@@ -1,0 +1,17 @@
+*.dll
+*.exe
+.DS_Store
+bin/
+pkg/
+vendor/
+.vagrant/
+*.backup
+*.log
+*.bak
+*~
+*#
+.*.swp
+.idea/
+*.test
+*.iml
+Notes.md
