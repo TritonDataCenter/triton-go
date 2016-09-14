@@ -19,10 +19,16 @@ func main() {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	keys, err := client.Keys().ListKeys(&triton.ListKeysInput{})
+	dcs, err := client.Datacenters().ListDataCenters(&triton.ListDataCentersInput{})
 	if err != nil {
-		log.Fatalf("ListKeys(): %s", err)
+		log.Fatalf("ListDatacenters(): %s", err)
 	}
 
-	spew.Dump(keys)
+	dc0, err := client.Datacenters().GetDataCenter(&triton.GetDataCenterInput{dcs[0].Name})
+	if err != nil {
+		log.Fatalf("GetDatacenter(): %s", err)
+	}
+
+	spew.Dump(dcs)
+	spew.Dump(dc0)
 }

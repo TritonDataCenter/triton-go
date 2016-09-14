@@ -11,6 +11,12 @@ type KeysClient struct {
 	*Client
 }
 
+// Keys returns a client used for accessing functions pertaining to
+// SSH key functionality in the Triton API.
+func (client *Client) Keys() *KeysClient {
+	return &KeysClient{client}
+}
+
 // Key represents a public key
 type Key struct {
 	// Name of the key

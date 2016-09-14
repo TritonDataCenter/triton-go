@@ -88,3 +88,45 @@ func (s *StepDeleteKey) Run(state TritonStateBag) StepAction {
 func (s *StepDeleteKey) Cleanup(state TritonStateBag) {
 	return
 }
+
+type StepGetDataCenter struct {
+	DataCenterName string
+}
+
+func (s *StepGetDataCenter) Run(state TritonStateBag) StepAction {
+	client := state.Client().Datacenters()
+
+	dc, err := client.GetDataCenter(&GetDataCenterInput{
+		Name: s.DataCenterName,
+	})
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	state.Put("datacenter", dc)
+	return Continue
+}
+
+func (s *StepGetDataCenter) Cleanup(state TritonStateBag) {
+	return
+}
+
+type StepListDataCenters struct {}
+
+func (s *StepListDataCenters) Run(state TritonStateBag) StepAction {
+	client := state.Client().Datacenters()
+
+	dcs, err := client.ListDataCenters(&ListDataCentersInput{})
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	state.Put("datacenters", dcs)
+	return Continue
+}
+
+func (s *StepListDataCenters) Cleanup(state TritonStateBag) {
+	return
+}

@@ -1,15 +1,38 @@
 package triton
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
-	"errors"
 )
 
 type AssertFunc func(TritonStateBag) error
+
+type StepAssertFunc struct {
+	AssertFunc AssertFunc
+}
+
+func (s *StepAssertFunc) Run(state TritonStateBag) StepAction {
+	if s.AssertFunc == nil {
+		state.AppendError(errors.New("StepAssertFunc may not have a nil AssertFunc"))
+		return Halt
+	}
+
+	err := s.AssertFunc(state)
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	return Continue
+}
+
+func (s *StepAssertFunc) Cleanup(state TritonStateBag) {
+	return
+}
 
 type StepAssert struct {
 	StateBagKey string

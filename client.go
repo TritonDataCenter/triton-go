@@ -12,6 +12,9 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/jen20/triton-go/authentication"
+	"github.com/hashicorp/go-cleanhttp"
+	"os"
+	"log"
 )
 
 // Client represents a connection to the Triton API.
@@ -28,18 +31,34 @@ type Client struct {
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
 func NewClient(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
+	defaultRetryWaitMin := 1 * time.Second
+	defaultRetryWaitMax := 5 * time.Minute
+	defaultRetryMax     := 32
+
+	httpClient := &http.Client{
+		Transport: cleanhttp.DefaultTransport(),
+		CheckRedirect: doNotFollowRedirects,
+	}
+
+	retryableClient := &retryablehttp.Client{
+		HTTPClient:   httpClient,
+		Logger:       log.New(os.Stderr, "", log.LstdFlags),
+		RetryWaitMin: defaultRetryWaitMin,
+		RetryWaitMax: defaultRetryWaitMax,
+		RetryMax:     defaultRetryMax,
+		CheckRetry:   retryablehttp.DefaultRetryPolicy,
+	}
+
 	return &Client{
-		client:      retryablehttp.NewClient(),
+		client:      retryableClient,
 		authorizer:  signers,
 		endpoint:    strings.TrimSuffix(endpoint, "/"),
 		accountName: accountName,
 	}, nil
 }
 
-// Keys returns a client used for accessing functions pertaining to
-// SSH key functionality in the Triton API.
-func (client *Client) Keys() *KeysClient {
-	return &KeysClient{client}
+func doNotFollowRedirects(*http.Request, []*http.Request) error {
+	return http.ErrUseLastResponse
 }
 
 func (c *Client) formatURL(path string) string {
@@ -95,4 +114,43 @@ func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadC
 		return nil, errwrap.Wrapf("Error decoding error resopnse: {{err}}", err)
 	}
 	return nil, tritonError
+}
+
+func (c *Client) executeRequestRaw(method, path string, body interface{}) (*http.Response, error) {
+	var requestBody io.ReadSeeker
+	if body != nil {
+		marshaled, err := json.MarshalIndent(body, "", "    ")
+		if err != nil {
+			return nil, err
+		}
+		requestBody = bytes.NewReader(marshaled)
+	}
+
+	req, err := retryablehttp.NewRequest(method, c.formatURL(path), requestBody)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+	}
+
+	dateHeader := time.Now().UTC().Format(time.RFC1123)
+	req.Header.Set("date", dateHeader)
+
+	authHeader, err := c.authorizer[0].Sign(dateHeader)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", "triton-go client API")
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+	}
+
+	return resp, nil
 }
