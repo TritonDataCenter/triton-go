@@ -3,8 +3,9 @@ package triton
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/errwrap"
 	"net/http"
+
+	"github.com/hashicorp/errwrap"
 )
 
 type KeysClient struct {
