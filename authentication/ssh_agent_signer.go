@@ -2,20 +2,22 @@ package authentication
 
 import (
 	"crypto/md5"
-	"encoding/base64"
+	"errors"
 	"fmt"
-	"github.com/hashicorp/errwrap"
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
 	"net"
 	"os"
 	"strings"
+
+	"github.com/hashicorp/errwrap"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 type SSHAgentSigner struct {
 	formattedKeyFingerprint string
 	keyFingerprint          string
 	accountName             string
+	keyIdentifier           string
 
 	agent agent.Agent
 	key   ssh.PublicKey
@@ -24,7 +26,7 @@ type SSHAgentSigner struct {
 func NewSSHAgentSigner(keyFingerprint, accountName string) (*SSHAgentSigner, error) {
 	sshAgentAddress := os.Getenv("SSH_AUTH_SOCK")
 	if sshAgentAddress == "" {
-		return nil, fmt.Errorf("SSH_AUTH_SOCK is not set")
+		return nil, errors.New("SSH_AUTH_SOCK is not set")
 	}
 
 	conn, err := net.Dial("unix", sshAgentAddress)
@@ -56,12 +58,15 @@ func NewSSHAgentSigner(keyFingerprint, accountName string) (*SSHAgentSigner, err
 		return nil, fmt.Errorf("No key in the SSH Agent matches fingerprint: %s", keyFingerprint)
 	}
 
+	formattedKeyFingerprint := formatPublicKeyFingerprint(matchingKey, true)
+
 	return &SSHAgentSigner{
-		formattedKeyFingerprint: formatPublicKeyFingerprint(matchingKey, true),
+		formattedKeyFingerprint: formattedKeyFingerprint,
 		keyFingerprint:          keyFingerprint,
 		accountName:             accountName,
 		agent:                   ag,
 		key:                     matchingKey,
+		keyIdentifier:           fmt.Sprintf("/%s/keys/%s", accountName, formattedKeyFingerprint),
 	}, nil
 }
 
@@ -72,15 +77,28 @@ func (s *SSHAgentSigner) Sign(dateHeader string) (string, error) {
 	if err != nil {
 		return "", errwrap.Wrapf("Error signing date header: {{err}}", err)
 	}
-	signedBase64 := base64.StdEncoding.EncodeToString(signature.Blob)
 
-	var algorithm string
-	switch signature.Format {
-	case "ssh-rsa":
-		algorithm = "rsa-sha1"
+	keyFormat, err := keyFormatToKeyType(signature.Format)
+	if err != nil {
+		return "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+	}
+
+	var authSignature httpAuthSignature
+	switch keyFormat {
+	case "rsa":
+		authSignature, err = newRSASignature(signature.Blob)
+		if err != nil {
+			return "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+		}
+	case "ecdsa":
+		authSignature, err = newECDSASignature(signature.Blob)
+		if err != nil {
+			return "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+		}
 	default:
 		return "", fmt.Errorf("Unsupported algorithm from SSH agent: %s", signature.Format)
 	}
 
-	return fmt.Sprintf(authorizationHeaderFormat, "/hashicorp/keys/jen20", algorithm, headerName, signedBase64), nil
+	return fmt.Sprintf(authorizationHeaderFormat, s.keyIdentifier,
+		authSignature.SignatureType(), headerName, authSignature.String()), nil
 }

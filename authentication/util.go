@@ -21,7 +21,7 @@ func formatPublicKeyFingerprint(key ssh.PublicKey, display bool) string {
 	}
 
 	formatted := ""
-	for i := 0; i < len(publicKeyFingerprintString)-2; i = i + 2 {
+	for i := 0; i < len(publicKeyFingerprintString); i = i + 2 {
 		formatted = fmt.Sprintf("%s%s:", formatted, publicKeyFingerprintString[i:i+2])
 	}
 
