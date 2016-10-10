@@ -10,16 +10,24 @@ import (
 // Note that this is specific to Joyent Public Cloud and will not pass on
 // private installations of Triton.
 func TestAccDataCenters_Get(t *testing.T) {
+	const dataCenterName = "us-east-1"
+	const dataCenterURL = "https://us-east-1.api.joyentcloud.com"
+
 	AccTest(t, TestCase{
 		Steps: []Step{
-			&StepGetDataCenter{
-				DataCenterName: "us-east-1",
+			&StepAPICall{
+				StateBagKey: "datacenter",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Datacenters().GetDataCenter(&GetDataCenterInput{
+						Name: dataCenterName,
+					})
+				},
 			},
 			&StepAssert{
 				StateBagKey: "datacenter",
 				Assertions: seq.Map{
-					"name": "us-east-1",
-					"url":  "https://us-east-1.api.joyentcloud.com",
+					"name": dataCenterName,
+					"url":  dataCenterURL,
 				},
 			},
 		},
@@ -31,7 +39,12 @@ func TestAccDataCenters_Get(t *testing.T) {
 func TestAccDataCenters_List(t *testing.T) {
 	AccTest(t, TestCase{
 		Steps: []Step{
-			&StepListDataCenters{},
+			&StepAPICall{
+				StateBagKey: "datacenters",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Datacenters().ListDataCenters(&ListDataCentersInput{})
+				},
+			},
 			&StepAssertFunc{
 				AssertFunc: func(state TritonStateBag) error {
 					dcs, ok := state.GetOk("datacenters")

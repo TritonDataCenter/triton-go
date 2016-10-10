@@ -1,132 +1,176 @@
 package triton
 
-type StepCreateKey struct {
-	KeyName     string
-	KeyMaterial string
+import (
+	"errors"
+	"fmt"
+	"log"
+	"reflect"
+
+	"github.com/abdullin/seq"
+	"github.com/hashicorp/errwrap"
+)
+
+type StepAPICall struct {
+	StateBagKey string
+	ErrorKey    string
+	CallFunc    func(client *Client) (interface{}, error)
+	CleanupFunc func(client *Client, callState interface{})
 }
 
-func (s *StepCreateKey) Run(state TritonStateBag) StepAction {
-	client := state.Client().Keys()
+func (s *StepAPICall) Run(state TritonStateBag) StepAction {
+	result, err := s.CallFunc(state.Client())
+	if err != nil {
+		if s.ErrorKey == "" {
+			state.AppendError(err)
+			return Halt
+		}
 
-	key, err := client.CreateKey(&CreateKeyInput{
-		Name: s.KeyName,
-		Key:  s.KeyMaterial,
-	})
+		state.Put(s.ErrorKey, err)
+		return Continue
+	}
+
+	state.Put(s.StateBagKey, result)
+	return Continue
+}
+
+func (s *StepAPICall) Cleanup(state TritonStateBag) {
+	if s.CleanupFunc == nil {
+		return
+	}
+
+	if callState, ok := state.GetOk(s.StateBagKey); ok {
+		s.CleanupFunc(state.Client(), callState)
+	} else {
+		log.Printf("[INFO] No state for API call, calling cleanup with nil call state")
+		s.CleanupFunc(state.Client(), nil)
+	}
+}
+
+type AssertFunc func(TritonStateBag) error
+
+type StepAssertFunc struct {
+	AssertFunc AssertFunc
+}
+
+func (s *StepAssertFunc) Run(state TritonStateBag) StepAction {
+	if s.AssertFunc == nil {
+		state.AppendError(errors.New("StepAssertFunc may not have a nil AssertFunc"))
+		return Halt
+	}
+
+	err := s.AssertFunc(state)
 	if err != nil {
 		state.AppendError(err)
 		return Halt
 	}
 
-	state.Put("key", key)
 	return Continue
 }
 
-func (s *StepCreateKey) Cleanup(state TritonStateBag) {
-	client := state.Client().Keys()
-
-	if err := client.DeleteKey(&DeleteKeyInput{
-		KeyName: s.KeyName,
-	}); err != nil {
-		if IsResourceNotFound(err) {
-			return
-		}
-		state.AppendError(err)
-	}
-}
-
-type StepGetKey struct {
-	StateBagKey     string
-	KeyName         string
-	ExpectedErrorKey string
-}
-
-func (s *StepGetKey) Run(state TritonStateBag) StepAction {
-	client := state.Client().Keys()
-
-	key, err := client.GetKey(&GetKeyInput{
-		KeyName: s.KeyName,
-	})
-	if err != nil {
-		if s.ExpectedErrorKey != "" {
-			state.Put(s.ExpectedErrorKey, err)
-			return Continue
-		}
-
-		state.AppendError(err)
-		return Halt
-	}
-
-	state.Put(s.StateBagKey, key)
-	return Continue
-}
-
-func (s *StepGetKey) Cleanup(state TritonStateBag) {
+func (s *StepAssertFunc) Cleanup(state TritonStateBag) {
 	return
 }
 
-type StepDeleteKey struct {
-	KeyName string
+type StepAssert struct {
+	StateBagKey string
+	Assertions  seq.Map
 }
 
-func (s *StepDeleteKey) Run(state TritonStateBag) StepAction {
-	client := state.Client().Keys()
+func (s *StepAssert) Run(state TritonStateBag) StepAction {
+	actual, ok := state.GetOk(s.StateBagKey)
+	if !ok {
+		state.AppendError(fmt.Errorf("Key %q not found in state", s.StateBagKey))
+	}
 
-	err := client.DeleteKey(&DeleteKeyInput{
-		KeyName: s.KeyName,
-	})
-	if err != nil {
-		if IsResourceNotFound(err) {
-			return Continue
+	for k, v := range s.Assertions {
+		path := fmt.Sprintf("%s.%s", s.StateBagKey, k)
+		log.Printf("[INFO] Asserting %q has value \"%v\"...", path, v)
+	}
+
+	result := s.Assertions.Test(actual)
+
+	if result.Ok() {
+		return Continue
+	}
+
+	for _, v := range result.Issues {
+		err := fmt.Sprintf("Expected %q to be \"%v\" but got %q",
+			v.Path,
+			v.ExpectedValue,
+			v.ActualValue,
+		)
+		state.AppendError(fmt.Errorf(err))
+	}
+
+	return Halt
+}
+
+func (s *StepAssert) Cleanup(state TritonStateBag) {
+	return
+}
+
+type StepAssertSet struct {
+	StateBagKey string
+	Keys        []string
+}
+
+func (s *StepAssertSet) Run(state TritonStateBag) StepAction {
+	actual, ok := state.GetOk(s.StateBagKey)
+	if !ok {
+		state.AppendError(fmt.Errorf("Key %q not found in state", s.StateBagKey))
+	}
+
+	ok = true
+	for _, key := range s.Keys {
+		r := reflect.ValueOf(actual)
+		f := reflect.Indirect(r).FieldByName(key)
+
+		log.Printf("[INFO] Asserting %q has a non-zero value...", key)
+		if f.Interface() == reflect.Zero(reflect.TypeOf(f)).Interface() {
+			err := fmt.Sprintf("Expected %q to have a non-zero value", key)
+			state.AppendError(fmt.Errorf(err))
+			ok = false
 		}
-		state.AppendError(err)
+	}
+
+	if !ok {
 		return Halt
 	}
 
 	return Continue
 }
 
-func (s *StepDeleteKey) Cleanup(state TritonStateBag) {
+func (s *StepAssertSet) Cleanup(state TritonStateBag) {
 	return
 }
 
-type StepGetDataCenter struct {
-	DataCenterName string
+type StepAssertTritonError struct {
+	ErrorKey string
+	Code     string
 }
 
-func (s *StepGetDataCenter) Run(state TritonStateBag) StepAction {
-	client := state.Client().Datacenters()
-
-	dc, err := client.GetDataCenter(&GetDataCenterInput{
-		Name: s.DataCenterName,
-	})
-	if err != nil {
-		state.AppendError(err)
+func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
+	err, ok := state.GetOk(s.ErrorKey)
+	if !ok {
+		state.AppendError(fmt.Errorf("Expected TritonError %q to be in state", s.Code))
 		return Halt
 	}
 
-	state.Put("datacenter", dc)
-	return Continue
-}
-
-func (s *StepGetDataCenter) Cleanup(state TritonStateBag) {
-	return
-}
-
-type StepListDataCenters struct {}
-
-func (s *StepListDataCenters) Run(state TritonStateBag) StepAction {
-	client := state.Client().Datacenters()
-
-	dcs, err := client.ListDataCenters(&ListDataCentersInput{})
-	if err != nil {
-		state.AppendError(err)
+	tritonErrorInterface := errwrap.GetType(err.(error), &TritonError{})
+	if tritonErrorInterface == nil {
+		state.AppendError(errors.New("Expected a TritonError in wrapped error chain"))
 		return Halt
 	}
 
-	state.Put("datacenters", dcs)
-	return Continue
+	tritonErr := tritonErrorInterface.(*TritonError)
+	if tritonErr.Code == s.Code {
+		return Continue
+	}
+
+	state.AppendError(fmt.Errorf("Expected TritonError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, tritonErr.Code))
+	return Halt
 }
 
-func (s *StepListDataCenters) Cleanup(state TritonStateBag) {
+func (s *StepAssertTritonError) Cleanup(state TritonStateBag) {
 	return
 }

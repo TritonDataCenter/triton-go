@@ -10,9 +10,17 @@ func TestAccKey_Create(t *testing.T) {
 
 	AccTest(t, TestCase{
 		Steps: []Step{
-			&StepCreateKey{
-				KeyName:     keyName,
-				KeyMaterial: testAccCreateKeyMaterial,
+			&StepAPICall{
+				StateBagKey: "key",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Keys().CreateKey(&CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
+				},
+				CleanupFunc: func(client *Client, callState interface{}) {
+					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+				},
 			},
 			&StepAssert{
 				StateBagKey: "key",
@@ -31,13 +39,23 @@ func TestAccKey_Get(t *testing.T) {
 
 	AccTest(t, TestCase{
 		Steps: []Step{
-			&StepCreateKey{
-				KeyName:     keyName,
-				KeyMaterial: testAccCreateKeyMaterial,
+			&StepAPICall{
+				StateBagKey: "key",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Keys().CreateKey(&CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
+				},
+				CleanupFunc: func(client *Client, callState interface{}) {
+					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+				},
 			},
-			&StepGetKey{
+			&StepAPICall{
 				StateBagKey: "getKey",
-				KeyName:     keyName,
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Keys().GetKey(&GetKeyInput{KeyName: keyName})
+				},
 			},
 			&StepAssert{
 				StateBagKey: "getKey",
@@ -56,17 +74,29 @@ func TestAccKey_Delete(t *testing.T) {
 
 	AccTest(t, TestCase{
 		Steps: []Step{
-			&StepCreateKey{
-				KeyName:     keyName,
-				KeyMaterial: testAccCreateKeyMaterial,
+			&StepAPICall{
+				StateBagKey: "key",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Keys().CreateKey(&CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
+				},
+				CleanupFunc: func(client *Client, callState interface{}) {
+					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+				},
 			},
-			&StepDeleteKey{
-				KeyName: keyName,
+			&StepAPICall{
+				StateBagKey: "noop",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return nil, client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+				},
 			},
-			&StepGetKey{
-				StateBagKey:      "getKey",
-				KeyName:          keyName,
-				ExpectedErrorKey: "getKeyError",
+			&StepAPICall{
+				ErrorKey: "getKeyError",
+				CallFunc: func(client *Client) (interface{}, error) {
+					return client.Keys().GetKey(&GetKeyInput{KeyName: keyName})
+				},
 			},
 			&StepAssertTritonError{
 				ErrorKey: "getKeyError",
