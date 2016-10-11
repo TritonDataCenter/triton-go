@@ -8,6 +8,7 @@ import (
 
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
+	"os"
 )
 
 type StepAPICall struct {
@@ -84,7 +85,15 @@ func (s *StepAssert) Run(state TritonStateBag) StepAction {
 
 	for k, v := range s.Assertions {
 		path := fmt.Sprintf("%s.%s", s.StateBagKey, k)
-		log.Printf("[INFO] Asserting %q has value \"%v\"...", path, v)
+		if os.Getenv("TRITON_VERBOSE_TESTS") != "" {
+			log.Printf("[INFO] Asserting %q has value \"%v\"", path, v)
+		} else {
+			vPrefix := fmt.Sprintf("%v", v)
+			if len(vPrefix) > 15 {
+				vPrefix = fmt.Sprintf("%s...", vPrefix[:15])
+			}
+			log.Printf("[INFO] Asserting %q has value \"%s\"", path, vPrefix)
+		}
 	}
 
 	result := s.Assertions.Test(actual)
@@ -125,7 +134,7 @@ func (s *StepAssertSet) Run(state TritonStateBag) StepAction {
 		r := reflect.ValueOf(actual)
 		f := reflect.Indirect(r).FieldByName(key)
 
-		log.Printf("[INFO] Asserting %q has a non-zero value...", key)
+		log.Printf("[INFO] Asserting %q has a non-zero value", key)
 		if f.Interface() == reflect.Zero(reflect.TypeOf(f)).Interface() {
 			err := fmt.Sprintf("Expected %q to have a non-zero value", key)
 			state.AppendError(fmt.Errorf(err))
