@@ -3,8 +3,9 @@ package triton
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/errwrap"
 	"net/http"
+
+	"github.com/hashicorp/errwrap"
 )
 
 type PackagesClient struct {
@@ -64,7 +65,7 @@ type GetPackageInput struct {
 	ID string
 }
 
-func (client *PackagesClient) GetPackage(input *GetPackageInput) (*Key, error) {
+func (client *PackagesClient) GetPackage(input *GetPackageInput) (*Package, error) {
 	path := fmt.Sprintf("/%s/packages/%s", client.accountName, input.ID)
 	respReader, err := client.executeRequest(http.MethodGet, path, nil)
 	if respReader != nil {
