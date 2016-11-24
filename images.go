@@ -169,3 +169,36 @@ func (client *ImagesClient) CreateImageFromMachine(input *CreateImageFromMachine
 
 	return result, nil
 }
+
+type UpdateImageInput struct {
+	ImageID     string            `json:"-"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version,omitempty"`
+	Description string            `json:"description,omitempty"`
+	HomePage    string            `json:"homepage,omitempty"`
+	EULA        string            `json:"eula,omitempty"`
+	ACL         []string          `json:"acl,omitempty"`
+	tags        map[string]string `json:"tags,omitempty"`
+}
+
+func (client *ImagesClient) UpdateImage(input *UpdateImageInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+	query := &url.Values{}
+	query.Set("action", "update")
+
+	respReader, err := client.executeRequestURIParams(http.MethodPost, path, input, query)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing UpdateImage request: {{err}}", err)
+	}
+
+	var result *Image
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding UpdateImage response: {{err}}", err)
+	}
+
+	return result, nil
+}
