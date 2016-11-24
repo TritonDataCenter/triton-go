@@ -2,6 +2,7 @@ package triton
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/hashicorp/errwrap"
 	"net/http"
 	"time"
@@ -27,8 +28,9 @@ type Image struct {
 	ID           string                 `json:"id"`
 	Name         string                 `json:"name"`
 	OS           string                 `json:"os"`
+	Description  string                 `json:"description"`
 	Version      string                 `json:"version"`
-	Type         string                 `json:"string"`
+	Type         string                 `json:"type"`
 	Requirements map[string]interface{} `json:"requirements"`
 	Homepage     string                 `json:"homepage"`
 	Files        []*ImageFile           `json:"files"`
@@ -57,6 +59,29 @@ func (client *ImagesClient) ListImages(*ListImagesInput) ([]*Image, error) {
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding ListImages response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type GetImageInput struct {
+	ImageID string
+}
+
+func (client *ImagesClient) GetImage(input *GetImageInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+	respReader, err := client.executeRequest(http.MethodGet, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetImage request: {{err}}", err)
+	}
+
+	var result *Image
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding GetImage response: {{err}}", err)
 	}
 
 	return result, nil
