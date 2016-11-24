@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/errwrap"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -102,4 +103,38 @@ func (client *ImagesClient) DeleteImage(input *DeleteImageInput) error {
 	}
 
 	return nil
+}
+
+type ExportImageInput struct {
+	ImageID   string
+	MantaPath string
+}
+
+type MantaLocation struct {
+	MantaURL     string `json:"manta_url"`
+	ImagePath    string `json:"image_path"`
+	ManifestPath string `json:"manifest_path"`
+}
+
+func (client *ImagesClient) ExportImage(input *ExportImageInput) (*MantaLocation, error) {
+	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+	query := &url.Values{}
+	query.Set("action", "export")
+	query.Set("manta_path", input.MantaPath)
+
+	respReader, err := client.executeRequestURIParams(http.MethodGet, path, nil, query)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetImage request: {{err}}", err)
+	}
+
+	var result *MantaLocation
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding GetImage response: {{err}}", err)
+	}
+
+	return result, nil
 }
