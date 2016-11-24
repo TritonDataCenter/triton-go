@@ -86,3 +86,20 @@ func (client *ImagesClient) GetImage(input *GetImageInput) (*Image, error) {
 
 	return result, nil
 }
+
+type DeleteImageInput struct {
+	ImageID string
+}
+
+func (client *ImagesClient) DeleteImage(input *DeleteImageInput) error {
+	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+	respReader, err := client.executeRequest(http.MethodDelete, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing DeleteKey request: {{err}}", err)
+	}
+
+	return nil
+}
