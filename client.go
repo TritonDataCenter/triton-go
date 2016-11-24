@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 	"os"
 	"log"
+	"net/url"
 )
 
 // Client represents a connection to the Triton API.
@@ -65,7 +66,7 @@ func (c *Client) formatURL(path string) string {
 	return fmt.Sprintf("%s%s", c.endpoint, path)
 }
 
-func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadCloser, error) {
+func (c *Client) executeRequestURIParams(method, path string, body interface{}, query *url.Values) (io.ReadCloser, error) {
 	var requestBody io.ReadSeeker
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
@@ -96,6 +97,10 @@ func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadC
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	if query != nil {
+		req.URL.RawQuery = query.Encode()
+	}
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
@@ -114,6 +119,10 @@ func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadC
 		return nil, errwrap.Wrapf("Error decoding error resopnse: {{err}}", err)
 	}
 	return nil, tritonError
+}
+
+func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadCloser, error) {
+	return c.executeRequestURIParams(method, path, body, nil)
 }
 
 func (c *Client) executeRequestRaw(method, path string, body interface{}) (*http.Response, error) {
