@@ -3,10 +3,11 @@ package triton
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/errwrap"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/hashicorp/errwrap"
 )
 
 type ImagesClient struct {
@@ -134,6 +135,36 @@ func (client *ImagesClient) ExportImage(input *ExportImageInput) (*MantaLocation
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetImage response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type CreateImageFromMachineInput struct {
+	MachineID   string            `json:"machine"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version,omitempty"`
+	Description string            `json:"description,omitempty"`
+	HomePage    string            `json:"homepage,omitempty"`
+	EULA        string            `json:"eula,omitempty"`
+	ACL         []string          `json:"acl,omitempty"`
+	tags        map[string]string `json:"tags,omitempty"`
+}
+
+func (client *ImagesClient) CreateImageFromMachine(input *CreateImageFromMachineInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images", client.accountName)
+	respReader, err := client.executeRequest(http.MethodPost, path, input)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing CreateImageFromMachine request: {{err}}", err)
+	}
+
+	var result *Image
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding CreateImageFromMachine response: {{err}}", err)
 	}
 
 	return result, nil
