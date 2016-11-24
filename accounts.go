@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"fmt"
 )
 
 type AccountsClient struct {
@@ -51,6 +52,40 @@ func (client *AccountsClient) GetAccount(input *GetAccountInput) (*Account, erro
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetAccount response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type UpdateAccountInput struct {
+	Email            string    `json:"email,omitempty"`
+	CompanyName      string    `json:"companyName,omitempty"`
+	FirstName        string    `json:"firstName,omitempty"`
+	LastName         string    `json:"lastName,omitempty"`
+	Address          string    `json:"address,omitempty"`
+	PostalCode       string    `json:"postalCode,omitempty"`
+	City             string    `json:"city,omitempty"`
+	State            string    `json:"state,omitempty"`
+	Country          string    `json:"country,omitempty"`
+	Phone            string    `json:"phone,omitempty"`
+	TritonCNSEnabled bool      `json:"triton_cns_enabled,omitempty"`
+}
+
+// UpdateAccount updates your account details with the given parameters.
+// TODO(jen20) Work out a safe way to test this
+func (client *AccountsClient) UpdateAccount(input *UpdateAccountInput) (*Account, error) {
+	respReader, err := client.executeRequest(http.MethodPost, fmt.Sprintf("/%s", client.accountName), input)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing UpdateAccount request: {{err}}", err)
+	}
+
+	var result *Account
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding UpdateAccount response: {{err}}", err)
 	}
 
 	return result, nil
