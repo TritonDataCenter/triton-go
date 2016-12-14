@@ -82,6 +82,6 @@ ok  	github.com/jen20/triton-go	31.861s
 ```
 
 [4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md 
-[5]: https://godoc.org/github.com/jen20/go-triton/authentication
-[6]: https://godoc.org/github.com/jen20/go-triton/authentication
+[5]: https://godoc.org/github.com/joyent/go-triton/authentication
+[6]: https://godoc.org/github.com/joyent/go-triton/authentication
 [7]: https://github.com/hashicorp/go-errwrap

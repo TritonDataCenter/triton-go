@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/jen20/triton-go/authentication"
+	"github.com/joyent/triton-go/authentication"
 )
 
 const TestEnvVar = "TRITON_TEST"

@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/jen20/triton-go/authentication"
 	"github.com/hashicorp/go-cleanhttp"
-	"os"
-	"log"
-	"net/url"
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/joyent/triton-go/authentication"
 )
 
 // Client represents a connection to the Triton API.

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/davecgh/go-spew/spew"
-	"github.com/jen20/triton-go"
-	"github.com/jen20/triton-go/authentication"
+	"github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/authentication"
 	"log"
 )
 
