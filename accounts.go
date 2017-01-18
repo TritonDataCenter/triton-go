@@ -13,10 +13,10 @@ type AccountsClient struct {
 	*Client
 }
 
-// Accounts returns a client used for accessing functions pertaining
+// Accounts returns a c used for accessing functions pertaining
 // to Account functionality in the Triton API.
-func (client *Client) Accounts() *AccountsClient {
-	return &AccountsClient{client}
+func (c *Client) Accounts() *AccountsClient {
+	return &AccountsClient{c}
 }
 
 type Account struct {

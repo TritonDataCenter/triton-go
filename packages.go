@@ -12,10 +12,10 @@ type PackagesClient struct {
 	*Client
 }
 
-// Packages returns a client used for accessing functions pertaining
+// Packages returns a c used for accessing functions pertaining
 // to Packages functionality in the Triton API.
-func (client *Client) Packages() *PackagesClient {
-	return &PackagesClient{client}
+func (c *Client) Packages() *PackagesClient {
+	return &PackagesClient{c}
 }
 
 type Package struct {

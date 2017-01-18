@@ -14,10 +14,10 @@ type DataCentersClient struct {
 	*Client
 }
 
-// DataCenters returns a client used for accessing functions pertaining
+// DataCenters returns a c used for accessing functions pertaining
 // to Datacenter functionality in the Triton API.
-func (client *Client) Datacenters() *DataCentersClient {
-	return &DataCentersClient{client}
+func (c *Client) Datacenters() *DataCentersClient {
+	return &DataCentersClient{c}
 }
 
 type DataCenter struct {

@@ -13,10 +13,10 @@ type ServicesClient struct {
 	*Client
 }
 
-// Services returns a client used for accessing functions pertaining
+// Services returns a c used for accessing functions pertaining
 // to Services functionality in the Triton API.
-func (client *Client) Services() *ServicesClient {
-	return &ServicesClient{client}
+func (c *Client) Services() *ServicesClient {
+	return &ServicesClient{c}
 }
 
 type Service struct {

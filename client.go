@@ -91,7 +91,7 @@ func (c *Client) executeRequestURIParams(method, path string, body interface{}, 
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go client API")
+	req.Header.Set("User-Agent", "triton-go c API")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -150,7 +150,7 @@ func (c *Client) executeRequestRaw(method, path string, body interface{}) (*http
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go client API")
+	req.Header.Set("User-Agent", "triton-go c API")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")

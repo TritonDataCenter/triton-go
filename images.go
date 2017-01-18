@@ -14,10 +14,10 @@ type ImagesClient struct {
 	*Client
 }
 
-// Images returns a client used for accessing functions pertaining to
+// Images returns a c used for accessing functions pertaining to
 // Images functionality in the Triton API.
-func (client *Client) Images() *ImagesClient {
-	return &ImagesClient{client}
+func (c *Client) Images() *ImagesClient {
+	return &ImagesClient{c}
 }
 
 type ImageFile struct {

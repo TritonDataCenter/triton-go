@@ -11,10 +11,10 @@ type RolesClient struct {
 	*Client
 }
 
-// Roles returns a client used for accessing functions pertaining
+// Roles returns a c used for accessing functions pertaining
 // to Role functionality in the Triton API.
-func (client *Client) Roles() *RolesClient {
-	return &RolesClient{client}
+func (c *Client) Roles() *RolesClient {
+	return &RolesClient{c}
 }
 
 type Role struct {

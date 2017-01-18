@@ -12,10 +12,10 @@ type ConfigClient struct {
 	*Client
 }
 
-// Config returns a client used for accessing functions pertaining
+// Config returns a c used for accessing functions pertaining
 // to Config functionality in the Triton API.
-func (client *Client) Config() *ConfigClient {
-	return &ConfigClient{client}
+func (c *Client) Config() *ConfigClient {
+	return &ConfigClient{c}
 }
 
 // Config represents configuration for your account.
@@ -51,7 +51,7 @@ type UpdateConfigInput struct {
 }
 
 // UpdateConfig updates configuration values for your account.
-// TODO(jen20) Work out a safe way to test this (after networks client implemented)
+// TODO(jen20) Work out a safe way to test this (after networks c implemented)
 func (client *ConfigClient) UpdateConfig(input *UpdateConfigInput) (*Config, error) {
 	respReader, err := client.executeRequest(http.MethodPut, fmt.Sprintf("/%s/config", client.accountName), input)
 	if respReader != nil {
