@@ -47,6 +47,129 @@ if err != nil {
 
 If an error is returned by the HTTP API, the `error` returned from the function will contain an instance of `triton.TritonError` in the chain. Error wrapping is performed using the [errwrap][7] library from HashiCorp.
 
+## Completeness
+
+The following list is updated as new functionality is added. The complete list of operations is taken from the [CloudAPI documentation](https://apidocs.joyent.com/cloudapi).
+
+- Accounts
+	- [x] GetAccount
+	- [x] UpdateAccount
+- Keys
+	- [x] ListKeys
+	- [x] GetKey
+	- [x] CreateKey
+	- [x] DeleteKey
+- Users
+	- [ ] ListUsers
+	- [ ] GetUser
+	- [ ] CreateUser
+	- [ ] UpdateUser
+	- [ ] ChangeUserPassword
+	- [ ] DeleteUser
+- Roles
+	- [ ] ListRoles
+	- [ ] GetRole
+	- [ ] CreateRole
+	- [ ] UpdateRole
+	- [ ] DeleteRole
+- Role Tags
+	- [ ] SetRoleTags
+- Policies
+	- [ ] ListPolicies
+	- [ ] GetPolicy
+	- [ ] CreatePolicy
+	- [ ] UpdatePolicy
+	- [ ] DeletePolicy
+- User SSH Keys
+	- [x] ListUserKeys
+	- [x] GetUserKey
+	- [x] CreateUserKey
+	- [x] DeleteUserKey
+- Config
+	- [x] GetConfig
+	- [x] UpdateConfig
+- Datacenters
+	- [x] ListDatacenters
+	- [x] GetDatacenter
+- Services
+	- [x] ListServices
+- Images
+	- [x] ListImages
+	- [x] GetImage
+	- [x] DeleteImage
+	- [x] ExportImage
+	- [x] CreateImageFromMachine
+	- [x] UpdateImage
+- Packages
+	- [x] ListPackages
+	- [x] GetPackage
+- Instances
+	- [ ] ListMachines
+	- [ ] GetMachine
+	- [ ] CreateMachine
+	- [ ] StopMachine
+	- [ ] StartMachine
+	- [ ] RebootMachine
+	- [ ] ResizeMachine
+	- [ ] RenameMachine
+	- [ ] EnableMachineFirewall
+	- [ ] DisableMachineFirewall
+	- [ ] CreateMachineSnapshot
+	- [ ] StartMachineFromSnapshot
+	- [ ] ListMachineSnapshots
+	- [ ] GetMachineSnapshot
+	- [ ] DeleteMachineSnapshot
+	- [ ] UpdateMachineMetadata
+	- [ ] ListMachineMetadata
+	- [ ] GetMachineMetadata
+	- [ ] DeleteMachineMetadata
+	- [ ] DeleteAllMachineMetadata
+	- [ ] AddMachineTags
+	- [ ] ReplaceMachineTags
+	- [ ] ListMachineTags
+	- [ ] GetMachineTag
+	- [ ] DeleteMachineTag
+	- [ ] DeleteMachineTags
+	- [ ] DeleteMachine
+	- [ ] MachineAudit
+- Analytics
+	- [ ] DescribeAnalytics
+	- [ ] ListInstrumentations
+	- [ ] GetInstrumentation
+	- [ ] GetInstrumentationValue
+	- [ ] GetInstrumentationHeatmap
+	- [ ] GetInstrumentationHeatmapDetails
+	- [ ] CreateInstrumentation
+	- [ ] DeleteInstrumentation
+- Firewall Rules
+	- [ ] ListFirewallRules
+	- [ ] GetFirewallRule
+	- [ ] CreateFirewallRule
+	- [ ] UpdateFirewallRule
+	- [ ] EnableFirewallRule
+	- [ ] DisableFirewallRule
+	- [ ] DeleteFirewallRule
+	- [ ] ListMachineFirewallRules
+	- [ ] ListFirewallRuleMachines
+- Fabrics
+	- [x] ListFabricVLANs
+	- [x] CreateFabricVLAN
+	- [x] GetFabricVLAN
+	- [x] UpdateFabricVLAN
+	- [x] DeleteFabricVLAN
+	- [x] ListFabricNetworks
+	- [x] CreateFabricNetwork
+	- [x] GetFabricNetwork
+	- [x] DeleteFabricNetwork
+- Networks
+	- [ ] ListNetworks
+	- [ ] GetNetwork
+- Nics
+	- [ ] ListNics
+	- [ ] GetNic
+	- [ ] AddNic
+	- [ ] RemoveNic
+
 ## Running Acceptance Tests
 
 Acceptance Tests run directly against the Triton API, so you will need either a local installation or Triton or an account with Joyent in order to run them. The tests create real resources (and thus cost real money!)
