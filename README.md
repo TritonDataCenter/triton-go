@@ -162,8 +162,8 @@ The following list is updated as new functionality is added. The complete list o
 	- [x] GetFabricNetwork
 	- [x] DeleteFabricNetwork
 - Networks
-	- [ ] ListNetworks
-	- [ ] GetNetwork
+	- [x] ListNetworks
+	- [x] GetNetwork
 - Nics
 	- [ ] ListNics
 	- [ ] GetNic
