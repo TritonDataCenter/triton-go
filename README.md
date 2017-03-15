@@ -67,11 +67,11 @@ The following list is updated as new functionality is added. The complete list o
 	- [ ] ChangeUserPassword
 	- [ ] DeleteUser
 - Roles
-	- [ ] ListRoles
-	- [ ] GetRole
-	- [ ] CreateRole
-	- [ ] UpdateRole
-	- [ ] DeleteRole
+	- [x] ListRoles
+	- [x] GetRole
+	- [x] CreateRole
+	- [x] UpdateRole
+	- [x] DeleteRole
 - Role Tags
 	- [ ] SetRoleTags
 - Policies
