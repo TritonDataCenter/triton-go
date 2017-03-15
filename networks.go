@@ -29,8 +29,8 @@ type Network struct {
 	ProvisioningEndIP   string
 	Gateway             string
 	Resolvers           []string
-	//TODO(jen20) Routes
-	InternetNAT bool
+	Routes              map[string]string
+	InternetNAT         bool
 }
 
 type ListNetworksInput struct{}
