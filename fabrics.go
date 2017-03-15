@@ -19,9 +19,9 @@ func (c *Client) Fabrics() *FabricsClient {
 }
 
 type FabricVLAN struct {
-	Name        string
-	ID          int `json:"vlan_id"`
-	Description string
+	Name        string `json:"name"`
+	ID          int    `json:"vlan_id"`
+	Description string `json:"description"`
 }
 
 type ListFabricVLANsInput struct{}
@@ -129,6 +129,103 @@ func (client *FabricsClient) DeleteFabricVLAN(input *DeleteFabricVLANInput) erro
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing DeleteFabricVLAN request: {{err}}", err)
+	}
+
+	return nil
+}
+
+type ListFabricNetworksInput struct {
+	FabricVLANID int `json:"-"`
+}
+
+func (client *FabricsClient) ListFabricNetworks(input *ListFabricNetworksInput) ([]*Network, error) {
+	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks", client.accountName, input.FabricVLANID)
+	respReader, err := client.executeRequest(http.MethodGet, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing ListFabricNetworks request: {{err}}", err)
+	}
+
+	var result []*Network
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding ListFabricNetworks response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type CreateFabricNetworkInput struct {
+	FabricVLANID     int               `json:"-"`
+	Name             string            `json:"name"`
+	Description      string            `json:"description"`
+	Subnet           string            `json:"subnet"`
+	ProvisionStartIP string            `json:"provision_start_ip"`
+	ProvisionEndIP   string            `json:"provision_end_ip"`
+	Gateway          string            `json:"gateway"`
+	Resolvers        []string          `json:"resolvers"`
+	Routes           map[string]string `json:"routes"`
+	InternetNAT      bool              `json:"internet_nat"`
+}
+
+func (client *FabricsClient) CreateFabricNetwork(input *CreateFabricNetworkInput) (*Network, error) {
+	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks", client.accountName, input.FabricVLANID)
+	respReader, err := client.executeRequest(http.MethodPost, path, input)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing CreateFabricNetwork request: {{err}}", err)
+	}
+
+	var result *Network
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding CreateFabricNetwork response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type GetFabricNetworkInput struct {
+	FabricVLANID int    `json:"-"`
+	NetworkID    string `json:"-"`
+}
+
+func (client *FabricsClient) GetFabricNetwork(input *GetFabricNetworkInput) (*Network, error) {
+	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", client.accountName, input.FabricVLANID, input.NetworkID)
+	respReader, err := client.executeRequest(http.MethodGet, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetFabricNetwork request: {{err}}", err)
+	}
+
+	var result *Network
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding GetFabricNetwork response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type DeleteFabricNetworkInput struct {
+	FabricVLANID int    `json:"-"`
+	NetworkID    string `json:"-"`
+}
+
+func (client *FabricsClient) DeleteFabricNetwork(input *DeleteFabricNetworkInput) error {
+	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", client.accountName, input.FabricVLANID, input.NetworkID)
+	respReader, err := client.executeRequest(http.MethodDelete, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing DeleteFabricNetwork request: {{err}}", err)
 	}
 
 	return nil
