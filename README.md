@@ -148,15 +148,15 @@ The following list is updated as new functionality is added. The complete list o
 	- [ ] CreateInstrumentation
 	- [ ] DeleteInstrumentation
 - Firewall Rules
-	- [ ] ListFirewallRules
-	- [ ] GetFirewallRule
-	- [ ] CreateFirewallRule
-	- [ ] UpdateFirewallRule
-	- [ ] EnableFirewallRule
-	- [ ] DisableFirewallRule
-	- [ ] DeleteFirewallRule
+	- [x] ListFirewallRules
+	- [x] GetFirewallRule
+	- [x] CreateFirewallRule
+	- [x] UpdateFirewallRule
+	- [x] EnableFirewallRule
+	- [x] DisableFirewallRule
+	- [x] DeleteFirewallRule
 	- [ ] ListMachineFirewallRules
-	- [ ] ListFirewallRuleMachines
+	- [x] ListFirewallRuleMachines
 - Fabrics
 	- [x] ListFabricVLANs
 	- [x] CreateFabricVLAN
