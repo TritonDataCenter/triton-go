@@ -19,18 +19,18 @@ func (c *Client) Networks() *NetworksClient {
 }
 
 type Network struct {
-	Id                  string
-	Name                string
-	Public              bool
-	Fabric              bool
-	Description         string
-	Subnet              string
-	ProvisioningStartIP string
-	ProvisioningEndIP   string
-	Gateway             string
-	Resolvers           []string
-	Routes              map[string]string
-	InternetNAT         bool
+	Id                  string            `json:"id"`
+	Name                string            `json:"name"`
+	Public              bool              `json:"public"`
+	Fabric              bool              `json:"fabric"`
+	Description         string            `json:"description"`
+	Subnet              string            `json:"subnet"`
+	ProvisioningStartIP string            `json:"provision_start_ip"`
+	ProvisioningEndIP   string            `json:"provision_end_ip"`
+	Gateway             string            `json:"gateway"`
+	Resolvers           []string          `json:"resolvers"`
+	Routes              map[string]string `json:"routes"`
+	InternetNAT         bool              `json:"internet_nat"`
 }
 
 type ListNetworksInput struct{}
