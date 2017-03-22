@@ -108,6 +108,10 @@ func IsUnknownError(err error) bool {
 // isSpecificError checks whether the error represented by err wraps
 // an underlying TritonError with code errorCode.
 func isSpecificError(err error, errorCode string) bool {
+	if err == nil {
+		return false
+	}
+
 	tritonErrorInterface := errwrap.GetType(err.(error), &TritonError{})
 	if tritonErrorInterface == nil {
 		return false
