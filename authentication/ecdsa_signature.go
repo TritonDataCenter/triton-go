@@ -50,7 +50,7 @@ func newECDSASignature(signatureBlob []byte) (*ecdsaSignature, error) {
 	rValue := ecSig.R.Bytes()
 	var hashAlgorithm string
 	switch len(rValue) {
-	case 32:
+	case 31, 32:
 		hashAlgorithm = "sha256"
 	case 65, 66:
 		hashAlgorithm = "sha512"
