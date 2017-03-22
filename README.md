@@ -9,17 +9,23 @@ Triton uses [HTTP Signature][4] to sign the Date header in each HTTP request mad
 To construct a Signer, use the `New*` range of methods in the `authentication` package. In the case of `authentication.NewSSHAgentSigner`, the parameters are the fingerprint of the key with which to sign, and the account name (normally stored in the `SDC_ACCOUNT` environment variable). For example:
 
 ```
-const fingerprint := "1b:bc:29:48:89:af:72:63:f0:83:b8:11:b6:4d:ff:3f"
-sshKeySigner, err := authentication.NewSSHAgentSigner(fingerprint, "hashicorp")
+const fingerprint := "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11"
+sshKeySigner, err := authentication.NewSSHAgentSigner(fingerprint, "AccountName")
 if err != nil {
 	log.Fatalf("NewSSHAgentSigner: %s", err)
 }
 ```
 
+An appropriate key fingerprint can be generated using `ssh-keygen`:
+
+```
+ssh-keygen -Emd5 -lf ~/.ssh/id_rsa.pub | cut -d " " -f 2 | sed 's/MD5://'
+```
+
 To construct a Client, use the `NewClient` function, passing in the endpoint, account name and constructed signer:
 
 ```go
-client, err := triton.NewClient("https://us-sw-1.api.joyent.com/", "hashicorp",	sshKeySigner)
+client, err := triton.NewClient("https://us-sw-1.api.joyent.com/", "AccountName",	sshKeySigner)
 if err != nil {
 	log.Fatalf("NewClient: %s", err)
 }
@@ -191,8 +197,8 @@ The verbose output has been removed for brevity here.
 $ HTTP_PROXY=http://localhost:8888 \
 	TRITON_TEST=1 \
 	SDC_URL=https://us-sw-1.api.joyent.com \
-	SDC_ACCOUNT=hashicorp \
-	SDC_KEY_ID=1b:bc:29:48:89:af:72:63:f0:83:b8:11:b6:4d:ff:3f \
+	SDC_ACCOUNT=AccountName \
+	SDC_KEY_ID=a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11 \
 	go test -v -run "TestAccKey"
 === RUN   TestAccKey_Create
 --- PASS: TestAccKey_Create (12.46s)
