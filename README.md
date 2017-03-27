@@ -111,15 +111,15 @@ The following list is updated as new functionality is added. The complete list o
 	- [x] GetPackage
 - Instances
 	- [ ] ListMachines
-	- [ ] GetMachine
-	- [ ] CreateMachine
+	- [x] GetMachine
+	- [x] CreateMachine
 	- [ ] StopMachine
 	- [ ] StartMachine
 	- [ ] RebootMachine
-	- [ ] ResizeMachine
-	- [ ] RenameMachine
-	- [ ] EnableMachineFirewall
-	- [ ] DisableMachineFirewall
+	- [x] ResizeMachine
+	- [x] RenameMachine
+	- [x] EnableMachineFirewall
+	- [x] DisableMachineFirewall
 	- [ ] CreateMachineSnapshot
 	- [ ] StartMachineFromSnapshot
 	- [ ] ListMachineSnapshots
@@ -130,13 +130,13 @@ The following list is updated as new functionality is added. The complete list o
 	- [ ] GetMachineMetadata
 	- [ ] DeleteMachineMetadata
 	- [ ] DeleteAllMachineMetadata
-	- [ ] AddMachineTags
-	- [ ] ReplaceMachineTags
-	- [ ] ListMachineTags
-	- [ ] GetMachineTag
-	- [ ] DeleteMachineTag
-	- [ ] DeleteMachineTags
-	- [ ] DeleteMachine
+	- [x] AddMachineTags
+	- [x] ReplaceMachineTags
+	- [x] ListMachineTags
+	- [x] GetMachineTag
+	- [x] DeleteMachineTag
+	- [x] DeleteMachineTags
+	- [x] DeleteMachine
 	- [ ] MachineAudit
 - Analytics
 	- [ ] DescribeAnalytics
