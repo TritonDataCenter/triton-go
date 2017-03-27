@@ -34,10 +34,10 @@ type Client struct {
 func NewClient(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
 	defaultRetryWaitMin := 1 * time.Second
 	defaultRetryWaitMax := 5 * time.Minute
-	defaultRetryMax     := 32
+	defaultRetryMax := 32
 
 	httpClient := &http.Client{
-		Transport: cleanhttp.DefaultTransport(),
+		Transport:     cleanhttp.DefaultTransport(),
 		CheckRedirect: doNotFollowRedirects,
 	}
 
@@ -91,7 +91,7 @@ func (c *Client) executeRequestURIParams(method, path string, body interface{}, 
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go c API")
+	req.Header.Set("User-Agent", "triton-go Client API")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -110,15 +110,20 @@ func (c *Client) executeRequestURIParams(method, path string, body interface{}, 
 		return resp.Body, nil
 	}
 
+	return nil, c.decodeError(resp.StatusCode, resp.Body)
+}
+
+func (c *Client) decodeError(statusCode int, body io.Reader) error {
 	tritonError := &TritonError{
-		StatusCode: resp.StatusCode,
+		StatusCode: statusCode,
 	}
 
-	errorDecoder := json.NewDecoder(resp.Body)
+	errorDecoder := json.NewDecoder(body)
 	if err := errorDecoder.Decode(tritonError); err != nil {
-		return nil, errwrap.Wrapf("Error decoding error resopnse: {{err}}", err)
+		return errwrap.Wrapf("Error decoding error response: {{err}}", err)
 	}
-	return nil, tritonError
+
+	return tritonError
 }
 
 func (c *Client) executeRequest(method, path string, body interface{}) (io.ReadCloser, error) {
