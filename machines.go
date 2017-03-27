@@ -283,13 +283,13 @@ func (client *MachinesClient) GetMachineTag(input *GetMachineTagInput) (string, 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetMachineTag request: {{err}}", err)
+		return "", errwrap.Wrapf("Error executing GetMachineTag request: {{err}}", err)
 	}
 
 	var result string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetMachineTag response: {{err}}", err)
+		return "", errwrap.Wrapf("Error decoding GetMachineTag response: {{err}}", err)
 	}
 
 	return result, nil
@@ -313,6 +313,30 @@ func (client *MachinesClient) ListMachineTags(input *ListMachineTagsInput) (map[
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding ListMachineTags response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type UpdateMachineMetadataInput struct {
+	ID       string
+	Metadata map[string]string
+}
+
+func (client *MachinesClient) UpdateMachineMetadata(input *UpdateMachineMetadataInput) (map[string]string, error) {
+	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
+	respReader, err := client.executeRequest(http.MethodPost, path, input.Metadata)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing UpdateMachineMetadata request: {{err}}", err)
+	}
+
+	var result map[string]string
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding UpdateMachineMetadata response: {{err}}", err)
 	}
 
 	return result, nil
@@ -403,4 +427,46 @@ func (client *MachinesClient) ListNICs(input *ListNICsInput) ([]*NIC, error) {
 	}
 
 	return result, nil
+}
+
+type AddNICInput struct {
+	MachineID string `json:"-"`
+	Network   string `json:"network"`
+}
+
+func (client *MachinesClient) AddNIC(input *AddNICInput) (*NIC, error) {
+	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
+	respReader, err := client.executeRequest(http.MethodPost, path, input)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing AddNIC request: {{err}}", err)
+	}
+
+	var result *NIC
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding AddNIC response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+type RemoveNICInput struct {
+	MachineID string
+	MAC       string
+}
+
+func (client *MachinesClient) RemoveNIC(input *RemoveNICInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, input.MAC)
+	respReader, err := client.executeRequest(http.MethodDelete, path, nil)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing RemoveNIC request: {{err}}", err)
+	}
+
+	return nil
 }

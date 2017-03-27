@@ -125,7 +125,7 @@ The following list is updated as new functionality is added. The complete list o
 	- [ ] ListMachineSnapshots
 	- [ ] GetMachineSnapshot
 	- [ ] DeleteMachineSnapshot
-	- [ ] UpdateMachineMetadata
+	- [x] UpdateMachineMetadata
 	- [ ] ListMachineMetadata
 	- [ ] GetMachineMetadata
 	- [ ] DeleteMachineMetadata
@@ -173,8 +173,8 @@ The following list is updated as new functionality is added. The complete list o
 - Nics
 	- [ ] ListNics
 	- [ ] GetNic
-	- [ ] AddNic
-	- [ ] RemoveNic
+	- [x] AddNic
+	- [x] RemoveNic
 
 ## Running Acceptance Tests
 
