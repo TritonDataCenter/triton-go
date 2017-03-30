@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/joyent/triton-go/authentication"
 )
@@ -37,7 +37,16 @@ func NewClient(endpoint string, accountName string, signers ...authentication.Si
 	defaultRetryMax := 32
 
 	httpClient := &http.Client{
-		Transport:     cleanhttp.DefaultTransport(),
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 10 * time.Second,
+			DisableKeepAlives:   true,
+			MaxIdleConnsPerHost: -1,
+		},
 		CheckRedirect: doNotFollowRedirects,
 	}
 
