@@ -20,7 +20,7 @@ type TritonStateBag interface {
 
 // TritonStateBag implements StateBag by using a normal map underneath
 // protected by a RWMutex.
-type basicTritontateBag struct {
+type basicTritonStateBag struct {
 	TritonClient *Client
 
 	errors *multierror.Error
@@ -30,21 +30,21 @@ type basicTritontateBag struct {
 	once sync.Once
 }
 
-func (b *basicTritontateBag) Client() *Client {
+func (b *basicTritonStateBag) Client() *Client {
 	b.l.RLock()
 	defer b.l.RUnlock()
 
 	return b.TritonClient
 }
 
-func (b *basicTritontateBag) AppendError(err error) {
+func (b *basicTritonStateBag) AppendError(err error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
 	b.errors = multierror.Append(b.errors, err)
 }
 
-func (b *basicTritontateBag) ErrorsOrNil() error {
+func (b *basicTritonStateBag) ErrorsOrNil() error {
 	b.l.RLock()
 	defer b.l.RUnlock()
 
@@ -55,12 +55,12 @@ func (b *basicTritontateBag) ErrorsOrNil() error {
 	return b.errors.ErrorOrNil()
 }
 
-func (b *basicTritontateBag) Get(k string) interface{} {
+func (b *basicTritonStateBag) Get(k string) interface{} {
 	result, _ := b.GetOk(k)
 	return result
 }
 
-func (b *basicTritontateBag) GetOk(k string) (interface{}, bool) {
+func (b *basicTritonStateBag) GetOk(k string) (interface{}, bool) {
 	b.l.RLock()
 	defer b.l.RUnlock()
 
@@ -68,7 +68,7 @@ func (b *basicTritontateBag) GetOk(k string) (interface{}, bool) {
 	return result, ok
 }
 
-func (b *basicTritontateBag) Put(k string, v interface{}) {
+func (b *basicTritonStateBag) Put(k string, v interface{}) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
@@ -81,7 +81,7 @@ func (b *basicTritontateBag) Put(k string, v interface{}) {
 	b.data[k] = v
 }
 
-func (b *basicTritontateBag) Remove(k string) {
+func (b *basicTritonStateBag) Remove(k string) {
 	b.l.Lock()
 	defer b.l.Unlock()
 

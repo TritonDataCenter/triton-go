@@ -73,7 +73,7 @@ func AccTest(t *testing.T, c TestCase) {
 		t.Fatalf("Error creating Triton Client: %s", err)
 	}
 
-	state := &basicTritontateBag{
+	state := &basicTritonStateBag{
 		TritonClient: client,
 	}
 
