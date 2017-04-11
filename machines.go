@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"net/url"
+
+	"github.com/hashicorp/errwrap"
 )
 
 type MachinesClient struct {
@@ -57,7 +58,19 @@ type GetMachineInput struct {
 	ID string
 }
 
+func (gmi *GetMachineInput) Validate() error {
+	if gmi.ID == "" {
+		return fmt.Errorf("machine ID can not be empty")
+	}
+
+	return nil
+}
+
 func (client *MachinesClient) GetMachine(input *GetMachineInput) (*Machine, error) {
+	if err := input.Validate(); err != nil {
+		return nil, errwrap.Wrapf("unable to get machine: {{err}}", err)
+	}
+
 	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
 	response, err := client.executeRequestRaw(http.MethodGet, path, nil)
 	if response != nil {
@@ -77,6 +90,31 @@ func (client *MachinesClient) GetMachine(input *GetMachineInput) (*Machine, erro
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetMachine response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
+func (client *MachinesClient) GetMachines() ([]*Machine, error) {
+	path := fmt.Sprintf("/%s/machines", client.accountName)
+	response, err := client.executeRequestRaw(http.MethodGet, path, nil)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	if response.StatusCode == http.StatusNotFound {
+		return nil, &TritonError{
+			Code: "ResourceNotFound",
+		}
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetMachines request: {{err}}",
+			client.decodeError(response.StatusCode, response.Body))
+	}
+
+	var result []*Machine
+	decoder := json.NewDecoder(response.Body)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding GetMachines response: {{err}}", err)
 	}
 
 	return result, nil
