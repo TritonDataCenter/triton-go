@@ -22,13 +22,19 @@ func (c *Client) Machines() *MachinesClient {
 	return &MachinesClient{c}
 }
 
+const (
+	machineCNSTagDisable    = "triton.cns.disable"
+	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
+	machineCNSTagServices   = "triton.cns.services"
+)
+
 // MachineCNS is a container for the CNS-specific attributes.  In the API these
 // values are embedded within a Machine's Tags attribute, however they are
 // exposed to the caller as their native types.
 type MachineCNS struct {
+	Disable    *bool
+	ReversePTR *string
 	Services   []string
-	Disable    bool
-	ReversePTR string
 }
 
 type Machine struct {
@@ -162,23 +168,31 @@ type CreateMachineInput struct {
 	Metadata        map[string]string
 	Tags            map[string]string
 	FirewallEnabled bool
+	CNS             MachineCNS
 }
 
-func transformCreateMachineInput(input *CreateMachineInput) map[string]interface{} {
-	result := make(map[string]interface{}, 8+len(input.Metadata)+len(input.Tags))
+func (input *CreateMachineInput) toAPI() map[string]interface{} {
+	const numExtraParams = 8
+	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
+
 	result["firewall_enabled"] = input.FirewallEnabled
+
 	if input.Name != "" {
 		result["name"] = input.Name
 	}
+
 	if input.Package != "" {
 		result["package"] = input.Package
 	}
+
 	if input.Image != "" {
 		result["image"] = input.Image
 	}
+
 	if len(input.Networks) > 0 {
 		result["networks"] = input.Networks
 	}
+
 	locality := struct {
 		Strict bool     `json:"strict"`
 		Near   []string `json:"near,omitempty"`
@@ -192,6 +206,11 @@ func transformCreateMachineInput(input *CreateMachineInput) map[string]interface
 	for key, value := range input.Tags {
 		result[fmt.Sprintf("tag.%s", key)] = value
 	}
+
+	// Deliberately clobber any user-specified Tags with the attributes from the
+	// CNS struct.
+	input.CNS.toTags(result)
+
 	for key, value := range input.Metadata {
 		result[fmt.Sprintf("metadata.%s", key)] = value
 	}
@@ -200,7 +219,7 @@ func transformCreateMachineInput(input *CreateMachineInput) map[string]interface
 }
 
 func (client *MachinesClient) CreateMachine(input *CreateMachineInput) (*Machine, error) {
-	respReader, err := client.executeRequest(http.MethodPost, "/my/machines", transformCreateMachineInput(input))
+	respReader, err := client.executeRequest(http.MethodPost, "/my/machines", input.toAPI())
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -378,13 +397,14 @@ func (client *MachinesClient) ListMachineTags(input *ListMachineTagsInput) (map[
 		return nil, errwrap.Wrapf("Error executing ListMachineTags request: {{err}}", err)
 	}
 
-	var result map[string]string
+	var result map[string]interface{}
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding ListMachineTags response: {{err}}", err)
 	}
 
-	return result, nil
+	_, tags := machineTagsExtractMeta(result)
+	return tags, nil
 }
 
 type UpdateMachineMetadataInput struct {
@@ -540,28 +560,26 @@ func (client *MachinesClient) RemoveNIC(input *RemoveNICInput) error {
 	return nil
 }
 
-const (
-	machineCNSTagDisable    = "triton.cns.disable"
-	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
-	machineCNSTagServices   = "triton.cns.services"
-)
-
 var reservedMachineCNSTags = map[string]struct{}{
 	machineCNSTagDisable:    {},
 	machineCNSTagReversePTR: {},
 	machineCNSTagServices:   {},
 }
 
-func (api *_Machine) toNative() (*Machine, error) {
+// machineTagsExtractMeta() extracts all of the misc parameters from Tags and
+// returns a clean CNS and Tags struct.
+func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string]string) {
 	nativeCNS := MachineCNS{}
-	nativeTags := make(map[string]string, len(api.Tags))
-	for k, raw := range api.Tags {
+	nativeTags := make(map[string]string, len(tags))
+	for k, raw := range tags {
 		if _, found := reservedMachineCNSTags[k]; found {
 			switch k {
 			case machineCNSTagDisable:
-				nativeCNS.Disable = raw.(bool)
+				b := raw.(bool)
+				nativeCNS.Disable = &b
 			case machineCNSTagReversePTR:
-				nativeCNS.ReversePTR = raw.(string)
+				s := raw.(string)
+				nativeCNS.ReversePTR = &s
 			case machineCNSTagServices:
 				nativeCNS.Services = strings.Split(raw.(string), ",")
 			default:
@@ -572,8 +590,30 @@ func (api *_Machine) toNative() (*Machine, error) {
 		}
 	}
 
+	return nativeCNS, nativeTags
+}
+
+// toNative() exports a given _Machine (API representation) to its native object
+// format.
+func (api *_Machine) toNative() (*Machine, error) {
 	m := Machine(api.Machine)
-	m.Tags = nativeTags
-	m.CNS = nativeCNS
+	m.CNS, m.Tags = machineTagsExtractMeta(api.Tags)
 	return &m, nil
+}
+
+// toTags() injects its state information into a Tags map suitable for use to
+// submit an API call to the vmapi machine endpoint
+func (mcns *MachineCNS) toTags(m map[string]interface{}) {
+	if mcns.Disable != nil {
+		s := fmt.Sprintf("%t", mcns.Disable)
+		m[machineCNSTagDisable] = &s
+	}
+
+	if mcns.ReversePTR != nil {
+		m[machineCNSTagReversePTR] = &mcns.ReversePTR
+	}
+
+	if len(mcns.Services) > 0 {
+		m[machineCNSTagServices] = strings.Join(mcns.Services, ",")
+	}
 }
