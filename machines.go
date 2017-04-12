@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"net/url"
@@ -21,27 +22,44 @@ func (c *Client) Machines() *MachinesClient {
 	return &MachinesClient{c}
 }
 
+// MachineCNS is a container for the CNS-specific attributes.  In the API these
+// values are embedded within a Machine's Tags attribute, however they are
+// exposed to the caller as their native types.
+type MachineCNS struct {
+	Services   []string
+	Disable    bool
+	ReversePTR string
+}
+
 type Machine struct {
-	ID              string                 `json:"id"`
-	Name            string                 `json:"name"`
-	Type            string                 `json:"type"`
-	Brand           string                 `json:"brand"`
-	State           string                 `json:"state"`
-	Image           string                 `json:"image"`
-	Memory          int                    `json:"memory"`
-	Disk            int                    `json:"disk"`
-	Metadata        map[string]string      `json:"metadata"`
-	Tags            map[string]interface{} `json:"tags"`
-	Created         time.Time              `json:"created"`
-	Updated         time.Time              `json:"updated"`
-	Docker          bool                   `json:"docker"`
-	IPs             []string               `json:"ips"`
-	Networks        []string               `json:"networks"`
-	PrimaryIP       string                 `json:"primaryIp"`
-	FirewallEnabled bool                   `json:"firewall_enabled"`
-	ComputeNode     string                 `json:"compute_node"`
-	Package         string                 `json:"package"`
-	DomainNames     []string               `json:"dns_names"`
+	ID              string            `json:"id"`
+	Name            string            `json:"name"`
+	Type            string            `json:"type"`
+	Brand           string            `json:"brand"`
+	State           string            `json:"state"`
+	Image           string            `json:"image"`
+	Memory          int               `json:"memory"`
+	Disk            int               `json:"disk"`
+	Metadata        map[string]string `json:"metadata"`
+	Tags            map[string]string `json:"tags"`
+	Created         time.Time         `json:"created"`
+	Updated         time.Time         `json:"updated"`
+	Docker          bool              `json:"docker"`
+	IPs             []string          `json:"ips"`
+	Networks        []string          `json:"networks"`
+	PrimaryIP       string            `json:"primaryIp"`
+	FirewallEnabled bool              `json:"firewall_enabled"`
+	ComputeNode     string            `json:"compute_node"`
+	Package         string            `json:"package"`
+	DomainNames     []string          `json:"dns_names"`
+	CNS             MachineCNS
+}
+
+// _MachineAPI is a private struct type used to deserialize responses from
+// vmapi's machine endpoints.
+type _MachineAPI struct {
+	Machine
+	Tags map[string]interface{} `json:"tags"`
 }
 
 type NIC struct {
@@ -86,13 +104,18 @@ func (client *MachinesClient) GetMachine(input *GetMachineInput) (*Machine, erro
 			client.decodeError(response.StatusCode, response.Body))
 	}
 
-	var result *Machine
+	var result *_MachineAPI
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetMachine response: {{err}}", err)
 	}
 
-	return result, nil
+	native, err := result.toNative()
+	if err != nil {
+		return nil, errwrap.Wrapf("unable to convert API response for machines to native type: {{err}}", err)
+	}
+
+	return native, nil
 }
 
 func (client *MachinesClient) GetMachines() ([]*Machine, error) {
@@ -111,13 +134,21 @@ func (client *MachinesClient) GetMachines() ([]*Machine, error) {
 			client.decodeError(response.StatusCode, response.Body))
 	}
 
-	var result []*Machine
+	var results []*_MachineAPI
 	decoder := json.NewDecoder(response.Body)
-	if err = decoder.Decode(&result); err != nil {
+	if err = decoder.Decode(&results); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetMachines response: {{err}}", err)
 	}
 
-	return result, nil
+	machines := make([]*Machine, 0, len(results))
+	for _, machineAPI := range results {
+		native, err := machineAPI.toNative()
+		if err != nil {
+			return nil, errwrap.Wrapf("unable to convert API response for machines to native type: {{err}}", err)
+		}
+		machines = append(machines, native)
+	}
+	return machines, nil
 }
 
 type CreateMachineInput struct {
@@ -507,4 +538,61 @@ func (client *MachinesClient) RemoveNIC(input *RemoveNICInput) error {
 	}
 
 	return nil
+}
+
+const (
+	machineCNSTagDisable    = "triton.cns.disable"
+	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
+	machineCNSTagServices   = "triton.cns.services"
+)
+
+var reservedMachineCNSTags = map[string]struct{}{
+	machineCNSTagDisable:    struct{}{},
+	machineCNSTagReversePTR: struct{}{},
+	machineCNSTagServices:   struct{}{},
+}
+
+func (api *_MachineAPI) toNative() (*Machine, error) {
+	nativeCNS := MachineCNS{}
+	nativeTags := make(map[string]string, len(api.Tags))
+	for k, raw := range api.Tags {
+		if _, found := reservedMachineCNSTags[k]; found {
+			switch k {
+			case machineCNSTagDisable:
+				nativeCNS.Disable = raw.(bool)
+			case machineCNSTagReversePTR:
+				nativeCNS.ReversePTR = raw.(string)
+			case machineCNSTagServices:
+				nativeCNS.Services = strings.Split(raw.(string), ",")
+			default:
+				// TODO(seanc@): should assert, logic fail
+			}
+		} else {
+			nativeTags[k] = raw.(string)
+		}
+	}
+
+	return &Machine{
+		ID:              api.ID,
+		Name:            api.Name,
+		Type:            api.Type,
+		Brand:           api.Brand,
+		State:           api.State,
+		Image:           api.Image,
+		Memory:          api.Memory,
+		Disk:            api.Disk,
+		Metadata:        api.Metadata,
+		Tags:            nativeTags,
+		Created:         api.Created,
+		Updated:         api.Updated,
+		Docker:          api.Docker,
+		IPs:             api.IPs,
+		Networks:        api.Networks,
+		PrimaryIP:       api.PrimaryIP,
+		FirewallEnabled: api.FirewallEnabled,
+		ComputeNode:     api.ComputeNode,
+		Package:         api.Package,
+		DomainNames:     api.DomainNames,
+		CNS:             nativeCNS,
+	}, nil
 }

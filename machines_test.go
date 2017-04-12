@@ -18,7 +18,7 @@ func TestAccMachine_GetMachine(t *testing.T) {
 						return nil, err
 					}
 
-					if len(machines) >= 1 {
+					if len(machines) < 1 {
 						t.Skip()
 						return nil, fmt.Errorf("no machines configured")
 					}
