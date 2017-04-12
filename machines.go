@@ -55,9 +55,9 @@ type Machine struct {
 	CNS             MachineCNS
 }
 
-// _MachineAPI is a private struct type used to deserialize responses from
-// vmapi's machine endpoints.
-type _MachineAPI struct {
+// _Machine is a private facade over Machine that handles the necessary API
+// overrides from vmapi's machine endpoint(s).
+type _Machine struct {
 	Machine
 	Tags map[string]interface{} `json:"tags"`
 }
@@ -104,7 +104,7 @@ func (client *MachinesClient) GetMachine(input *GetMachineInput) (*Machine, erro
 			client.decodeError(response.StatusCode, response.Body))
 	}
 
-	var result *_MachineAPI
+	var result *_Machine
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetMachine response: {{err}}", err)
@@ -134,7 +134,7 @@ func (client *MachinesClient) GetMachines() ([]*Machine, error) {
 			client.decodeError(response.StatusCode, response.Body))
 	}
 
-	var results []*_MachineAPI
+	var results []*_Machine
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&results); err != nil {
 		return nil, errwrap.Wrapf("Error decoding GetMachines response: {{err}}", err)
@@ -552,7 +552,7 @@ var reservedMachineCNSTags = map[string]struct{}{
 	machineCNSTagServices:   {},
 }
 
-func (api *_MachineAPI) toNative() (*Machine, error) {
+func (api *_Machine) toNative() (*Machine, error) {
 	nativeCNS := MachineCNS{}
 	nativeTags := make(map[string]string, len(api.Tags))
 	for k, raw := range api.Tags {
