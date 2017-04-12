@@ -547,9 +547,9 @@ const (
 )
 
 var reservedMachineCNSTags = map[string]struct{}{
-	machineCNSTagDisable:    struct{}{},
-	machineCNSTagReversePTR: struct{}{},
-	machineCNSTagServices:   struct{}{},
+	machineCNSTagDisable:    {},
+	machineCNSTagReversePTR: {},
+	machineCNSTagServices:   {},
 }
 
 func (api *_MachineAPI) toNative() (*Machine, error) {
