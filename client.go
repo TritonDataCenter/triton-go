@@ -21,7 +21,7 @@ import (
 type Client struct {
 	client      *retryablehttp.Client
 	authorizer  []authentication.Signer
-	apiURL      *url.URL
+	apiURL      url.URL
 	accountName string
 }
 
@@ -70,7 +70,7 @@ func NewClient(endpoint string, accountName string, signers ...authentication.Si
 	return &Client{
 		client:      retryableClient,
 		authorizer:  signers,
-		apiURL:      apiURL,
+		apiURL:      *apiURL,
 		accountName: accountName,
 	}, nil
 }
@@ -89,18 +89,13 @@ func (c *Client) executeRequestURIParams(method, path string, body interface{}, 
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	c.apiURL.Path = path
+	endpoint := c.apiURL
+	endpoint.Path = path
 	if query != nil {
-		c.apiURL.RawQuery = query.Encode()
+		endpoint.RawQuery = query.Encode()
 	}
 
-	// Reset apiURL's state
-	defer func() {
-		c.apiURL.Path = ""
-		c.apiURL.RawQuery = ""
-	}()
-
-	req, err := retryablehttp.NewRequest(method, c.apiURL.String(), requestBody)
+	req, err := retryablehttp.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
 	}
@@ -160,14 +155,10 @@ func (c *Client) executeRequestRaw(method, path string, body interface{}) (*http
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	c.apiURL.Path = path
+	endpoint := c.apiURL
+	endpoint.Path = path
 
-	// Reset apiURL's state
-	defer func() {
-		c.apiURL.Path = ""
-	}()
-
-	req, err := retryablehttp.NewRequest(method, c.apiURL.String(), requestBody)
+	req, err := retryablehttp.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
 	}
