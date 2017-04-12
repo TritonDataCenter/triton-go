@@ -572,27 +572,8 @@ func (api *_MachineAPI) toNative() (*Machine, error) {
 		}
 	}
 
-	return &Machine{
-		ID:              api.ID,
-		Name:            api.Name,
-		Type:            api.Type,
-		Brand:           api.Brand,
-		State:           api.State,
-		Image:           api.Image,
-		Memory:          api.Memory,
-		Disk:            api.Disk,
-		Metadata:        api.Metadata,
-		Tags:            nativeTags,
-		Created:         api.Created,
-		Updated:         api.Updated,
-		Docker:          api.Docker,
-		IPs:             api.IPs,
-		Networks:        api.Networks,
-		PrimaryIP:       api.PrimaryIP,
-		FirewallEnabled: api.FirewallEnabled,
-		ComputeNode:     api.ComputeNode,
-		Package:         api.Package,
-		DomainNames:     api.DomainNames,
-		CNS:             nativeCNS,
-	}, nil
+	m := Machine(api.Machine)
+	m.Tags = nativeTags
+	m.CNS = nativeCNS
+	return &m, nil
 }
