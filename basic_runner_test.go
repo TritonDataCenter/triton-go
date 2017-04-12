@@ -29,9 +29,6 @@ func (b *basicRunner) Run(state TritonStateBag) {
 		panic("already running")
 	}
 
-	// Seed the random name generator
-	reseed()
-
 	cancelCh := make(chan struct{})
 	doneCh := make(chan struct{})
 	b.cancelCh = cancelCh

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
-	"os"
 )
 
 type StepAPICall struct {
@@ -129,7 +129,7 @@ func (s *StepAssertSet) Run(state TritonStateBag) StepAction {
 		state.AppendError(fmt.Errorf("Key %q not found in state", s.StateBagKey))
 	}
 
-	ok = true
+	var pass = true
 	for _, key := range s.Keys {
 		r := reflect.ValueOf(actual)
 		f := reflect.Indirect(r).FieldByName(key)
@@ -138,11 +138,11 @@ func (s *StepAssertSet) Run(state TritonStateBag) StepAction {
 		if f.Interface() == reflect.Zero(reflect.TypeOf(f)).Interface() {
 			err := fmt.Sprintf("Expected %q to have a non-zero value", key)
 			state.AppendError(fmt.Errorf(err))
-			ok = false
+			pass = false
 		}
 	}
 
-	if !ok {
+	if !pass {
 		return Halt
 	}
 
