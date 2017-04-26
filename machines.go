@@ -219,7 +219,8 @@ func (input *CreateMachineInput) toAPI() map[string]interface{} {
 }
 
 func (client *MachinesClient) CreateMachine(input *CreateMachineInput) (*Machine, error) {
-	respReader, err := client.executeRequest(http.MethodPost, "/my/machines", input.toAPI())
+	path := fmt.Sprintf("/%s/machines", client.accountName)
+	respReader, err := client.executeRequest(http.MethodPost, path, input.toAPI())
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -501,7 +502,8 @@ type ListNICsInput struct {
 }
 
 func (client *MachinesClient) ListNICs(input *ListNICsInput) ([]*NIC, error) {
-	respReader, err := client.executeRequest(http.MethodGet, fmt.Sprintf("/my/machines/%s/nics", input.MachineID), nil)
+	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
+	respReader, err := client.executeRequest(http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}

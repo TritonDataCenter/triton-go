@@ -49,7 +49,8 @@ type Image struct {
 type ListImagesInput struct{}
 
 func (client *ImagesClient) ListImages(*ListImagesInput) ([]*Image, error) {
-	respReader, err := client.executeRequest(http.MethodGet, "/my/images", nil)
+	path := fmt.Sprintf("/%s/images", client.accountName)
+	respReader, err := client.executeRequest(http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
