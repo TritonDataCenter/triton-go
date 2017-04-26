@@ -100,7 +100,7 @@ func (client *MachinesClient) GetMachine(input *GetMachineInput) (*Machine, erro
 	if response != nil {
 		defer response.Body.Close()
 	}
-	if response.StatusCode == http.StatusNotFound {
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &TritonError{
 			Code: "ResourceNotFound",
 		}
