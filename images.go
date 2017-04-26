@@ -148,7 +148,7 @@ type CreateImageFromMachineInput struct {
 	HomePage    string            `json:"homepage,omitempty"`
 	EULA        string            `json:"eula,omitempty"`
 	ACL         []string          `json:"acl,omitempty"`
-	tags        map[string]string `json:"tags,omitempty"`
+	Tags        map[string]string `json:"tags,omitempty"`
 }
 
 func (client *ImagesClient) CreateImageFromMachine(input *CreateImageFromMachineInput) (*Image, error) {
@@ -178,7 +178,7 @@ type UpdateImageInput struct {
 	HomePage    string            `json:"homepage,omitempty"`
 	EULA        string            `json:"eula,omitempty"`
 	ACL         []string          `json:"acl,omitempty"`
-	tags        map[string]string `json:"tags,omitempty"`
+	Tags        map[string]string `json:"tags,omitempty"`
 }
 
 func (client *ImagesClient) UpdateImage(input *UpdateImageInput) (*Image, error) {
