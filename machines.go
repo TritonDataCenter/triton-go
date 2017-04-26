@@ -560,6 +560,48 @@ func (client *MachinesClient) RemoveNIC(input *RemoveNICInput) error {
 	return nil
 }
 
+type StopMachineInput struct {
+	MachineID string
+}
+
+func (client *MachinesClient) StopMachine(input *StopMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.MachineID)
+
+	params := &url.Values{}
+	params.Set("action", "stop")
+
+	respReader, err := client.executeRequestURIParams(http.MethodPost, path, nil, params)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing StopMachine request: {{err}}", err)
+	}
+
+	return nil
+}
+
+type StartMachineInput struct {
+	MachineID string
+}
+
+func (client *MachinesClient) StartMachine(input *StartMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.MachineID)
+
+	params := &url.Values{}
+	params.Set("action", "start")
+
+	respReader, err := client.executeRequestURIParams(http.MethodPost, path, nil, params)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing StartMachine request: {{err}}", err)
+	}
+
+	return nil
+}
+
 var reservedMachineCNSTags = map[string]struct{}{
 	machineCNSTagDisable:    {},
 	machineCNSTagReversePTR: {},
