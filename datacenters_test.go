@@ -1,6 +1,7 @@
 package triton
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -18,9 +19,11 @@ func TestAccDataCenters_Get(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "datacenter",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Datacenters().GetDataCenter(&GetDataCenterInput{
-						Name: dataCenterName,
-					})
+					return client.Datacenters().GetDataCenter(
+						context.Background(),
+						&GetDataCenterInput{
+							Name: dataCenterName,
+						})
 				},
 			},
 			&StepAssert{
@@ -42,7 +45,9 @@ func TestAccDataCenters_List(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "datacenters",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Datacenters().ListDataCenters(&ListDataCentersInput{})
+					return client.Datacenters().ListDataCenters(
+						context.Background(),
+						&ListDataCentersInput{})
 				},
 			},
 			&StepAssertFunc{

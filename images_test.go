@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"context"
 	"github.com/abdullin/seq"
 	"time"
 )
@@ -17,7 +18,8 @@ func TestAccImagesList(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Images().ListImages(&ListImagesInput{})
+					return client.Images().ListImages(
+						context.Background(), &ListImagesInput{})
 				},
 			},
 			&StepAssertFunc{
@@ -69,18 +71,20 @@ func TestAccImagesList(t *testing.T) {
 func TestAccImagesGet(t *testing.T) {
 	const stateKey = "image"
 	const imageId = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
-	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:05:28Z")
+	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:07:38Z")
 	if err != nil {
-		t.Fatalf("Reference time does not parse as RFC3339")
+		t.Fatal("Reference time does not parse as RFC3339")
 	}
 	AccTest(t, TestCase{
 		Steps: []Step{
 			&StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Images().GetImage(&GetImageInput{
-						ImageID: imageId,
-					})
+					return client.Images().GetImage(
+						context.Background(),
+						&GetImageInput{
+							ImageID: imageId,
+						})
 				},
 			},
 			&StepAssert{

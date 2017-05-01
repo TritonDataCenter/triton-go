@@ -1,6 +1,7 @@
 package triton
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -13,7 +14,9 @@ func TestAccNetworks_List(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "networks",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Networks().ListNetworks(&ListNetworksInput{})
+					return client.Networks().ListNetworks(
+						context.Background(),
+						&ListNetworksInput{})
 				},
 			},
 			&StepAssertFunc{

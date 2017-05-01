@@ -42,7 +42,7 @@ func (s *StepAPICall) Cleanup(state TritonStateBag) {
 	if callState, ok := state.GetOk(s.StateBagKey); ok {
 		s.CleanupFunc(state.Client(), callState)
 	} else {
-		log.Printf("[INFO] No state for API call, calling cleanup with nil call state")
+		log.Print("[INFO] No state for API call, calling cleanup with nil call state")
 		s.CleanupFunc(state.Client(), nil)
 	}
 }
