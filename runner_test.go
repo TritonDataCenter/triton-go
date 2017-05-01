@@ -1,12 +1,12 @@
 package triton
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/joyent/triton-go/authentication"
 )
 
@@ -38,18 +38,24 @@ func AccTest(t *testing.T, c TestCase) {
 	sdcKeyId := os.Getenv("SDC_KEY_ID")
 	sdcKeyMaterial := os.Getenv("SDC_KEY_MATERIAL")
 
-	var prerollErrors *multierror.Error
+	var prerollErrors []error
 	if sdcURL == "" {
-		prerollErrors = multierror.Append(prerollErrors, fmt.Errorf("The SDC_URL environment variable must be set to run acceptance tests"))
+		prerollErrors = append(prerollErrors,
+			errors.New("The SDC_URL environment variable must be set to run acceptance tests"))
 	}
 	if sdcAccount == "" {
-		prerollErrors = multierror.Append(prerollErrors, fmt.Errorf("The SDC_ACCOUNT environment variable must be set to run acceptance tests"))
+		prerollErrors = append(prerollErrors,
+			errors.New("The SDC_ACCOUNT environment variable must be set to run acceptance tests"))
 	}
 	if sdcKeyId == "" {
-		prerollErrors = multierror.Append(prerollErrors, fmt.Errorf("The SDC_KEY_ID environment variable must be set to run acceptance tests"))
+		prerollErrors = append(prerollErrors,
+			errors.New("The SDC_KEY_ID environment variable must be set to run acceptance tests"))
 	}
-	if errs := prerollErrors.ErrorOrNil(); errs != nil {
-		t.Fatal(errs)
+	if len(prerollErrors) > 0 {
+		for _, err := range prerollErrors {
+			t.Error(err)
+		}
+		t.FailNow()
 	}
 
 	var signer authentication.Signer
@@ -84,6 +90,9 @@ func AccTest(t *testing.T, c TestCase) {
 	runner.Run(state)
 
 	if errs := state.ErrorsOrNil(); errs != nil {
-		log.Fatal(fmt.Sprintf("%s\n\nThere may be dangling resources in your Triton account!", errs))
+		for _, err := range errs {
+			t.Error(err)
+		}
+		t.Fatal("\n\nThere may be dangling resources in your Triton account!")
 	}
 }

@@ -1,6 +1,9 @@
 package triton
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestAccConfig_Get(t *testing.T) {
 	AccTest(t, TestCase{
@@ -8,7 +11,8 @@ func TestAccConfig_Get(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "config",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Config().GetConfig(&GetConfigInput{})
+					return client.Config().GetConfig(
+						context.Background(), &GetConfigInput{})
 				},
 			},
 			&StepAssertSet{

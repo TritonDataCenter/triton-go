@@ -2,8 +2,6 @@ package triton
 
 import (
 	"sync"
-
-	"github.com/hashicorp/go-multierror"
 )
 
 type TritonStateBag interface {
@@ -15,7 +13,7 @@ type TritonStateBag interface {
 	Client() *Client
 
 	AppendError(error)
-	ErrorsOrNil() error
+	ErrorsOrNil() []error
 }
 
 // TritonStateBag implements StateBag by using a normal map underneath
@@ -23,7 +21,7 @@ type TritonStateBag interface {
 type basicTritonStateBag struct {
 	TritonClient *Client
 
-	errors *multierror.Error
+	errors []error
 	data   map[string]interface{}
 
 	l    sync.RWMutex
@@ -41,18 +39,18 @@ func (b *basicTritonStateBag) AppendError(err error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
-	b.errors = multierror.Append(b.errors, err)
+	if b.errors == nil {
+		b.errors = make([]error, 0, 1)
+	}
+
+	b.errors = append(b.errors, err)
 }
 
-func (b *basicTritonStateBag) ErrorsOrNil() error {
+func (b *basicTritonStateBag) ErrorsOrNil() []error {
 	b.l.RLock()
 	defer b.l.RUnlock()
 
-	if b.errors == nil {
-		return nil
-	}
-
-	return b.errors.ErrorOrNil()
+	return b.errors
 }
 
 func (b *basicTritonStateBag) Get(k string) interface{} {
