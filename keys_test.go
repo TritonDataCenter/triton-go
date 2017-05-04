@@ -1,8 +1,10 @@
 package triton
 
 import (
-	"github.com/abdullin/seq"
+	"context"
 	"testing"
+
+	"github.com/abdullin/seq"
 )
 
 func TestAccKey_Create(t *testing.T) {
@@ -13,13 +15,19 @@ func TestAccKey_Create(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Keys().CreateKey(&CreateKeyInput{
-						Name: keyName,
-						Key:  testAccCreateKeyMaterial,
-					})
+					return client.Keys().CreateKey(
+						context.Background(),
+						&CreateKeyInput{
+							Name: keyName,
+							Key:  testAccCreateKeyMaterial,
+						})
 				},
 				CleanupFunc: func(client *Client, callState interface{}) {
-					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+					client.Keys().DeleteKey(
+						context.Background(),
+						&DeleteKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAssert{
@@ -42,19 +50,28 @@ func TestAccKey_Get(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Keys().CreateKey(&CreateKeyInput{
-						Name: keyName,
-						Key:  testAccCreateKeyMaterial,
-					})
+					return client.Keys().CreateKey(
+						context.Background(),
+						&CreateKeyInput{
+							Name: keyName,
+							Key:  testAccCreateKeyMaterial,
+						})
 				},
 				CleanupFunc: func(client *Client, callState interface{}) {
-					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+					client.Keys().DeleteKey(
+						context.Background(),
+						&DeleteKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAPICall{
 				StateBagKey: "getKey",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Keys().GetKey(&GetKeyInput{KeyName: keyName})
+					return client.Keys().GetKey(context.Background(),
+						&GetKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAssert{
@@ -77,25 +94,39 @@ func TestAccKey_Delete(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Keys().CreateKey(&CreateKeyInput{
-						Name: keyName,
-						Key:  testAccCreateKeyMaterial,
-					})
+					return client.Keys().CreateKey(
+						context.Background(),
+						&CreateKeyInput{
+							Name: keyName,
+							Key:  testAccCreateKeyMaterial,
+						})
 				},
 				CleanupFunc: func(client *Client, callState interface{}) {
-					client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+					client.Keys().DeleteKey(
+						context.Background(),
+						&DeleteKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAPICall{
 				StateBagKey: "noop",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return nil, client.Keys().DeleteKey(&DeleteKeyInput{KeyName: keyName})
+					return nil, client.Keys().DeleteKey(
+						context.Background(),
+						&DeleteKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAPICall{
 				ErrorKey: "getKeyError",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Keys().GetKey(&GetKeyInput{KeyName: keyName})
+					return client.Keys().GetKey(
+						context.Background(),
+						&GetKeyInput{
+							KeyName: keyName,
+						})
 				},
 			},
 			&StepAssertTritonError{

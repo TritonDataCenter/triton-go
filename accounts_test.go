@@ -1,6 +1,7 @@
 package triton
 
 import (
+	"context"
 	"testing"
 )
 
@@ -10,7 +11,8 @@ func TestAccAccount_Get(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: "account",
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Accounts().GetAccount(&GetAccountInput{})
+					return client.Accounts().GetAccount(
+						context.Background(), &GetAccountInput{})
 				},
 			},
 			&StepAssertSet{

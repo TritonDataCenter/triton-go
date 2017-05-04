@@ -1,6 +1,7 @@
 package triton
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -13,7 +14,9 @@ func TestAccServicesList(t *testing.T) {
 			&StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Services().ListServices(&ListServicesInput{})
+					return client.Services().ListServices(
+						context.Background(),
+						&ListServicesInput{})
 				},
 			},
 			&StepAssertFunc{

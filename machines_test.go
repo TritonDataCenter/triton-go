@@ -1,14 +1,19 @@
 package triton_test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go"
 )
 
 func getAnyMachineID(t *testing.T, c *triton.Client) (string, error) {
-	machines, err := c.Machines().GetMachines()
+	machines, err := c.Machines().ListMachines(
+		context.Background(),
+		&triton.ListMachinesInput{},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -20,7 +25,7 @@ func getAnyMachineID(t *testing.T, c *triton.Client) (string, error) {
 	}
 
 	t.Skip()
-	return "", fmt.Errorf("no machines configured")
+	return "", errors.New("no machines configured")
 }
 
 func TestAccMachine_GetMachine(t *testing.T) {
@@ -34,9 +39,11 @@ func TestAccMachine_GetMachine(t *testing.T) {
 						return nil, err
 					}
 
-					return client.Machines().GetMachine(&triton.GetMachineInput{
-						ID: machineID,
-					})
+					return client.Machines().GetMachine(
+						context.Background(),
+						&triton.GetMachineInput{
+							ID: machineID,
+						})
 				},
 			},
 			&triton.StepAssertSet{
@@ -60,9 +67,11 @@ func TestAccMachine_ListMachineTags(t *testing.T) {
 						return nil, err
 					}
 
-					return client.Machines().ListMachineTags(&triton.ListMachineTagsInput{
-						ID: machineID,
-					})
+					return client.Machines().ListMachineTags(
+						context.Background(),
+						&triton.ListMachineTagsInput{
+							ID: machineID,
+						})
 				},
 			},
 			&triton.StepAssertFunc{
@@ -74,7 +83,7 @@ func TestAccMachine_ListMachineTags(t *testing.T) {
 
 					tags := tagsRaw.(map[string]string)
 					if len(tags) == 0 {
-						return fmt.Errorf("Expected at least one tag on machine")
+						return errors.New("Expected at least one tag on machine")
 					}
 					return nil
 				},

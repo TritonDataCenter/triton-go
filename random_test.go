@@ -11,9 +11,6 @@ func init() {
 	seed.Init()
 }
 
-// Helpers for generating random tidbits for use in identifiers to prevent
-// collisions in acceptance tests.
-
 // RandString generates a random alphanumeric string of the length specified
 func RandString(strlen int) string {
 	return RandStringFromCharSet(strlen, CharSetAlphaNum)
