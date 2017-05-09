@@ -102,7 +102,7 @@ func (client *MachinesClient) GetMachine(ctx context.Context, input *GetMachineI
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &TritonError{
-			StatusCode: http.StatusCode,
+			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
 	}
@@ -135,7 +135,7 @@ func (client *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesI
 	}
 	if response.StatusCode == http.StatusNotFound {
 		return nil, &TritonError{
-			StatusCode: http.StatusCode,
+			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
 	}
