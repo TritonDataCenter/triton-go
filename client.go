@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/authentication"
 )
 
@@ -34,7 +33,7 @@ type Client struct {
 func NewClient(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
 	apiURL, err := url.Parse(endpoint)
 	if err != nil {
-		return nil, errwrap.Wrapf("invalid endpoint: {{err}}", err)
+		return nil, WrapErrorf("invalid endpoint: {{err}}", err)
 	}
 
 	if accountName == "" {
@@ -104,7 +103,7 @@ func (c *Client) executeRequestURIParams(ctx context.Context, method, path strin
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error constructing HTTP request: {{err}}", err)
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -112,7 +111,7 @@ func (c *Client) executeRequestURIParams(ctx context.Context, method, path strin
 
 	authHeader, err := c.authorizer[0].Sign(dateHeader)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error signing HTTP request: {{err}}", err)
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
@@ -125,7 +124,7 @@ func (c *Client) executeRequestURIParams(ctx context.Context, method, path strin
 
 	resp, err := c.client.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error executing HTTP request: {{err}}", err)
 	}
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
@@ -142,7 +141,7 @@ func (c *Client) decodeError(statusCode int, body io.Reader) error {
 
 	errorDecoder := json.NewDecoder(body)
 	if err := errorDecoder.Decode(err); err != nil {
-		return errwrap.Wrapf("Error decoding error response: {{err}}", err)
+		return WrapErrorf("Error decoding error response: {{err}}", err)
 	}
 
 	return err
@@ -167,7 +166,7 @@ func (c *Client) executeRequestRaw(ctx context.Context, method, path string, bod
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error constructing HTTP request: {{err}}", err)
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -175,7 +174,7 @@ func (c *Client) executeRequestRaw(ctx context.Context, method, path string, bod
 
 	authHeader, err := c.authorizer[0].Sign(dateHeader)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error signing HTTP request: {{err}}", err)
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
@@ -188,7 +187,7 @@ func (c *Client) executeRequestRaw(ctx context.Context, method, path string, bod
 
 	resp, err := c.client.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, WrapErrorf("Error executing HTTP request: {{err}}", err)
 	}
 
 	return resp, nil
