@@ -554,7 +554,7 @@ type RemoveNICInput struct {
 }
 
 func (client *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, input.MAC)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, strings.Replace(input.MAC, ":", "", -1))
 	respReader, err := client.executeRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
