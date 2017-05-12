@@ -561,10 +561,11 @@ type AddNICInput struct {
 	Network   string `json:"network"`
 }
 
-// AddNIC adds a NIC to a given machine.  AddNIC() will restart the given
-// instance.  Only one NIC per network may exist.  If a NIC for a given network
-// already exists, a ResourceFound error will be returned.  A NIC is running
-// when GetNIC()'s NIC.state is set to "running".
+// AddNIC asynchronously adds a NIC to a given machine.  If a NIC for a given
+// network already exists, a ResourceFound error will be returned.  The status
+// of the addition of a NIC can be polled by calling GetNIC()'s and testing NIC
+// until its state is set to "running".  Only one NIC per network may exist.
+// Warning: this operation causes the machine to restart.
 func (client *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
 	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
 	response, err := client.executeRequestRaw(ctx, http.MethodPost, path, input)
