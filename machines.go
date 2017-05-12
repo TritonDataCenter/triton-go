@@ -598,11 +598,23 @@ type RemoveNICInput struct {
 	MAC       string
 }
 
+// RemoveNIC removes a given NIC from a machine asynchronously.  The status of
+// the removal can be polled via GetNIC().  When GetNIC() returns a 404, the NIC
+// has been removed from the instance.  Warning: this operation causes the
+// machine to restart.
 func (client *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, strings.Replace(input.MAC, ":", "", -1))
-	respReader, err := client.executeRequest(ctx, http.MethodDelete, path, nil)
-	if respReader != nil {
-		defer respReader.Close()
+	mac := strings.Replace(input.MAC, ":", "", -1)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
+	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusNotFound:
+		return &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceNotFound",
+		}
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing RemoveNIC request: {{err}}", err)
