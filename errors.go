@@ -93,6 +93,11 @@ func IsRequestMoved(err error) bool {
 	return isSpecificError(err, "RequestMoved")
 }
 
+// IsResourceFound tests whether err wraps a TritonError with code ResourceFound
+func IsResourceFound(err error) bool {
+	return isSpecificError(err, "ResourceFound")
+}
+
 // IsResourceNotFound tests whether err wraps a TritonError with
 // code ResourceNotFound
 func IsResourceNotFound(err error) bool {

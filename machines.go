@@ -561,18 +561,30 @@ type AddNICInput struct {
 	Network   string `json:"network"`
 }
 
+// AddNIC adds a NIC to a given machine.  AddNIC() will restart the given
+// instance.  Only one NIC per network may exist.  If a NIC for a given network
+// already exists, a ResourceFound error will be returned.  A NIC is running
+// when GetNIC()'s NIC.state is set to "running".
 func (client *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
 	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
-	if respReader != nil {
-		defer respReader.Close()
+	response, err := client.executeRequestRaw(ctx, http.MethodPost, path, input)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusFound:
+		return nil, &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceFound",
+			Message:    response.Header.Get("Location"),
+		}
 	}
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing AddNIC request: {{err}}", err)
 	}
 
 	var result *NIC
-	decoder := json.NewDecoder(respReader)
+	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding AddNIC response: {{err}}", err)
 	}
