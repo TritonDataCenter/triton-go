@@ -171,7 +171,7 @@ The following list is updated as new functionality is added. The complete list o
 	- [x] ListNetworks
 	- [x] GetNetwork
 - Nics
-	- [ ] ListNics
+	- [X] ListNics
 	- [X] GetNic
 	- [x] AddNic
 	- [x] RemoveNic
