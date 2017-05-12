@@ -524,6 +524,38 @@ func (client *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput
 	return result, nil
 }
 
+type GetNICInput struct {
+	MachineID string
+	MAC       string
+}
+
+func (client *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
+	mac := strings.Replace(input.MAC, ":", "", -1)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
+	response, err := client.executeRequestRaw(ctx, http.MethodGet, path, nil)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusNotFound:
+		return nil, &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceNotFound",
+		}
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetNIC request: {{err}}", err)
+	}
+
+	var result *NIC
+	decoder := json.NewDecoder(response.Body)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding ListNICs response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
 type AddNICInput struct {
 	MachineID string `json:"-"`
 	Network   string `json:"network"`
