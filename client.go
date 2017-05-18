@@ -19,6 +19,8 @@ import (
 
 const nilContext = "nil context"
 
+var MissingKeyIdError = errors.New("Default SSH agent authentication requires SDC_KEY_ID")
+
 // Client represents a connection to the Triton API.
 type Client struct {
 	client      *http.Client
@@ -73,7 +75,7 @@ func NewClient(endpoint string, accountName string, signers ...authentication.Si
 			}
 			newClient.authorizers = append(authorizers, keySigner)
 		} else {
-			return nil, errors.New("Default SSH agent authentication requires SDC_KEY_ID!")
+			return nil, MissingKeyIdError
 		}
 	}
 
