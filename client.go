@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -21,7 +22,7 @@ const nilContext = "nil context"
 // Client represents a connection to the Triton API.
 type Client struct {
 	client      *http.Client
-	authorizer  []authentication.Signer
+	authorizers []authentication.Signer
 	apiURL      url.URL
 	accountName string
 }
@@ -46,12 +47,37 @@ func NewClient(endpoint string, accountName string, signers ...authentication.Si
 		CheckRedirect: doNotFollowRedirects,
 	}
 
-	return &Client{
+	newClient := &Client{
 		client:      httpClient,
-		authorizer:  signers,
+		authorizers: signers,
 		apiURL:      *apiURL,
 		accountName: accountName,
-	}, nil
+	}
+
+	var authorizers []authentication.Signer
+	for _, key := range signers {
+		if key != nil {
+			authorizers = append(authorizers, key)
+		}
+	}
+
+	// Default to constructing an SSHAgentSigner if there are no other signers
+	// passed into NewClient and there's an SDC_KEY_ID value available in the
+	// user environ.
+	if len(authorizers) == 0 {
+		keyID := os.Getenv("SDC_KEY_ID")
+		if len(keyID) != 0 {
+			keySigner, err := authentication.NewSSHAgentSigner(keyID, accountName)
+			if err != nil {
+				return nil, errwrap.Wrapf("Problem initializing NewSSHAgentSigner: {{err}}", err)
+			}
+			newClient.authorizers = append(authorizers, keySigner)
+		} else {
+			return nil, errors.New("Default SSH agent authentication requires SDC_KEY_ID!")
+		}
+	}
+
+	return newClient, nil
 }
 
 // InsecureSkipTLSVerify turns off TLS verification for the client connection. This
@@ -110,7 +136,9 @@ func (c *Client) executeRequestURIParams(ctx context.Context, method, path strin
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
 
-	authHeader, err := c.authorizer[0].Sign(dateHeader)
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.authorizers[0].Sign(dateHeader)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
@@ -173,7 +201,9 @@ func (c *Client) executeRequestRaw(ctx context.Context, method, path string, bod
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
 
-	authHeader, err := c.authorizer[0].Sign(dateHeader)
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.authorizers[0].Sign(dateHeader)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
