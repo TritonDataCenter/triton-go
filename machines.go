@@ -524,23 +524,68 @@ func (client *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput
 	return result, nil
 }
 
+type GetNICInput struct {
+	MachineID string
+	MAC       string
+}
+
+func (client *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
+	mac := strings.Replace(input.MAC, ":", "", -1)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
+	response, err := client.executeRequestRaw(ctx, http.MethodGet, path, nil)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusNotFound:
+		return nil, &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceNotFound",
+		}
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing GetNIC request: {{err}}", err)
+	}
+
+	var result *NIC
+	decoder := json.NewDecoder(response.Body)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding ListNICs response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
 type AddNICInput struct {
 	MachineID string `json:"-"`
 	Network   string `json:"network"`
 }
 
+// AddNIC asynchronously adds a NIC to a given machine.  If a NIC for a given
+// network already exists, a ResourceFound error will be returned.  The status
+// of the addition of a NIC can be polled by calling GetNIC()'s and testing NIC
+// until its state is set to "running".  Only one NIC per network may exist.
+// Warning: this operation causes the machine to restart.
 func (client *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
 	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
-	if respReader != nil {
-		defer respReader.Close()
+	response, err := client.executeRequestRaw(ctx, http.MethodPost, path, input)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusFound:
+		return nil, &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceFound",
+			Message:    response.Header.Get("Location"),
+		}
 	}
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing AddNIC request: {{err}}", err)
 	}
 
 	var result *NIC
-	decoder := json.NewDecoder(respReader)
+	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding AddNIC response: {{err}}", err)
 	}
@@ -553,11 +598,23 @@ type RemoveNICInput struct {
 	MAC       string
 }
 
+// RemoveNIC removes a given NIC from a machine asynchronously.  The status of
+// the removal can be polled via GetNIC().  When GetNIC() returns a 404, the NIC
+// has been removed from the instance.  Warning: this operation causes the
+// machine to restart.
 func (client *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, input.MAC)
-	respReader, err := client.executeRequest(ctx, http.MethodDelete, path, nil)
-	if respReader != nil {
-		defer respReader.Close()
+	mac := strings.Replace(input.MAC, ":", "", -1)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
+	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	switch response.StatusCode {
+	case http.StatusNotFound:
+		return &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceNotFound",
+		}
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing RemoveNIC request: {{err}}", err)

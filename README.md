@@ -171,8 +171,8 @@ The following list is updated as new functionality is added. The complete list o
 	- [x] ListNetworks
 	- [x] GetNetwork
 - Nics
-	- [ ] ListNics
-	- [ ] GetNic
+	- [X] ListNics
+	- [X] GetNic
 	- [x] AddNic
 	- [x] RemoveNic
 
@@ -210,7 +210,7 @@ PASS
 ok  	github.com/jen20/triton-go	31.861s
 ```
 
-[4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md 
+[4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md
 [5]: https://godoc.org/github.com/joyent/go-triton/authentication
 [6]: https://godoc.org/github.com/joyent/go-triton/authentication
 [7]: https://github.com/hashicorp/go-errwrap
