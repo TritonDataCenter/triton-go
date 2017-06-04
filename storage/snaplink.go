@@ -1,9 +1,10 @@
-package manta
+package storage
 
 import (
 	"fmt"
-	"github.com/hashicorp/errwrap"
 	"net/http"
+
+	"github.com/hashicorp/errwrap"
 )
 
 // PutSnapLinkInput represents parameters to a PutSnapLink operation.
