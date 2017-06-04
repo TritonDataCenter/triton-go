@@ -1,4 +1,4 @@
-package manta
+package storage
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/jen20/manta-go/authentication"
+	"github.com/jen20/triton-go/storage/authentication"
 )
 
 // Client represents a connection to the Triton API.

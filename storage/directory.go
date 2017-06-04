@@ -1,4 +1,4 @@
-package manta
+package storage
 
 import (
 	"encoding/json"
