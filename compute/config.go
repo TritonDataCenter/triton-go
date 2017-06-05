@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -10,13 +10,7 @@ import (
 )
 
 type ConfigClient struct {
-	*Client
-}
-
-// Config returns a c used for accessing functions pertaining
-// to Config functionality in the Triton API.
-func (c *Client) Config() *ConfigClient {
-	return &ConfigClient{c}
+	*Compute
 }
 
 // Config represents configuration for your account.
