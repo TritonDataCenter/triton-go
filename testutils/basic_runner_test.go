@@ -1,4 +1,4 @@
-package triton
+package testutils
 
 import (
 	"log"
