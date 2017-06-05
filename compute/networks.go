@@ -1,22 +1,16 @@
-package triton
+package compute
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"context"
 	"github.com/hashicorp/errwrap"
 )
 
 type NetworksClient struct {
-	*Client
-}
-
-// Networks returns a c used for accessing functions pertaining to
-// Network functionality in the Triton API.
-func (c *Client) Networks() *NetworksClient {
-	return &NetworksClient{c}
+	*Compute
 }
 
 type Network struct {

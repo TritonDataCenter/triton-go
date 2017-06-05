@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -13,13 +13,7 @@ import (
 )
 
 type MachinesClient struct {
-	*Client
-}
-
-// Machines returns a client used for accessing functions pertaining to
-// machine functionality in the Triton API.
-func (c *Client) Machines() *MachinesClient {
-	return &MachinesClient{c}
+	*Compute
 }
 
 const (

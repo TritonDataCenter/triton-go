@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -10,13 +10,7 @@ import (
 )
 
 type RolesClient struct {
-	*Client
-}
-
-// Roles returns a c used for accessing functions pertaining
-// to Role functionality in the Triton API.
-func (c *Client) Roles() *RolesClient {
-	return &RolesClient{c}
+	*Compute
 }
 
 type Role struct {

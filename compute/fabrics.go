@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"encoding/json"
@@ -6,17 +6,13 @@ import (
 	"net/http"
 
 	"context"
+
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type FabricsClient struct {
-	*Client
-}
-
-// Fabrics returns a client used for accessing functions pertaining to
-// Fabric functionality in the Triton API.
-func (c *Client) Fabrics() *FabricsClient {
-	return &FabricsClient{c}
+	*client.Client
 }
 
 type FabricVLAN struct {

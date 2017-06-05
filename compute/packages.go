@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -10,13 +10,7 @@ import (
 )
 
 type PackagesClient struct {
-	*Client
-}
-
-// Packages returns a c used for accessing functions pertaining
-// to Packages functionality in the Triton API.
-func (c *Client) Packages() *PackagesClient {
-	return &PackagesClient{c}
+	*Compute
 }
 
 type Package struct {

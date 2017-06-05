@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -11,13 +11,7 @@ import (
 )
 
 type ServicesClient struct {
-	*Client
-}
-
-// Services returns a c used for accessing functions pertaining
-// to Services functionality in the Triton API.
-func (c *Client) Services() *ServicesClient {
-	return &ServicesClient{c}
+	*Compute
 }
 
 type Service struct {

@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"encoding/json"
@@ -8,17 +8,12 @@ import (
 	"sort"
 
 	"context"
+
 	"github.com/hashicorp/errwrap"
 )
 
 type DataCentersClient struct {
-	*Client
-}
-
-// DataCenters returns a c used for accessing functions pertaining
-// to Datacenter functionality in the Triton API.
-func (c *Client) Datacenters() *DataCentersClient {
-	return &DataCentersClient{c}
+	*Compute
 }
 
 type DataCenter struct {

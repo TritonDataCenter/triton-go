@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -9,18 +9,18 @@ import (
 func TestAccServicesList(t *testing.T) {
 	const stateKey = "services"
 
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Services().ListServices(
 						context.Background(),
 						&ListServicesInput{})
 				},
 			},
-			&StepAssertFunc{
-				AssertFunc: func(state TritonStateBag) error {
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
 					services, ok := state.GetOk(stateKey)
 					if !ok {
 						return fmt.Errorf("State key %q not found", stateKey)

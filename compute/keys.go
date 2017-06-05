@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -10,13 +10,7 @@ import (
 )
 
 type KeysClient struct {
-	*Client
-}
-
-// Keys returns a c used for accessing functions pertaining to
-// SSH key functionality in the Triton API.
-func (c *Client) Keys() *KeysClient {
-	return &KeysClient{c}
+	*Compute
 }
 
 // Key represents a public key

@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 )
 
 func TestAccKey_Create(t *testing.T) {
-	keyName := RandPrefixString("TestAccCreateKey", 32)
+	keyName := testutils.RandPrefixString("TestAccCreateKey", 32)
 
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -22,7 +22,7 @@ func TestAccKey_Create(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Client, callState interface{}) {
+				CleanupFunc: func(client *Compute, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -30,7 +30,7 @@ func TestAccKey_Create(t *testing.T) {
 						})
 				},
 			},
-			&StepAssert{
+			&testutils.StepAssert{
 				StateBagKey: "key",
 				Assertions: seq.Map{
 					"name":        keyName,
@@ -43,13 +43,13 @@ func TestAccKey_Create(t *testing.T) {
 }
 
 func TestAccKey_Get(t *testing.T) {
-	keyName := RandPrefixString("TestAccGetKey", 32)
+	keyName := testutils.RandPrefixString("TestAccGetKey", 32)
 
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -57,7 +57,7 @@ func TestAccKey_Get(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Client, callState interface{}) {
+				CleanupFunc: func(client *Compute, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -65,16 +65,16 @@ func TestAccKey_Get(t *testing.T) {
 						})
 				},
 			},
-			&StepAPICall{
+			&testutils.StepAPICall{
 				StateBagKey: "getKey",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Keys().GetKey(context.Background(),
 						&GetKeyInput{
 							KeyName: keyName,
 						})
 				},
 			},
-			&StepAssert{
+			&testutils.StepAssert{
 				StateBagKey: "getKey",
 				Assertions: seq.Map{
 					"name":        keyName,
@@ -87,13 +87,13 @@ func TestAccKey_Get(t *testing.T) {
 }
 
 func TestAccKey_Delete(t *testing.T) {
-	keyName := RandPrefixString("TestAccGetKey", 32)
+	keyName := testutils.RandPrefixString("TestAccGetKey", 32)
 
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -101,7 +101,7 @@ func TestAccKey_Delete(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Client, callState interface{}) {
+				CleanupFunc: func(client *Compute, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -109,9 +109,9 @@ func TestAccKey_Delete(t *testing.T) {
 						})
 				},
 			},
-			&StepAPICall{
+			&testutils.StepAPICall{
 				StateBagKey: "noop",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return nil, client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -119,9 +119,9 @@ func TestAccKey_Delete(t *testing.T) {
 						})
 				},
 			},
-			&StepAPICall{
+			&testutils.StepAPICall{
 				ErrorKey: "getKeyError",
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Keys().GetKey(
 						context.Background(),
 						&GetKeyInput{
@@ -129,7 +129,7 @@ func TestAccKey_Delete(t *testing.T) {
 						})
 				},
 			},
-			&StepAssertTritonError{
+			&testutils.StepAssertTritonError{
 				ErrorKey: "getKeyError",
 				Code:     "ResourceNotFound",
 			},

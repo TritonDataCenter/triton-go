@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -11,13 +11,7 @@ import (
 )
 
 type AccountsClient struct {
-	*Client
-}
-
-// Accounts returns a c used for accessing functions pertaining
-// to Account functionality in the Triton API.
-func (c *Client) Accounts() *AccountsClient {
-	return &AccountsClient{c}
+	*Compute
 }
 
 type Account struct {
