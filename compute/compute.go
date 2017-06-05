@@ -7,8 +7,9 @@ type Compute struct {
 }
 
 type Compute interface {
-	Datacenters() *DataCentersClient
 	Accounts() *AccountsClient
+	Config() *ConfigClient
+	Datacenters() *DataCentersClient
 	Fabrics() *FabricsClient
 	Firewall() *FirewallClient
 	Images() *ImagesClient
@@ -20,16 +21,22 @@ type Compute interface {
 	Services() *ServicesClient
 }
 
-// Datacenters returns a Compute client used for accessing functions pertaining
-// to DataCenter functionality in the Triton API.
-func (c *Compute) Datacenters() *DataCentersClient {
-	return &DataCentersClient{c}
-}
-
 // Accounts returns a Compute client used for accessing functions pertaining to
 // Account functionality in the Triton API.
 func (c *Compute) Accounts() *AccountsClient {
 	return &AccountsClient{c}
+}
+
+// Config returns a c used for accessing functions pertaining
+// to Config functionality in the Triton API.
+func (c *Compute) Config() *ConfigClient {
+	return &ConfigClient{c}
+}
+
+// Datacenters returns a Compute client used for accessing functions pertaining
+// to DataCenter functionality in the Triton API.
+func (c *Compute) Datacenters() *DataCentersClient {
+	return &DataCentersClient{c}
 }
 
 // Fabrics returns a Compute client used for accessing functions pertaining to
