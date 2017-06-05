@@ -30,9 +30,9 @@ type Network struct {
 
 type ListNetworksInput struct{}
 
-func (client *NetworksClient) ListNetworks(ctx context.Context, _ *ListNetworksInput) ([]*Network, error) {
-	path := fmt.Sprintf("/%s/networks", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *NetworksClient) ListNetworks(ctx context.Context, _ *ListNetworksInput) ([]*Network, error) {
+	path := fmt.Sprintf("/%s/networks", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -53,9 +53,9 @@ type GetNetworkInput struct {
 	ID string
 }
 
-func (client *NetworksClient) GetNetwork(ctx context.Context, input *GetNetworkInput) (*Network, error) {
-	path := fmt.Sprintf("/%s/networks/%s", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *NetworksClient) GetNetwork(ctx context.Context, input *GetNetworkInput) (*Network, error) {
+	path := fmt.Sprintf("/%s/networks/%s", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}

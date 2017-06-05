@@ -18,13 +18,17 @@ type ClientConfig struct {
 
 // TODO: Work configuration providers into the mix for pulling variables out of
 // the env or `node-triton` profile.
-func NewClient(config *Config) (*TritonClient, error) {
+func NewClient(config *ClientConfig) (*TritonClient, error) {
 	// TODO: Utilize config interface within the function itself
 	client, error := client.New(config.endpoint, config.accountName, config.signers)
 	if error != nil {
 		return nil, error
 	}
-	compute := &Compute{client}
-	storage := &Storage{client}
+	compute := &Compute{
+		client: client,
+	}
+	storage := &Storage{
+		client: client,
+	}
 	return &TritonClient{client, compute, storage}
 }

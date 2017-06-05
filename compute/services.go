@@ -21,9 +21,9 @@ type Service struct {
 
 type ListServicesInput struct{}
 
-func (client *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
-	path := fmt.Sprintf("/%s/services", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
+	path := fmt.Sprintf("/%s/services", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}

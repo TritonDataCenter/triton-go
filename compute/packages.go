@@ -38,9 +38,9 @@ type ListPackagesInput struct {
 	Group   string `json:"group"`
 }
 
-func (client *PackagesClient) ListPackages(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
-	path := fmt.Sprintf("/%s/packages", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, input)
+func (c *PackagesClient) ListPackages(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
+	path := fmt.Sprintf("/%s/packages", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -61,9 +61,9 @@ type GetPackageInput struct {
 	ID string
 }
 
-func (client *PackagesClient) GetPackage(ctx context.Context, input *GetPackageInput) (*Package, error) {
-	path := fmt.Sprintf("/%s/packages/%s", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *PackagesClient) GetPackage(ctx context.Context, input *GetPackageInput) (*Package, error) {
+	path := fmt.Sprintf("/%s/packages/%s", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}

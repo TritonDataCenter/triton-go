@@ -1,4 +1,4 @@
-package authentication
+package oldauthentication
 
 const authorizationHeaderFormat = `Signature keyId="%s",algorithm="%s",headers="%s",signature="%s"`
 

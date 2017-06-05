@@ -43,9 +43,9 @@ type Image struct {
 
 type ListImagesInput struct{}
 
-func (client *ImagesClient) ListImages(ctx context.Context, _ *ListImagesInput) ([]*Image, error) {
-	path := fmt.Sprintf("/%s/images", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *ImagesClient) ListImages(ctx context.Context, _ *ListImagesInput) ([]*Image, error) {
+	path := fmt.Sprintf("/%s/images", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -66,9 +66,9 @@ type GetImageInput struct {
 	ImageID string
 }
 
-func (client *ImagesClient) GetImage(ctx context.Context, input *GetImageInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *ImagesClient) GetImage(ctx context.Context, input *GetImageInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -89,9 +89,9 @@ type DeleteImageInput struct {
 	ImageID string
 }
 
-func (client *ImagesClient) DeleteImage(ctx context.Context, input *DeleteImageInput) error {
-	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
-	respReader, err := client.executeRequest(ctx, http.MethodDelete, path, nil)
+func (c *ImagesClient) DeleteImage(ctx context.Context, input *DeleteImageInput) error {
+	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -113,13 +113,13 @@ type MantaLocation struct {
 	ManifestPath string `json:"manifest_path"`
 }
 
-func (client *ImagesClient) ExportImage(ctx context.Context, input *ExportImageInput) (*MantaLocation, error) {
-	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+func (c *ImagesClient) ExportImage(ctx context.Context, input *ExportImageInput) (*MantaLocation, error) {
+	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
 	query := &url.Values{}
 	query.Set("action", "export")
 	query.Set("manta_path", input.MantaPath)
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodGet, path, nil, query)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodGet, path, nil, query)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -147,9 +147,9 @@ type CreateImageFromMachineInput struct {
 	Tags        map[string]string `json:"tags,omitempty"`
 }
 
-func (client *ImagesClient) CreateImageFromMachine(ctx context.Context, input *CreateImageFromMachineInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
+func (c *ImagesClient) CreateImageFromMachine(ctx context.Context, input *CreateImageFromMachineInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -177,12 +177,12 @@ type UpdateImageInput struct {
 	Tags        map[string]string `json:"tags,omitempty"`
 }
 
-func (client *ImagesClient) UpdateImage(ctx context.Context, input *UpdateImageInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images/%s", client.accountName, input.ImageID)
+func (c *ImagesClient) UpdateImage(ctx context.Context, input *UpdateImageInput) (*Image, error) {
+	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
 	query := &url.Values{}
 	query.Set("action", "update")
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, input, query)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, input, query)
 	if respReader != nil {
 		defer respReader.Close()
 	}
