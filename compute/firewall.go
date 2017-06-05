@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -10,13 +10,7 @@ import (
 )
 
 type FirewallClient struct {
-	*Client
-}
-
-// Firewall returns a client used for accessing functions pertaining to
-// firewall functionality in the Triton API.
-func (c *Client) Firewall() *FirewallClient {
-	return &FirewallClient{c}
+	*Compute
 }
 
 // FirewallRule represents a firewall rule

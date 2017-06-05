@@ -1,29 +1,31 @@
-package triton
+package compute
 
 import (
 	"fmt"
 	"testing"
 
 	"context"
-	"github.com/abdullin/seq"
 	"time"
+
+	"github.com/abdullin/seq"
+	"github.com/joyent/triton-go/testutils"
 )
 
 func TestAccImagesList(t *testing.T) {
 	const stateKey = "images"
 	const image1Id = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
 	const image2Id = "70e3ae72-96b6-11e6-9056-9737fd4d0764"
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Images().ListImages(
 						context.Background(), &ListImagesInput{})
 				},
 			},
-			&StepAssertFunc{
-				AssertFunc: func(state TritonStateBag) error {
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
 					images, ok := state.GetOk(stateKey)
 					if !ok {
 						return fmt.Errorf("State key %q not found", stateKey)
@@ -46,7 +48,7 @@ func TestAccImagesList(t *testing.T) {
 					return nil
 				},
 			},
-			&StepAssert{
+			&testutils.StepAssert{
 				StateBagKey: image1Id,
 				Assertions: seq.Map{
 					"name":                    "ws2012std",
@@ -55,7 +57,7 @@ func TestAccImagesList(t *testing.T) {
 					"requirements.min_ram":    3840,
 				},
 			},
-			&StepAssert{
+			&testutils.StepAssert{
 				StateBagKey: image2Id,
 				Assertions: seq.Map{
 					"name":       "base-64",
@@ -75,11 +77,11 @@ func TestAccImagesGet(t *testing.T) {
 	if err != nil {
 		t.Fatal("Reference time does not parse as RFC3339")
 	}
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					return client.Images().GetImage(
 						context.Background(),
 						&GetImageInput{
@@ -87,7 +89,7 @@ func TestAccImagesGet(t *testing.T) {
 						})
 				},
 			},
-			&StepAssert{
+			&testutils.StepAssert{
 				StateBagKey: stateKey,
 				Assertions: seq.Map{
 					"name":    "ws2012std",

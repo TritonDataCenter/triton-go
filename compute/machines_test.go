@@ -1,18 +1,16 @@
-package triton_test
+package compute
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"testing"
-
-	"github.com/joyent/triton-go"
 )
 
-func getAnyMachineID(t *testing.T, c *triton.Client) (string, error) {
+func getAnyMachineID(t *testing.T, c *Compute) (string, error) {
 	machines, err := c.Machines().ListMachines(
 		context.Background(),
-		&triton.ListMachinesInput{},
+		&ListMachinesInput{},
 	)
 	if err != nil {
 		return "", err
@@ -29,11 +27,11 @@ func getAnyMachineID(t *testing.T, c *triton.Client) (string, error) {
 }
 
 func TestAccMachine_GetMachine(t *testing.T) {
-	triton.AccTest(t, triton.TestCase{
-		Steps: []triton.Step{
-			&triton.StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: "machine",
-				CallFunc: func(client *triton.Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					machineID, err := getAnyMachineID(t, client)
 					if err != nil {
 						return nil, err
@@ -41,12 +39,12 @@ func TestAccMachine_GetMachine(t *testing.T) {
 
 					return client.Machines().GetMachine(
 						context.Background(),
-						&triton.GetMachineInput{
+						&GetMachineInput{
 							ID: machineID,
 						})
 				},
 			},
-			&triton.StepAssertSet{
+			&testutils.StepAssertSet{
 				StateBagKey: "machine",
 				Keys:        []string{"ID", "Name", "Type", "Tags"},
 			},
@@ -57,11 +55,11 @@ func TestAccMachine_GetMachine(t *testing.T) {
 // FIXME(seanc@): TestAccMachine_ListMachineTags assumes that any machine ID
 // returned from getAnyMachineID will have at least one tag.
 func TestAccMachine_ListMachineTags(t *testing.T) {
-	triton.AccTest(t, triton.TestCase{
-		Steps: []triton.Step{
-			&triton.StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepAPICall{
 				StateBagKey: "machine",
-				CallFunc: func(client *triton.Client) (interface{}, error) {
+				CallFunc: func(client *Compute) (interface{}, error) {
 					machineID, err := getAnyMachineID(t, client)
 					if err != nil {
 						return nil, err
@@ -69,13 +67,13 @@ func TestAccMachine_ListMachineTags(t *testing.T) {
 
 					return client.Machines().ListMachineTags(
 						context.Background(),
-						&triton.ListMachineTagsInput{
+						&testutils.ListMachineTagsInput{
 							ID: machineID,
 						})
 				},
 			},
-			&triton.StepAssertFunc{
-				AssertFunc: func(state triton.TritonStateBag) error {
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
 					tagsRaw, found := state.GetOk("machine")
 					if !found {
 						return fmt.Errorf("State key %q not found", "machines")

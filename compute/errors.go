@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"fmt"

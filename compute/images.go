@@ -1,4 +1,4 @@
-package triton
+package compute
 
 import (
 	"context"
@@ -12,13 +12,7 @@ import (
 )
 
 type ImagesClient struct {
-	*Client
-}
-
-// Images returns a c used for accessing functions pertaining to
-// Images functionality in the Triton API.
-func (c *Client) Images() *ImagesClient {
-	return &ImagesClient{c}
+	*Compute
 }
 
 type ImageFile struct {
