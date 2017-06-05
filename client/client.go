@@ -1,4 +1,4 @@
-package triton
+package client
 
 import (
 	"bytes"
@@ -29,12 +29,18 @@ type Client struct {
 	accountName string
 }
 
-// NewClient is used to construct a Client in order to make API
+type Config struct {
+	endpoint    string
+	accountName string
+	signers     []authentication.Signer
+}
+
+// New is used to construct a Client in order to make API
 // requests to the Triton API.
 //
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
-func NewClient(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
+func New(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
 	apiURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, errwrap.Wrapf("invalid endpoint: {{err}}", err)
