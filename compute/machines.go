@@ -84,13 +84,13 @@ func (gmi *GetMachineInput) Validate() error {
 	return nil
 }
 
-func (client *MachinesClient) GetMachine(ctx context.Context, input *GetMachineInput) (*Machine, error) {
+func (c *MachinesClient) GetMachine(ctx context.Context, input *GetMachineInput) (*Machine, error) {
 	if err := input.Validate(); err != nil {
 		return nil, errwrap.Wrapf("unable to get machine: {{err}}", err)
 	}
 
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
-	response, err := client.executeRequestRaw(ctx, http.MethodGet, path, nil)
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	response, err := c.executeRequestRaw(ctx, http.MethodGet, path, nil)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -102,7 +102,7 @@ func (client *MachinesClient) GetMachine(ctx context.Context, input *GetMachineI
 	}
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing GetMachine request: {{err}}",
-			client.decodeError(response.StatusCode, response.Body))
+			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	var result *_Machine
@@ -121,9 +121,9 @@ func (client *MachinesClient) GetMachine(ctx context.Context, input *GetMachineI
 
 type ListMachinesInput struct{}
 
-func (client *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesInput) ([]*Machine, error) {
-	path := fmt.Sprintf("/%s/machines", client.accountName)
-	response, err := client.executeRequestRaw(ctx, http.MethodGet, path, nil)
+func (c *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesInput) ([]*Machine, error) {
+	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+	response, err := c.executeRequestRaw(ctx, http.MethodGet, path, nil)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -135,7 +135,7 @@ func (client *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesI
 	}
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing ListMachines request: {{err}}",
-			client.decodeError(response.StatusCode, response.Body))
+			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	var results []*_Machine
@@ -216,9 +216,9 @@ func (input *CreateMachineInput) toAPI() map[string]interface{} {
 	return result
 }
 
-func (client *MachinesClient) CreateMachine(ctx context.Context, input *CreateMachineInput) (*Machine, error) {
-	path := fmt.Sprintf("/%s/machines", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input.toAPI())
+func (c *MachinesClient) CreateMachine(ctx context.Context, input *CreateMachineInput) (*Machine, error) {
+	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input.toAPI())
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -239,9 +239,9 @@ type DeleteMachineInput struct {
 	ID string
 }
 
-func (client *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
-	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+func (c *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	response, err := c.executeRequestRaw(ctx, http.MethodDelete, path, nil)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -250,7 +250,7 @@ func (client *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMa
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing DeleteMachine request: {{err}}",
-			client.decodeError(response.StatusCode, response.Body))
+			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
@@ -260,9 +260,9 @@ type DeleteMachineTagsInput struct {
 	ID string
 }
 
-func (client *MachinesClient) DeleteMachineTags(ctx context.Context, input *DeleteMachineTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
-	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+func (c *MachinesClient) DeleteMachineTags(ctx context.Context, input *DeleteMachineTagsInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	response, err := c.executeRequestRaw(ctx, http.MethodDelete, path, nil)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -271,7 +271,7 @@ func (client *MachinesClient) DeleteMachineTags(ctx context.Context, input *Dele
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing DeleteMachineTags request: {{err}}",
-			client.decodeError(response.StatusCode, response.Body))
+			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
@@ -282,9 +282,9 @@ type DeleteMachineTagInput struct {
 	Key string
 }
 
-func (client *MachinesClient) DeleteMachineTag(ctx context.Context, input *DeleteMachineTagInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags/%s", client.accountName, input.ID, input.Key)
-	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+func (c *MachinesClient) DeleteMachineTag(ctx context.Context, input *DeleteMachineTagInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
+	response, err := c.executeRequestRaw(ctx, http.MethodDelete, path, nil)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -293,7 +293,7 @@ func (client *MachinesClient) DeleteMachineTag(ctx context.Context, input *Delet
 	}
 	if err != nil {
 		return errwrap.Wrapf("Error executing DeleteMachineTag request: {{err}}",
-			client.decodeError(response.StatusCode, response.Body))
+			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
@@ -304,14 +304,14 @@ type RenameMachineInput struct {
 	Name string
 }
 
-func (client *MachinesClient) RenameMachine(ctx context.Context, input *RenameMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
+func (c *MachinesClient) RenameMachine(ctx context.Context, input *RenameMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "rename")
 	params.Set("name", input.Name)
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -327,9 +327,9 @@ type ReplaceMachineTagsInput struct {
 	Tags map[string]string
 }
 
-func (client *MachinesClient) ReplaceMachineTags(ctx context.Context, input *ReplaceMachineTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPut, path, input.Tags)
+func (c *MachinesClient) ReplaceMachineTags(ctx context.Context, input *ReplaceMachineTagsInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPut, path, input.Tags)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -345,9 +345,9 @@ type AddMachineTagsInput struct {
 	Tags map[string]string
 }
 
-func (client *MachinesClient) AddMachineTags(ctx context.Context, input *AddMachineTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input.Tags)
+func (c *MachinesClient) AddMachineTags(ctx context.Context, input *AddMachineTagsInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input.Tags)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -363,9 +363,9 @@ type GetMachineTagInput struct {
 	Key string
 }
 
-func (client *MachinesClient) GetMachineTag(ctx context.Context, input *GetMachineTagInput) (string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags/%s", client.accountName, input.ID, input.Key)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *MachinesClient) GetMachineTag(ctx context.Context, input *GetMachineTagInput) (string, error) {
+	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -386,9 +386,9 @@ type ListMachineTagsInput struct {
 	ID string
 }
 
-func (client *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]interface{}, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]interface{}, error) {
+	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -411,9 +411,9 @@ type UpdateMachineMetadataInput struct {
 	Metadata map[string]string
 }
 
-func (client *MachinesClient) UpdateMachineMetadata(ctx context.Context, input *UpdateMachineMetadataInput) (map[string]string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input.Metadata)
+func (c *MachinesClient) UpdateMachineMetadata(ctx context.Context, input *UpdateMachineMetadataInput) (map[string]string, error) {
+	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input.Metadata)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -435,14 +435,14 @@ type ResizeMachineInput struct {
 	Package string
 }
 
-func (client *MachinesClient) ResizeMachine(ctx context.Context, input *ResizeMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
+func (c *MachinesClient) ResizeMachine(ctx context.Context, input *ResizeMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "resize")
 	params.Set("package", input.Package)
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -457,13 +457,13 @@ type EnableMachineFirewallInput struct {
 	ID string
 }
 
-func (client *MachinesClient) EnableMachineFirewall(ctx context.Context, input *EnableMachineFirewallInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
+func (c *MachinesClient) EnableMachineFirewall(ctx context.Context, input *EnableMachineFirewallInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "enable_firewall")
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -478,13 +478,13 @@ type DisableMachineFirewallInput struct {
 	ID string
 }
 
-func (client *MachinesClient) DisableMachineFirewall(ctx context.Context, input *DisableMachineFirewallInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.ID)
+func (c *MachinesClient) DisableMachineFirewall(ctx context.Context, input *DisableMachineFirewallInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "disable_firewall")
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -499,9 +499,9 @@ type ListNICsInput struct {
 	MachineID string
 }
 
-func (client *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
+	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -523,10 +523,10 @@ type GetNICInput struct {
 	MAC       string
 }
 
-func (client *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
+func (c *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
-	response, err := client.executeRequestRaw(ctx, http.MethodGet, path, nil)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
+	response, err := c.executeRequestRaw(ctx, http.MethodGet, path, nil)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -560,9 +560,9 @@ type AddNICInput struct {
 // of the addition of a NIC can be polled by calling GetNIC()'s and testing NIC
 // until its state is set to "running".  Only one NIC per network may exist.
 // Warning: this operation causes the machine to restart.
-func (client *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", client.accountName, input.MachineID)
-	response, err := client.executeRequestRaw(ctx, http.MethodPost, path, input)
+func (c *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
+	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
+	response, err := c.executeRequestRaw(ctx, http.MethodPost, path, input)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -596,10 +596,10 @@ type RemoveNICInput struct {
 // the removal can be polled via GetNIC().  When GetNIC() returns a 404, the NIC
 // has been removed from the instance.  Warning: this operation causes the
 // machine to restart.
-func (client *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
+func (c *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", client.accountName, input.MachineID, mac)
-	response, err := client.executeRequestRaw(ctx, http.MethodDelete, path, nil)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
+	response, err := c.executeRequestRaw(ctx, http.MethodDelete, path, nil)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -621,13 +621,13 @@ type StopMachineInput struct {
 	MachineID string
 }
 
-func (client *MachinesClient) StopMachine(ctx context.Context, input *StopMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.MachineID)
+func (c *MachinesClient) StopMachine(ctx context.Context, input *StopMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.MachineID)
 
 	params := &url.Values{}
 	params.Set("action", "stop")
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -642,13 +642,13 @@ type StartMachineInput struct {
 	MachineID string
 }
 
-func (client *MachinesClient) StartMachine(ctx context.Context, input *StartMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", client.accountName, input.MachineID)
+func (c *MachinesClient) StartMachine(ctx context.Context, input *StartMachineInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.MachineID)
 
 	params := &url.Values{}
 	params.Set("action", "start")
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	respReader, err := c.executeRequestURIParams(ctx, http.MethodPost, path, nil, params)
 	if respReader != nil {
 		defer respReader.Close()
 	}

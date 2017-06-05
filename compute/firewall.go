@@ -33,9 +33,9 @@ type FirewallRule struct {
 
 type ListFirewallRulesInput struct{}
 
-func (client *FirewallClient) ListFirewallRules(ctx context.Context, _ *ListFirewallRulesInput) ([]*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *FirewallClient) ListFirewallRules(ctx context.Context, _ *ListFirewallRulesInput) ([]*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -56,9 +56,9 @@ type GetFirewallRuleInput struct {
 	ID string
 }
 
-func (client *FirewallClient) GetFirewallRule(ctx context.Context, input *GetFirewallRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *FirewallClient) GetFirewallRule(ctx context.Context, input *GetFirewallRuleInput) (*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -81,9 +81,9 @@ type CreateFirewallRuleInput struct {
 	Description string `json:"description"`
 }
 
-func (client *FirewallClient) CreateFirewallRule(ctx context.Context, input *CreateFirewallRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
+func (c *FirewallClient) CreateFirewallRule(ctx context.Context, input *CreateFirewallRuleInput) (*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -107,9 +107,9 @@ type UpdateFirewallRuleInput struct {
 	Description string `json:"description"`
 }
 
-func (client *FirewallClient) UpdateFirewallRule(ctx context.Context, input *UpdateFirewallRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
+func (c *FirewallClient) UpdateFirewallRule(ctx context.Context, input *UpdateFirewallRuleInput) (*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -130,9 +130,9 @@ type EnableFirewallRuleInput struct {
 	ID string `json:"-"`
 }
 
-func (client *FirewallClient) EnableFirewallRule(ctx context.Context, input *EnableFirewallRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s/enable", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
+func (c *FirewallClient) EnableFirewallRule(ctx context.Context, input *EnableFirewallRuleInput) (*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules/%s/enable", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -153,9 +153,9 @@ type DisableFirewallRuleInput struct {
 	ID string `json:"-"`
 }
 
-func (client *FirewallClient) DisableFirewallRule(ctx context.Context, input *DisableFirewallRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s/disable", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodPost, path, input)
+func (c *FirewallClient) DisableFirewallRule(ctx context.Context, input *DisableFirewallRuleInput) (*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/fwrules/%s/disable", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -176,9 +176,9 @@ type DeleteFirewallRuleInput struct {
 	ID string
 }
 
-func (client *FirewallClient) DeleteFirewallRule(ctx context.Context, input *DeleteFirewallRuleInput) error {
-	path := fmt.Sprintf("/%s/fwrules/%s", client.accountName, input.ID)
-	respReader, err := client.executeRequest(ctx, http.MethodDelete, path, nil)
+func (c *FirewallClient) DeleteFirewallRule(ctx context.Context, input *DeleteFirewallRuleInput) error {
+	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -193,9 +193,9 @@ type ListMachineFirewallRulesInput struct {
 	MachineID string
 }
 
-func (client *FirewallClient) ListMachineFirewallRules(ctx context.Context, input *ListMachineFirewallRulesInput) ([]*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/machines/%s/firewallrules", client.accountName, input.MachineID)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+func (c *FirewallClient) ListMachineFirewallRules(ctx context.Context, input *ListMachineFirewallRulesInput) ([]*FirewallRule, error) {
+	path := fmt.Sprintf("/%s/machines/%s/firewallrules", c.client.AccountName, input.MachineID)
+	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
