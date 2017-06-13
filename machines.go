@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -27,7 +26,6 @@ const (
 	machineCNSTagDisable    = "triton.cns.disable"
 	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
 	machineCNSTagServices   = "triton.cns.services"
-	machineSDCDocker        = "sdc_docker"
 )
 
 // MachineCNS is a container for the CNS-specific attributes.  In the API these
@@ -40,26 +38,26 @@ type MachineCNS struct {
 }
 
 type Machine struct {
-	ID              string            `json:"id"`
-	Name            string            `json:"name"`
-	Type            string            `json:"type"`
-	Brand           string            `json:"brand"`
-	State           string            `json:"state"`
-	Image           string            `json:"image"`
-	Memory          int               `json:"memory"`
-	Disk            int               `json:"disk"`
-	Metadata        map[string]string `json:"metadata"`
-	Tags            map[string]string `json:"tags"`
-	Created         time.Time         `json:"created"`
-	Updated         time.Time         `json:"updated"`
-	Docker          bool              `json:"docker"`
-	IPs             []string          `json:"ips"`
-	Networks        []string          `json:"networks"`
-	PrimaryIP       string            `json:"primaryIp"`
-	FirewallEnabled bool              `json:"firewall_enabled"`
-	ComputeNode     string            `json:"compute_node"`
-	Package         string            `json:"package"`
-	DomainNames     []string          `json:"dns_names"`
+	ID              string                 `json:"id"`
+	Name            string                 `json:"name"`
+	Type            string                 `json:"type"`
+	Brand           string                 `json:"brand"`
+	State           string                 `json:"state"`
+	Image           string                 `json:"image"`
+	Memory          int                    `json:"memory"`
+	Disk            int                    `json:"disk"`
+	Metadata        map[string]string      `json:"metadata"`
+	Tags            map[string]interface{} `json:"tags"`
+	Created         time.Time              `json:"created"`
+	Updated         time.Time              `json:"updated"`
+	Docker          bool                   `json:"docker"`
+	IPs             []string               `json:"ips"`
+	Networks        []string               `json:"networks"`
+	PrimaryIP       string                 `json:"primaryIp"`
+	FirewallEnabled bool                   `json:"firewall_enabled"`
+	ComputeNode     string                 `json:"compute_node"`
+	Package         string                 `json:"package"`
+	DomainNames     []string               `json:"dns_names"`
 	CNS             MachineCNS
 }
 
@@ -394,7 +392,7 @@ type ListMachineTagsInput struct {
 	ID string
 }
 
-func (client *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]string, error) {
+func (client *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]interface{}, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags", client.accountName, input.ID)
 	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
@@ -676,14 +674,12 @@ var reservedMachineCNSTags = map[string]struct{}{
 
 // machineTagsExtractMeta() extracts all of the misc parameters from Tags and
 // returns a clean CNS and Tags struct.
-func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string]string) {
+func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string]interface{}) {
 	nativeCNS := MachineCNS{}
-	nativeTags := make(map[string]string, len(tags))
+	nativeTags := make(map[string]interface{}, len(tags))
 	for k, raw := range tags {
 		if _, found := reservedMachineCNSTags[k]; found {
 			switch k {
-			case machineSDCDocker:
-				nativeTags[k] = strconv.FormatBool(raw.(bool))
 			case machineCNSTagDisable:
 				b := raw.(bool)
 				nativeCNS.Disable = &b
@@ -696,7 +692,7 @@ func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string
 				// TODO(seanc@): should assert, logic fail
 			}
 		} else {
-			nativeTags[k] = raw.(string)
+			nativeTags[k] = raw
 		}
 	}
 
