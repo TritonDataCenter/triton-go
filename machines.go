@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,6 +27,7 @@ const (
 	machineCNSTagDisable    = "triton.cns.disable"
 	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
 	machineCNSTagServices   = "triton.cns.services"
+	machineSDCDocker        = "sdc_docker"
 )
 
 // MachineCNS is a container for the CNS-specific attributes.  In the API these
@@ -669,6 +671,7 @@ var reservedMachineCNSTags = map[string]struct{}{
 	machineCNSTagDisable:    {},
 	machineCNSTagReversePTR: {},
 	machineCNSTagServices:   {},
+	machineSDCDocker:        {},
 }
 
 // machineTagsExtractMeta() extracts all of the misc parameters from Tags and
@@ -679,6 +682,8 @@ func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string
 	for k, raw := range tags {
 		if _, found := reservedMachineCNSTags[k]; found {
 			switch k {
+			case machineSDCDocker:
+				nativeTags[k] = strconv.FormatBool(raw.(bool))
 			case machineCNSTagDisable:
 				b := raw.(bool)
 				nativeCNS.Disable = &b
