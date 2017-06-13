@@ -669,7 +669,6 @@ var reservedMachineCNSTags = map[string]struct{}{
 	machineCNSTagDisable:    {},
 	machineCNSTagReversePTR: {},
 	machineCNSTagServices:   {},
-	machineSDCDocker:        {},
 }
 
 // machineTagsExtractMeta() extracts all of the misc parameters from Tags and
