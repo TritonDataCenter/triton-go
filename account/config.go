@@ -1,4 +1,4 @@
-package compute
+package account
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type ConfigClient struct {
-	*Compute
+	*Config
 }
 
 // Config represents configuration for your account.

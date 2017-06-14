@@ -1,10 +1,10 @@
-package compute
+package account
 
 import (
 	"context"
 	"testing"
 
-	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -13,9 +13,9 @@ func TestAccAccount_Get(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "account",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *Account) (interface{}, error) {
 					return client.Accounts().GetAccount(
-						context.Background(), &compute.GetAccountInput{})
+						context.Background(), &account.GetAccountInput{})
 				},
 			},
 			&testutils.StepAssertSet{

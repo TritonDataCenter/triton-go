@@ -1,4 +1,4 @@
-package compute
+package account
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 type AccountsClient struct {
-	*Compute
+	*Account
 }
 
 type Account struct {
