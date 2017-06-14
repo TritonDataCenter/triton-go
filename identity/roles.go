@@ -1,4 +1,4 @@
-package compute
+package identity
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type RolesClient struct {
-	*Compute
+	*Identity
 }
 
 type Role struct {
