@@ -22,7 +22,7 @@ type Service struct {
 type ListServicesInput struct{}
 
 func (c *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
-	path := fmt.Sprintf("/%s/services", c.client.AccountName)
+	path := fmt.Sprintf("/%s/services", c.Client.AccountName)
 	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()

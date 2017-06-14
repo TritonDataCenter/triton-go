@@ -24,7 +24,7 @@ type DataCenter struct {
 type ListDataCentersInput struct{}
 
 func (c *DataCentersClient) ListDataCenters(ctx context.Context, _ *ListDataCentersInput) ([]*DataCenter, error) {
-	path := fmt.Sprintf("/%s/datacenters", c.client.AccountName)
+	path := fmt.Sprintf("/%s/datacenters", c.Client.AccountName)
 	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
@@ -65,7 +65,7 @@ type GetDataCenterInput struct {
 }
 
 func (c *DataCentersClient) GetDataCenter(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
-	path := fmt.Sprintf("/%s/datacenters/%s", c.client.AccountName, input.Name)
+	path := fmt.Sprintf("/%s/datacenters/%s", c.Client.AccountName, input.Name)
 	resp, err := c.executeRequestRaw(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing GetDatacenter request: {{err}}", err)

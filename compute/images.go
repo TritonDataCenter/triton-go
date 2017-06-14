@@ -44,7 +44,7 @@ type Image struct {
 type ListImagesInput struct{}
 
 func (c *ImagesClient) ListImages(ctx context.Context, _ *ListImagesInput) ([]*Image, error) {
-	path := fmt.Sprintf("/%s/images", c.client.AccountName)
+	path := fmt.Sprintf("/%s/images", c.Client.AccountName)
 	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
@@ -67,7 +67,7 @@ type GetImageInput struct {
 }
 
 func (c *ImagesClient) GetImage(ctx context.Context, input *GetImageInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	path := fmt.Sprintf("/%s/images/%s", c.Client.AccountName, input.ImageID)
 	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
@@ -90,7 +90,7 @@ type DeleteImageInput struct {
 }
 
 func (c *ImagesClient) DeleteImage(ctx context.Context, input *DeleteImageInput) error {
-	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	path := fmt.Sprintf("/%s/images/%s", c.Client.AccountName, input.ImageID)
 	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
@@ -114,7 +114,7 @@ type MantaLocation struct {
 }
 
 func (c *ImagesClient) ExportImage(ctx context.Context, input *ExportImageInput) (*MantaLocation, error) {
-	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	path := fmt.Sprintf("/%s/images/%s", c.Client.AccountName, input.ImageID)
 	query := &url.Values{}
 	query.Set("action", "export")
 	query.Set("manta_path", input.MantaPath)
@@ -148,7 +148,7 @@ type CreateImageFromMachineInput struct {
 }
 
 func (c *ImagesClient) CreateImageFromMachine(ctx context.Context, input *CreateImageFromMachineInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images", c.client.AccountName)
+	path := fmt.Sprintf("/%s/images", c.Client.AccountName)
 	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
@@ -178,7 +178,7 @@ type UpdateImageInput struct {
 }
 
 func (c *ImagesClient) UpdateImage(ctx context.Context, input *UpdateImageInput) (*Image, error) {
-	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
+	path := fmt.Sprintf("/%s/images/%s", c.Client.AccountName, input.ImageID)
 	query := &url.Values{}
 	query.Set("action", "update")
 
