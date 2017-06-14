@@ -1,4 +1,4 @@
-package compute
+package networking
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func TestAccNetworks_List(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "networks",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *Networking) (interface{}, error) {
 					return client.Networks().ListNetworks(
 						context.Background(),
 						&ListNetworksInput{})
