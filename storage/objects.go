@@ -34,7 +34,7 @@ type GetObjectOutput struct {
 // the call returns successfully), it is your responsibility to close the io.ReadCloser
 // named ObjectReader in the operation output.
 func (s *Storage) GetObject(input *GetObjectInput) (*GetObjectOutput, error) {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
 
 	respBody, respHeaders, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
 	if err != nil {
@@ -77,7 +77,7 @@ type DeleteObjectInput struct {
 
 // DeleteObject deletes an object.
 func (s *Storage) DeleteObject(input *DeleteObjectInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
 
 	respBody, _, err := s.executeRequest(http.MethodDelete, path, nil, nil, nil)
 	if respBody != nil {
@@ -107,7 +107,7 @@ type PutObjectMetadataInput struct {
 //	- Content-MD5
 //	- Durability-Level
 func (s *Storage) PutObjectMetadata(input *PutObjectMetadataInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
 	query := &url.Values{}
 	query.Set("metadata", "true")
 
@@ -142,7 +142,7 @@ type PutObjectInput struct {
 }
 
 func (s *Storage) PutObject(input *PutObjectInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
 
 	if input.MaxContentLength != 0 && input.ContentLength != 0 {
 		return errors.New("ContentLength and MaxContentLength may not both be set to non-zero values.")

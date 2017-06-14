@@ -36,7 +36,7 @@ type ListDirectoryOutput struct {
 
 // ListDirectory lists the contents of a directory.
 func (s *Storage) ListDirectory(input *ListDirectoryInput) (*ListDirectoryOutput, error) {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s/%s", s.Client.AccountName, input.DirectoryName)
 	query := &url.Values{}
 	if input.Limit != 0 {
 		query.Set("limit", strconv.FormatUint(input.Limit, 10))
@@ -87,7 +87,7 @@ type PutDirectoryInput struct {
 // operation. Your private namespace starts at /:login/stor, and you can create any
 // nested set of directories or objects underneath that.
 func (s *Storage) PutDirectory(input *PutDirectoryInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.DirectoryName)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
 
@@ -109,7 +109,7 @@ type DeleteDirectoryInput struct {
 
 // DeleteDirectory deletes a directory. The directory must be empty.
 func (s *Storage) DeleteDirectory(input *DeleteDirectoryInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.DirectoryName)
 
 	respBody, _, err := s.executeRequest(http.MethodDelete, path, nil, nil, nil)
 	if respBody != nil {

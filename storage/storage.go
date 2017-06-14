@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/joyent/triton-go/client"
 )
 
 type Storage struct {
-	client *client.Client
+	Client *client.Client
 }
 
 func (s *Storage) executeRequest(method, path string, query *url.Values, headers *http.Header, body interface{}) (io.ReadCloser, http.Header, error) {
@@ -27,7 +26,10 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	req, err := retryablehttp.NewRequest(method, s.client.FormatURL(path), requestBody)
+	endpoint := s.Client.APIURL
+	endpoint.Path = path
+
+	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
 	}
@@ -46,7 +48,7 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
 
-	authHeader, err := s.client.Authorizers[0].Sign(dateHeader)
+	authHeader, err := s.Client.Authorizers[0].Sign(dateHeader)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
@@ -58,7 +60,7 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 		req.URL.RawQuery = query.Encode()
 	}
 
-	resp, err := s.client.HTTPClient.Do(req)
+	resp, err := s.Client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
 	}
@@ -79,7 +81,7 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 }
 
 func (s *Storage) executeRequestNoEncode(method, path string, query *url.Values, headers *http.Header, body io.ReadSeeker) (io.ReadCloser, http.Header, error) {
-	req, err := retryablehttp.NewRequest(method, s.client.FormatURL(path), body)
+	req, err := http.NewRequest(method, s.Client.FormatURL(path), body)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
 	}
@@ -95,7 +97,7 @@ func (s *Storage) executeRequestNoEncode(method, path string, query *url.Values,
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
 
-	authHeader, err := s.client.Authorizers[0].Sign(dateHeader)
+	authHeader, err := s.Client.Authorizers[0].Sign(dateHeader)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
@@ -107,7 +109,7 @@ func (s *Storage) executeRequestNoEncode(method, path string, query *url.Values,
 		req.URL.RawQuery = query.Encode()
 	}
 
-	resp, err := s.client.HTTPClient.Do(req)
+	resp, err := s.Client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
 	}

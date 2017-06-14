@@ -93,7 +93,7 @@ type CreateJobOutput struct {
 // CreateJob submits a new job to be executed. This call is not
 // idempotent, so calling it twice will create two jobs.
 func (s *Storage) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
-	path := fmt.Sprintf("/%s/jobs", s.client.AccountName)
+	path := fmt.Sprintf("/%s/jobs", s.Client.AccountName)
 
 	respBody, respHeaders, err := s.executeRequest(http.MethodPost, path, nil, nil, input)
 	if respBody != nil {
@@ -122,7 +122,7 @@ type AddJobInputsInput struct {
 
 // AddJobInputs submits inputs to an already created job.
 func (s *Storage) AddJobInputs(input *AddJobInputsInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.Client.AccountName, input.JobID)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "text/plain")
 
@@ -146,7 +146,7 @@ type EndJobInputInput struct {
 
 // EndJobInput submits inputs to an already created job.
 func (s *Storage) EndJobInput(input *EndJobInputInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in/end", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/in/end", s.Client.AccountName, input.JobID)
 
 	respBody, _, err := s.executeRequestNoEncode(http.MethodPost, path, nil, nil, nil)
 	if respBody != nil {
@@ -173,7 +173,7 @@ type CancelJobInput struct {
 // 	- input is still open
 // 	- you have a long-running job
 func (s *Storage) CancelJob(input *CancelJobInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/cancel", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/cancel", s.Client.AccountName, input.JobID)
 
 	respBody, _, err := s.executeRequestNoEncode(http.MethodPost, path, nil, nil, nil)
 	if respBody != nil {
@@ -201,7 +201,7 @@ type ListJobsOutput struct {
 
 // ListJobs returns the list of jobs you currently have.
 func (s *Storage) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
-	path := fmt.Sprintf("/%s/jobs", s.client.AccountName)
+	path := fmt.Sprintf("/%s/jobs", s.Client.AccountName)
 	query := &url.Values{}
 	if input.RunningOnly {
 		query.Set("state", "running")
@@ -258,7 +258,7 @@ type GetJobOutput struct {
 
 // GetJob returns the list of jobs you currently have.
 func (s *Storage) GetJob(input *GetJobInput) (*GetJobOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/status", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/status", s.Client.AccountName, input.JobID)
 
 	respBody, _, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
 	if respBody != nil {
@@ -295,7 +295,7 @@ type GetJobOutputOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *Storage) GetJobOutput(input *GetJobOutputInput) (*GetJobOutputOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/out", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/out", s.Client.AccountName, input.JobID)
 
 	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
 	if respBody != nil {
@@ -333,7 +333,7 @@ type GetJobInputOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *Storage) GetJobInput(input *GetJobInputInput) (*GetJobInputOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.Client.AccountName, input.JobID)
 
 	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
 	if respBody != nil {
@@ -371,7 +371,7 @@ type GetJobFailuresOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *Storage) GetJobFailures(input *GetJobFailuresInput) (*GetJobFailuresOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/fail", s.client.AccountName, input.JobID)
+	path := fmt.Sprintf("/%s/jobs/%s/live/fail", s.Client.AccountName, input.JobID)
 
 	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
 	if respBody != nil {
