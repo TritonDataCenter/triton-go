@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -26,7 +27,10 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	endpoint := s.Client.APIURL
+	endpoint, err := url.Parse(os.Getenv("MANTA_URL"))
+	if err != nil {
+		return nil, nil, errwrap.Wrapf("Error parsing MANTA_URL: {{err}}", err)
+	}
 	endpoint.Path = path
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
@@ -81,7 +85,13 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 }
 
 func (s *Storage) executeRequestNoEncode(method, path string, query *url.Values, headers *http.Header, body io.ReadSeeker) (io.ReadCloser, http.Header, error) {
-	req, err := http.NewRequest(method, s.Client.FormatURL(path), body)
+	endpoint, err := url.Parse(os.Getenv("MANTA_URL"))
+	if err != nil {
+		return nil, nil, errwrap.Wrapf("Error parsing MANTA_URL: {{err}}", err)
+	}
+	endpoint.Path = path
+
+	req, err := http.NewRequest(method, endpoint.String(), body)
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
 	}

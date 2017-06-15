@@ -142,7 +142,7 @@ type PutObjectInput struct {
 }
 
 func (s *Storage) PutObject(input *PutObjectInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.ObjectPath)
 
 	if input.MaxContentLength != 0 && input.ContentLength != 0 {
 		return errors.New("ContentLength and MaxContentLength may not both be set to non-zero values.")

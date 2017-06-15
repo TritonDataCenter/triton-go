@@ -36,7 +36,7 @@ type ListDirectoryOutput struct {
 
 // ListDirectory lists the contents of a directory.
 func (s *Storage) ListDirectory(input *ListDirectoryInput) (*ListDirectoryOutput, error) {
-	path := fmt.Sprintf("/%s/%s", s.Client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.DirectoryName)
 	query := &url.Values{}
 	if input.Limit != 0 {
 		query.Set("limit", strconv.FormatUint(input.Limit, 10))
