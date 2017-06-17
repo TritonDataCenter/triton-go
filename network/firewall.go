@@ -7,10 +7,11 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type FirewallClient struct {
-	*NetworkService
+	client *client.Client
 }
 
 // FirewallRule represents a firewall rule
@@ -35,7 +36,7 @@ type ListFirewallRulesInput struct{}
 
 func (c *FirewallClient) ListFirewallRules(ctx context.Context, _ *ListFirewallRulesInput) ([]*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -58,7 +59,7 @@ type GetFirewallRuleInput struct {
 
 func (c *FirewallClient) GetFirewallRule(ctx context.Context, input *GetFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -83,7 +84,7 @@ type CreateFirewallRuleInput struct {
 
 func (c *FirewallClient) CreateFirewallRule(ctx context.Context, input *CreateFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -109,7 +110,7 @@ type UpdateFirewallRuleInput struct {
 
 func (c *FirewallClient) UpdateFirewallRule(ctx context.Context, input *UpdateFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -132,7 +133,7 @@ type EnableFirewallRuleInput struct {
 
 func (c *FirewallClient) EnableFirewallRule(ctx context.Context, input *EnableFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s/enable", c.client.AccountName, input.ID)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -155,7 +156,7 @@ type DisableFirewallRuleInput struct {
 
 func (c *FirewallClient) DisableFirewallRule(ctx context.Context, input *DisableFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s/disable", c.client.AccountName, input.ID)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -178,7 +179,7 @@ type DeleteFirewallRuleInput struct {
 
 func (c *FirewallClient) DeleteFirewallRule(ctx context.Context, input *DeleteFirewallRuleInput) error {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -195,7 +196,7 @@ type ListMachineFirewallRulesInput struct {
 
 func (c *FirewallClient) ListMachineFirewallRules(ctx context.Context, input *ListMachineFirewallRulesInput) ([]*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/machines/%s/firewallrules", c.client.AccountName, input.MachineID)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
