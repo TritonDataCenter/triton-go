@@ -1,4 +1,4 @@
-package networking
+package network
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type FirewallClient struct {
-	*Networking
+	*NetworkService
 }
 
 // FirewallRule represents a firewall rule

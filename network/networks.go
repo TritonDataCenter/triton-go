@@ -1,4 +1,4 @@
-package networking
+package network
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type NetworksClient struct {
-	*Networking
+	*NetworkService
 }
 
 type Network struct {

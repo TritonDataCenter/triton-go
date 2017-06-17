@@ -1,4 +1,4 @@
-package networking
+package network
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 )
 
 type FabricsClient struct {
-	*Networking
+	*NetworkService
 }
 
 type FabricVLAN struct {
