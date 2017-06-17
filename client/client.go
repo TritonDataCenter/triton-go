@@ -1,6 +1,8 @@
 package client
 
 import (
+	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -147,4 +149,105 @@ func (c *Client) DecodeError(statusCode int, body io.Reader) error {
 	}
 
 	return err
+}
+
+// -----------------------------------------------------------------------------
+
+func (c *Client) ExecuteRequestURIParams(ctx context.Context, method, path string, body interface{}, query *url.Values) (io.ReadCloser, error) {
+	var requestBody io.ReadSeeker
+	if body != nil {
+		marshaled, err := json.MarshalIndent(body, "", "    ")
+		if err != nil {
+			return nil, err
+		}
+		requestBody = bytes.NewReader(marshaled)
+	}
+
+	endpoint := c.APIURL
+	endpoint.Path = path
+	if query != nil {
+		endpoint.RawQuery = query.Encode()
+	}
+
+	req, err := http.NewRequest(method, endpoint.String(), requestBody)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+	}
+
+	dateHeader := time.Now().UTC().Format(time.RFC1123)
+	req.Header.Set("date", dateHeader)
+
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", "triton-go Client API")
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+	}
+
+	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+		return resp.Body, nil
+	}
+
+	return nil, c.DecodeError(resp.StatusCode, resp.Body)
+}
+
+func (c *Client) ExecuteRequest(ctx context.Context, method, path string, body interface{}) (io.ReadCloser, error) {
+	return c.ExecuteRequestURIParams(ctx, method, path, body, nil)
+}
+
+func (c *Client) ExecuteRequestRaw(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+	var requestBody io.ReadSeeker
+	if body != nil {
+		marshaled, err := json.MarshalIndent(body, "", "    ")
+		if err != nil {
+			return nil, err
+		}
+		requestBody = bytes.NewReader(marshaled)
+	}
+
+	endpoint := c.APIURL
+	endpoint.Path = path
+
+	req, err := http.NewRequest(method, endpoint.String(), requestBody)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+	}
+
+	dateHeader := time.Now().UTC().Format(time.RFC1123)
+	req.Header.Set("date", dateHeader)
+
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", "triton-go c API")
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+	}
+
+	return resp, nil
 }

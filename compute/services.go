@@ -8,10 +8,11 @@ import (
 	"sort"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type ServicesClient struct {
-	*Compute
+	client *client.Client
 }
 
 type Service struct {
@@ -22,8 +23,8 @@ type Service struct {
 type ListServicesInput struct{}
 
 func (c *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
-	path := fmt.Sprintf("/%s/services", c.Client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	path := fmt.Sprintf("/%s/services", c.client.AccountName)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
