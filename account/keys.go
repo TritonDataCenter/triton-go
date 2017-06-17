@@ -10,7 +10,7 @@ import (
 )
 
 type KeysClient struct {
-	*Compute
+	*AccountService
 }
 
 // Key represents a public key

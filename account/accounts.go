@@ -11,7 +11,7 @@ import (
 )
 
 type AccountsClient struct {
-	*Account
+	*AccountService
 }
 
 type Account struct {

@@ -10,7 +10,7 @@ import (
 )
 
 type ConfigClient struct {
-	*Config
+	*AccountService
 }
 
 // Config represents configuration for your account.

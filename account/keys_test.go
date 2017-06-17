@@ -14,7 +14,7 @@ func TestAccKey_Create(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -22,7 +22,7 @@ func TestAccKey_Create(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Compute, callState interface{}) {
+				CleanupFunc: func(client *AccountService, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -49,7 +49,7 @@ func TestAccKey_Get(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -57,7 +57,7 @@ func TestAccKey_Get(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Compute, callState interface{}) {
+				CleanupFunc: func(client *AccountService, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -67,7 +67,7 @@ func TestAccKey_Get(t *testing.T) {
 			},
 			&testutils.StepAPICall{
 				StateBagKey: "getKey",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Keys().GetKey(context.Background(),
 						&GetKeyInput{
 							KeyName: keyName,
@@ -93,7 +93,7 @@ func TestAccKey_Delete(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Keys().CreateKey(
 						context.Background(),
 						&CreateKeyInput{
@@ -101,7 +101,7 @@ func TestAccKey_Delete(t *testing.T) {
 							Key:  testAccCreateKeyMaterial,
 						})
 				},
-				CleanupFunc: func(client *Compute, callState interface{}) {
+				CleanupFunc: func(client *AccountService, callState interface{}) {
 					client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -111,7 +111,7 @@ func TestAccKey_Delete(t *testing.T) {
 			},
 			&testutils.StepAPICall{
 				StateBagKey: "noop",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return nil, client.Keys().DeleteKey(
 						context.Background(),
 						&DeleteKeyInput{
@@ -121,7 +121,7 @@ func TestAccKey_Delete(t *testing.T) {
 			},
 			&testutils.StepAPICall{
 				ErrorKey: "getKeyError",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Keys().GetKey(
 						context.Background(),
 						&GetKeyInput{

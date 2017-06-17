@@ -10,7 +10,7 @@ func TestAccConfig_Get(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "config",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *AccountService) (interface{}, error) {
 					return client.Config().GetConfig(
 						context.Background(),
 						&GetConfigInput{})
