@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type AccountsClient struct {
-	*AccountService
+	client *client.Client
 }
 
 type Account struct {
@@ -36,7 +37,7 @@ type GetAccountInput struct{}
 
 func (c AccountsClient) GetAccount(ctx context.Context, input *GetAccountInput) (*Account, error) {
 	path := fmt.Sprintf("/%s", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -71,7 +72,7 @@ type UpdateAccountInput struct {
 // TODO(jen20) Work out a safe way to test this
 func (c AccountsClient) UpdateAccount(ctx context.Context, input *UpdateAccountInput) (*Account, error) {
 	path := fmt.Sprintf("/%s", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}

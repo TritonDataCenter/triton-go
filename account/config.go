@@ -7,10 +7,11 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type ConfigClient struct {
-	*AccountService
+	client *client.Client
 }
 
 // Config represents configuration for your account.
@@ -24,7 +25,7 @@ type GetConfigInput struct{}
 // GetConfig outputs configuration for your account.
 func (c *ConfigClient) GetConfig(ctx context.Context, input *GetConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -49,7 +50,7 @@ type UpdateConfigInput struct {
 // UpdateConfig updates configuration values for your account.
 func (c *ConfigClient) UpdateConfig(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodPut, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPut, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}

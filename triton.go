@@ -1,6 +1,7 @@
 package triton
 
 import (
+	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/client"
 	"github.com/joyent/triton-go/compute"
@@ -9,6 +10,7 @@ import (
 
 type TritonClient struct {
 	*client.Client
+	Account *account.AccountService
 	Compute *compute.Compute
 	Storage *storage.Storage
 }
@@ -30,5 +32,7 @@ func NewClient(config *ClientConfig) (*TritonClient, error) {
 	}
 	compute := &compute.Compute{client}
 	storage := &storage.Storage{client}
-	return &TritonClient{client, compute, storage}, nil
+	account := &account.AccountService{client}
+	triton := &TritonClient{client, account, compute, storage}
+	return triton, nil
 }

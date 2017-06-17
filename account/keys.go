@@ -7,10 +7,11 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type KeysClient struct {
-	*AccountService
+	client *client.Client
 }
 
 // Key represents a public key
@@ -31,7 +32,7 @@ type ListKeysInput struct{}
 // account.
 func (c *KeysClient) ListKeys(ctx context.Context, _ *ListKeysInput) ([]*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -54,7 +55,7 @@ type GetKeyInput struct {
 
 func (c *KeysClient) GetKey(ctx context.Context, input *GetKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -77,7 +78,7 @@ type DeleteKeyInput struct {
 
 func (c *KeysClient) DeleteKey(ctx context.Context, input *DeleteKeyInput) error {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
-	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -101,7 +102,7 @@ type CreateKeyInput struct {
 // CreateKey uploads a new OpenSSH key to Triton for use in HTTP signing and SSH.
 func (c *KeysClient) CreateKey(ctx context.Context, input *CreateKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
