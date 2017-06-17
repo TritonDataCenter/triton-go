@@ -7,10 +7,11 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 type RolesClient struct {
-	*Identity
+	client *client.Client
 }
 
 type Role struct {
@@ -25,7 +26,7 @@ type ListRolesInput struct{}
 
 func (c *RolesClient) ListRoles(ctx context.Context, _ *ListRolesInput) ([]*Role, error) {
 	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -48,7 +49,7 @@ type GetRoleInput struct {
 
 func (c *RolesClient) GetRole(ctx context.Context, input *GetRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
-	respReader, err := c.executeRequest(ctx, http.MethodGet, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -84,7 +85,7 @@ type CreateRoleInput struct {
 
 func (c *RolesClient) CreateRole(ctx context.Context, input *CreateRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -123,7 +124,7 @@ type UpdateRoleInput struct {
 
 func (c *RolesClient) UpdateRole(ctx context.Context, input *UpdateRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
-	respReader, err := c.executeRequest(ctx, http.MethodPost, path, input)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -146,7 +147,7 @@ type DeleteRoleInput struct {
 
 func (c *RolesClient) DeleteRoles(ctx context.Context, input *DeleteRoleInput) error {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
-	respReader, err := c.executeRequest(ctx, http.MethodDelete, path, nil)
+	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
 	if respReader != nil {
 		defer respReader.Close()
 	}
