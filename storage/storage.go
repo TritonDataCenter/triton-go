@@ -17,7 +17,21 @@ type Storage struct {
 	Client *client.Client
 }
 
-func (s *Storage) executeRequest(method, path string, query *url.Values, headers *http.Header, body interface{}) (io.ReadCloser, http.Header, error) {
+type RequestInput struct {
+	Method  string
+	Path    string
+	Query   *url.Values
+	Headers *http.Header
+	Body    interface{}
+}
+
+func (s *Storage) executeRequest(inputs RequestInput) (io.ReadCloser, http.Header, error) {
+	method := inputs.Method
+	path := inputs.Path
+	query := inputs.Query
+	headers := inputs.Headers
+	body := inputs.Body
+
 	var requestBody io.ReadSeeker
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
@@ -84,7 +98,21 @@ func (s *Storage) executeRequest(method, path string, query *url.Values, headers
 	return nil, nil, mantaError
 }
 
-func (s *Storage) executeRequestNoEncode(method, path string, query *url.Values, headers *http.Header, body io.ReadSeeker) (io.ReadCloser, http.Header, error) {
+type RequestNoEncodeInput struct {
+	Method  string
+	Path    string
+	Query   *url.Values
+	Headers *http.Header
+	Body    io.ReadSeeker
+}
+
+func (s *Storage) executeRequestNoEncode(inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
+	method := inputs.Method
+	path := inputs.Path
+	query := inputs.Query
+	headers := inputs.Headers
+	body := inputs.Body
+
 	endpoint, err := url.Parse(os.Getenv("MANTA_URL"))
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error parsing MANTA_URL: {{err}}", err)

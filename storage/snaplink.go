@@ -15,12 +15,17 @@ type PutSnapLinkInput struct {
 
 // PutSnapLink creates a SnapLink to an object.
 func (s *Storage) PutSnapLink(input *PutSnapLinkInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.LinkPath)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.LinkPath)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=link")
 	headers.Set("Location", input.SourcePath)
 
-	respBody, _, err := s.executeRequest(http.MethodPut, path, nil, headers, nil)
+	reqInput := RequestInput{
+		Method:  http.MethodPut,
+		Path:    path,
+		Headers: headers,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}

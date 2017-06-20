@@ -45,7 +45,12 @@ func (s *Storage) ListDirectory(input *ListDirectoryInput) (*ListDirectoryOutput
 		query.Set("manta_path", input.Marker)
 	}
 
-	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, query, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+		Query:  query,
+	}
+	respBody, respHeader, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -87,11 +92,16 @@ type PutDirectoryInput struct {
 // operation. Your private namespace starts at /:login/stor, and you can create any
 // nested set of directories or objects underneath that.
 func (s *Storage) PutDirectory(input *PutDirectoryInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.DirectoryName)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
 
-	respBody, _, err := s.executeRequest(http.MethodPut, path, nil, headers, nil)
+	reqInput := RequestInput{
+		Method:  http.MethodPut,
+		Path:    path,
+		Headers: headers,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -109,9 +119,13 @@ type DeleteDirectoryInput struct {
 
 // DeleteDirectory deletes a directory. The directory must be empty.
 func (s *Storage) DeleteDirectory(input *DeleteDirectoryInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.DirectoryName)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.DirectoryName)
 
-	respBody, _, err := s.executeRequest(http.MethodDelete, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}

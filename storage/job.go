@@ -95,7 +95,12 @@ type CreateJobOutput struct {
 func (s *Storage) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
 	path := fmt.Sprintf("/%s/jobs", s.Client.AccountName)
 
-	respBody, respHeaders, err := s.executeRequest(http.MethodPost, path, nil, nil, input)
+	reqInput := RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respBody, respHeaders, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -128,7 +133,13 @@ func (s *Storage) AddJobInputs(input *AddJobInputsInput) error {
 
 	reader := strings.NewReader(strings.Join(input.ObjectPaths, "\n"))
 
-	respBody, _, err := s.executeRequestNoEncode(http.MethodPost, path, nil, headers, reader)
+	reqInput := RequestNoEncodeInput{
+		Method:  http.MethodPost,
+		Path:    path,
+		Headers: headers,
+		Body:    reader,
+	}
+	respBody, _, err := s.executeRequestNoEncode(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -148,7 +159,11 @@ type EndJobInputInput struct {
 func (s *Storage) EndJobInput(input *EndJobInputInput) error {
 	path := fmt.Sprintf("/%s/jobs/%s/live/in/end", s.Client.AccountName, input.JobID)
 
-	respBody, _, err := s.executeRequestNoEncode(http.MethodPost, path, nil, nil, nil)
+	reqInput := RequestNoEncodeInput{
+		Method: http.MethodPost,
+		Path:   path,
+	}
+	respBody, _, err := s.executeRequestNoEncode(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -175,7 +190,11 @@ type CancelJobInput struct {
 func (s *Storage) CancelJob(input *CancelJobInput) error {
 	path := fmt.Sprintf("/%s/jobs/%s/live/cancel", s.Client.AccountName, input.JobID)
 
-	respBody, _, err := s.executeRequestNoEncode(http.MethodPost, path, nil, nil, nil)
+	reqInput := RequestNoEncodeInput{
+		Method: http.MethodPost,
+		Path:   path,
+	}
+	respBody, _, err := s.executeRequestNoEncode(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -213,7 +232,12 @@ func (s *Storage) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
 		query.Set("manta_path", input.Marker)
 	}
 
-	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, query, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+		Query:  query,
+	}
+	respBody, respHeader, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -260,7 +284,11 @@ type GetJobOutput struct {
 func (s *Storage) GetJob(input *GetJobInput) (*GetJobOutput, error) {
 	path := fmt.Sprintf("/%s/jobs/%s/live/status", s.Client.AccountName, input.JobID)
 
-	respBody, _, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -297,7 +325,11 @@ type GetJobOutputOutput struct {
 func (s *Storage) GetJobOutput(input *GetJobOutputInput) (*GetJobOutputOutput, error) {
 	path := fmt.Sprintf("/%s/jobs/%s/live/out", s.Client.AccountName, input.JobID)
 
-	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respBody, respHeader, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -335,7 +367,11 @@ type GetJobInputOutput struct {
 func (s *Storage) GetJobInput(input *GetJobInputInput) (*GetJobInputOutput, error) {
 	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.Client.AccountName, input.JobID)
 
-	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respBody, respHeader, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -373,7 +409,11 @@ type GetJobFailuresOutput struct {
 func (s *Storage) GetJobFailures(input *GetJobFailuresInput) (*GetJobFailuresOutput, error) {
 	path := fmt.Sprintf("/%s/jobs/%s/live/fail", s.Client.AccountName, input.JobID)
 
-	respBody, respHeader, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respBody, respHeader, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}

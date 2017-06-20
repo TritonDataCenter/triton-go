@@ -34,9 +34,13 @@ type GetObjectOutput struct {
 // the call returns successfully), it is your responsibility to close the io.ReadCloser
 // named ObjectReader in the operation output.
 func (s *Storage) GetObject(input *GetObjectInput) (*GetObjectOutput, error) {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.ObjectPath)
 
-	respBody, respHeaders, err := s.executeRequest(http.MethodGet, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respBody, respHeaders, err := s.executeRequest(reqInput)
 	if err != nil {
 		respBody.Close()
 		return nil, errwrap.Wrapf("Error executing GetDirectory request: {{err}}", err)
@@ -77,9 +81,13 @@ type DeleteObjectInput struct {
 
 // DeleteObject deletes an object.
 func (s *Storage) DeleteObject(input *DeleteObjectInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.ObjectPath)
 
-	respBody, _, err := s.executeRequest(http.MethodDelete, path, nil, nil, nil)
+	reqInput := RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -107,7 +115,7 @@ type PutObjectMetadataInput struct {
 //	- Content-MD5
 //	- Durability-Level
 func (s *Storage) PutObjectMetadata(input *PutObjectMetadataInput) error {
-	path := fmt.Sprintf("/%s/stor/%s", s.Client.AccountName, input.ObjectPath)
+	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.ObjectPath)
 	query := &url.Values{}
 	query.Set("metadata", "true")
 
@@ -117,7 +125,13 @@ func (s *Storage) PutObjectMetadata(input *PutObjectMetadataInput) error {
 		headers.Set(key, value)
 	}
 
-	respBody, _, err := s.executeRequest(http.MethodPut, path, query, headers, nil)
+	reqInput := RequestInput{
+		Method:  http.MethodPut,
+		Path:    path,
+		Query:   query,
+		Headers: headers,
+	}
+	respBody, _, err := s.executeRequest(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -171,7 +185,13 @@ func (s *Storage) PutObject(input *PutObjectInput) error {
 		headers.Set("Max-Content-Length", strconv.FormatUint(input.MaxContentLength, 10))
 	}
 
-	respBody, _, err := s.executeRequestNoEncode(http.MethodPut, path, nil, headers, input.ObjectReader)
+	reqInput := RequestNoEncodeInput{
+		Method:  http.MethodPut,
+		Path:    path,
+		Headers: headers,
+		Body:    input.ObjectReader,
+	}
+	respBody, _, err := s.executeRequestNoEncode(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
