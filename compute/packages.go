@@ -41,7 +41,12 @@ type ListPackagesInput struct {
 
 func (c *PackagesClient) ListPackages(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
 	path := fmt.Sprintf("/%s/packages", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -64,7 +69,11 @@ type GetPackageInput struct {
 
 func (c *PackagesClient) GetPackage(ctx context.Context, input *GetPackageInput) (*Package, error) {
 	path := fmt.Sprintf("/%s/packages/%s", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

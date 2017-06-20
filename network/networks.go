@@ -33,7 +33,11 @@ type ListNetworksInput struct{}
 
 func (c *NetworksClient) ListNetworks(ctx context.Context, _ *ListNetworksInput) ([]*Network, error) {
 	path := fmt.Sprintf("/%s/networks", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -56,7 +60,11 @@ type GetNetworkInput struct {
 
 func (c *NetworksClient) GetNetwork(ctx context.Context, input *GetNetworkInput) (*Network, error) {
 	path := fmt.Sprintf("/%s/networks/%s", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

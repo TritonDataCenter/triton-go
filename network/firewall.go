@@ -36,7 +36,11 @@ type ListFirewallRulesInput struct{}
 
 func (c *FirewallClient) ListFirewallRules(ctx context.Context, _ *ListFirewallRulesInput) ([]*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -59,7 +63,11 @@ type GetFirewallRuleInput struct {
 
 func (c *FirewallClient) GetFirewallRule(ctx context.Context, input *GetFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -84,7 +92,12 @@ type CreateFirewallRuleInput struct {
 
 func (c *FirewallClient) CreateFirewallRule(ctx context.Context, input *CreateFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -110,7 +123,12 @@ type UpdateFirewallRuleInput struct {
 
 func (c *FirewallClient) UpdateFirewallRule(ctx context.Context, input *UpdateFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -133,7 +151,12 @@ type EnableFirewallRuleInput struct {
 
 func (c *FirewallClient) EnableFirewallRule(ctx context.Context, input *EnableFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s/enable", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -156,7 +179,12 @@ type DisableFirewallRuleInput struct {
 
 func (c *FirewallClient) DisableFirewallRule(ctx context.Context, input *DisableFirewallRuleInput) (*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/fwrules/%s/disable", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -179,7 +207,11 @@ type DeleteFirewallRuleInput struct {
 
 func (c *FirewallClient) DeleteFirewallRule(ctx context.Context, input *DeleteFirewallRuleInput) error {
 	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -196,7 +228,11 @@ type ListMachineFirewallRulesInput struct {
 
 func (c *FirewallClient) ListMachineFirewallRules(ctx context.Context, input *ListMachineFirewallRulesInput) ([]*FirewallRule, error) {
 	path := fmt.Sprintf("/%s/machines/%s/firewallrules", c.client.AccountName, input.MachineID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

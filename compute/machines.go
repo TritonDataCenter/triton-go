@@ -91,7 +91,11 @@ func (c *MachinesClient) GetMachine(ctx context.Context, input *GetMachineInput)
 	}
 
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -124,7 +128,11 @@ type ListMachinesInput struct{}
 
 func (c *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesInput) ([]*Machine, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -219,7 +227,12 @@ func (input *CreateMachineInput) toAPI() map[string]interface{} {
 
 func (c *MachinesClient) CreateMachine(ctx context.Context, input *CreateMachineInput) (*Machine, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input.toAPI())
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input.toAPI(),
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -242,7 +255,11 @@ type DeleteMachineInput struct {
 
 func (c *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMachineInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -263,7 +280,11 @@ type DeleteMachineTagsInput struct {
 
 func (c *MachinesClient) DeleteMachineTags(ctx context.Context, input *DeleteMachineTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -285,7 +306,11 @@ type DeleteMachineTagInput struct {
 
 func (c *MachinesClient) DeleteMachineTag(ctx context.Context, input *DeleteMachineTagInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -312,7 +337,12 @@ func (c *MachinesClient) RenameMachine(ctx context.Context, input *RenameMachine
 	params.Set("action", "rename")
 	params.Set("name", input.Name)
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -330,7 +360,12 @@ type ReplaceMachineTagsInput struct {
 
 func (c *MachinesClient) ReplaceMachineTags(ctx context.Context, input *ReplaceMachineTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPut, path, input.Tags)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPut,
+		Path:   path,
+		Body:   input.Tags,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -348,7 +383,12 @@ type AddMachineTagsInput struct {
 
 func (c *MachinesClient) AddMachineTags(ctx context.Context, input *AddMachineTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input.Tags)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input.Tags,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -366,7 +406,11 @@ type GetMachineTagInput struct {
 
 func (c *MachinesClient) GetMachineTag(ctx context.Context, input *GetMachineTagInput) (string, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -389,7 +433,11 @@ type ListMachineTagsInput struct {
 
 func (c *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]interface{}, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -414,7 +462,12 @@ type UpdateMachineMetadataInput struct {
 
 func (c *MachinesClient) UpdateMachineMetadata(ctx context.Context, input *UpdateMachineMetadataInput) (map[string]string, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input.Metadata)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input.Metadata,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -443,7 +496,12 @@ func (c *MachinesClient) ResizeMachine(ctx context.Context, input *ResizeMachine
 	params.Set("action", "resize")
 	params.Set("package", input.Package)
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -464,7 +522,12 @@ func (c *MachinesClient) EnableMachineFirewall(ctx context.Context, input *Enabl
 	params := &url.Values{}
 	params.Set("action", "enable_firewall")
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -485,7 +548,12 @@ func (c *MachinesClient) DisableMachineFirewall(ctx context.Context, input *Disa
 	params := &url.Values{}
 	params.Set("action", "disable_firewall")
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -502,7 +570,11 @@ type ListNICsInput struct {
 
 func (c *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
 	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -527,7 +599,11 @@ type GetNICInput struct {
 func (c *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
 	mac := strings.Replace(input.MAC, ":", "", -1)
 	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -563,7 +639,12 @@ type AddNICInput struct {
 // Warning: this operation causes the machine to restart.
 func (c *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
 	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -600,7 +681,11 @@ type RemoveNICInput struct {
 func (c *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
 	mac := strings.Replace(input.MAC, ":", "", -1)
 	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
-	response, err := c.client.ExecuteRequestRaw(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
@@ -628,7 +713,12 @@ func (c *MachinesClient) StopMachine(ctx context.Context, input *StopMachineInpu
 	params := &url.Values{}
 	params.Set("action", "stop")
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -649,7 +739,12 @@ func (c *MachinesClient) StartMachine(ctx context.Context, input *StartMachineIn
 	params := &url.Values{}
 	params.Set("action", "start")
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, nil, params)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

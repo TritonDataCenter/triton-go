@@ -37,7 +37,11 @@ type GetAccountInput struct{}
 
 func (c AccountsClient) GetAccount(ctx context.Context, input *GetAccountInput) (*Account, error) {
 	path := fmt.Sprintf("/%s", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -72,7 +76,12 @@ type UpdateAccountInput struct {
 // TODO(jen20) Work out a safe way to test this
 func (c AccountsClient) UpdateAccount(ctx context.Context, input *UpdateAccountInput) (*Account, error) {
 	path := fmt.Sprintf("/%s", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

@@ -32,7 +32,11 @@ type ListKeysInput struct{}
 // account.
 func (c *KeysClient) ListKeys(ctx context.Context, _ *ListKeysInput) ([]*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -55,7 +59,11 @@ type GetKeyInput struct {
 
 func (c *KeysClient) GetKey(ctx context.Context, input *GetKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -78,7 +86,11 @@ type DeleteKeyInput struct {
 
 func (c *KeysClient) DeleteKey(ctx context.Context, input *DeleteKeyInput) error {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -102,7 +114,12 @@ type CreateKeyInput struct {
 // CreateKey uploads a new OpenSSH key to Triton for use in HTTP signing and SSH.
 func (c *KeysClient) CreateKey(ctx context.Context, input *CreateKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

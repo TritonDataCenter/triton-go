@@ -46,7 +46,11 @@ type ListImagesInput struct{}
 
 func (c *ImagesClient) ListImages(ctx context.Context, _ *ListImagesInput) ([]*Image, error) {
 	path := fmt.Sprintf("/%s/images", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -69,7 +73,11 @@ type GetImageInput struct {
 
 func (c *ImagesClient) GetImage(ctx context.Context, input *GetImageInput) (*Image, error) {
 	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -92,7 +100,11 @@ type DeleteImageInput struct {
 
 func (c *ImagesClient) DeleteImage(ctx context.Context, input *DeleteImageInput) error {
 	path := fmt.Sprintf("/%s/images/%s", c.client.AccountName, input.ImageID)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodDelete, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -120,7 +132,12 @@ func (c *ImagesClient) ExportImage(ctx context.Context, input *ExportImageInput)
 	query.Set("action", "export")
 	query.Set("manta_path", input.MantaPath)
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodGet, path, nil, query)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+		Query:  query,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -150,7 +167,12 @@ type CreateImageFromMachineInput struct {
 
 func (c *ImagesClient) CreateImageFromMachine(ctx context.Context, input *CreateImageFromMachineInput) (*Image, error) {
 	path := fmt.Sprintf("/%s/images", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPost, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -183,7 +205,13 @@ func (c *ImagesClient) UpdateImage(ctx context.Context, input *UpdateImageInput)
 	query := &url.Values{}
 	query.Set("action", "update")
 
-	respReader, err := c.client.ExecuteRequestURIParams(ctx, http.MethodPost, path, input, query)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  query,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

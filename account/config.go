@@ -25,7 +25,11 @@ type GetConfigInput struct{}
 // GetConfig outputs configuration for your account.
 func (c *ConfigClient) GetConfig(ctx context.Context, input *GetConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodGet, path, nil)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}
@@ -50,7 +54,12 @@ type UpdateConfigInput struct {
 // UpdateConfig updates configuration values for your account.
 func (c *ConfigClient) UpdateConfig(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
-	respReader, err := c.client.ExecuteRequest(ctx, http.MethodPut, path, input)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPut,
+		Path:   path,
+		Body:   input,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
 		defer respReader.Close()
 	}

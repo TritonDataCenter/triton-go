@@ -153,7 +153,20 @@ func (c *Client) DecodeError(statusCode int, body io.Reader) error {
 
 // -----------------------------------------------------------------------------
 
-func (c *Client) ExecuteRequestURIParams(ctx context.Context, method, path string, body interface{}, query *url.Values) (io.ReadCloser, error) {
+type RequestInput struct {
+	Method  string
+	Path    string
+	Query   *url.Values
+	Headers *http.Header
+	Body    interface{}
+}
+
+func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
+	method := inputs.Method
+	path := inputs.Path
+	body := inputs.Body
+	query := inputs.Query
+
 	var requestBody io.ReadSeeker
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
@@ -204,11 +217,15 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, method, path strin
 	return nil, c.DecodeError(resp.StatusCode, resp.Body)
 }
 
-func (c *Client) ExecuteRequest(ctx context.Context, method, path string, body interface{}) (io.ReadCloser, error) {
-	return c.ExecuteRequestURIParams(ctx, method, path, body, nil)
+func (c *Client) ExecuteRequest(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
+	return c.ExecuteRequestURIParams(ctx, inputs)
 }
 
-func (c *Client) ExecuteRequestRaw(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*http.Response, error) {
+	method := inputs.Method
+	path := inputs.Path
+	body := inputs.Body
+
 	var requestBody io.ReadSeeker
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
