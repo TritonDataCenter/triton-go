@@ -24,7 +24,7 @@ type Role struct {
 
 type ListRolesInput struct{}
 
-func (c *RolesClient) ListRoles(ctx context.Context, _ *ListRolesInput) ([]*Role, error) {
+func (c *RolesClient) List(ctx context.Context, _ *ListRolesInput) ([]*Role, error) {
 	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -51,7 +51,7 @@ type GetRoleInput struct {
 	RoleID string
 }
 
-func (c *RolesClient) GetRole(ctx context.Context, input *GetRoleInput) (*Role, error) {
+func (c *RolesClient) Get(ctx context.Context, input *GetRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -91,7 +91,7 @@ type CreateRoleInput struct {
 	DefaultMembers []string `json:"default_members,omitempty"`
 }
 
-func (c *RolesClient) CreateRole(ctx context.Context, input *CreateRoleInput) (*Role, error) {
+func (c *RolesClient) Create(ctx context.Context, input *CreateRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -135,7 +135,7 @@ type UpdateRoleInput struct {
 	DefaultMembers []string `json:"default_members,omitempty"`
 }
 
-func (c *RolesClient) UpdateRole(ctx context.Context, input *UpdateRoleInput) (*Role, error) {
+func (c *RolesClient) Update(ctx context.Context, input *UpdateRoleInput) (*Role, error) {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -163,7 +163,7 @@ type DeleteRoleInput struct {
 	RoleID string
 }
 
-func (c *RolesClient) DeleteRoles(ctx context.Context, input *DeleteRoleInput) error {
+func (c *RolesClient) Delete(ctx context.Context, input *DeleteRoleInput) error {
 	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
