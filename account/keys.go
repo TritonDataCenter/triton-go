@@ -30,7 +30,7 @@ type ListKeysInput struct{}
 
 // ListKeys lists all public keys we have on record for the specified
 // account.
-func (c *KeysClient) ListKeys(ctx context.Context, _ *ListKeysInput) ([]*Key, error) {
+func (c *KeysClient) List(ctx context.Context, _ *ListKeysInput) ([]*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -57,7 +57,7 @@ type GetKeyInput struct {
 	KeyName string
 }
 
-func (c *KeysClient) GetKey(ctx context.Context, input *GetKeyInput) (*Key, error) {
+func (c *KeysClient) Get(ctx context.Context, input *GetKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -84,7 +84,7 @@ type DeleteKeyInput struct {
 	KeyName string
 }
 
-func (c *KeysClient) DeleteKey(ctx context.Context, input *DeleteKeyInput) error {
+func (c *KeysClient) Delete(ctx context.Context, input *DeleteKeyInput) error {
 	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -112,7 +112,7 @@ type CreateKeyInput struct {
 }
 
 // CreateKey uploads a new OpenSSH key to Triton for use in HTTP signing and SSH.
-func (c *KeysClient) CreateKey(ctx context.Context, input *CreateKeyInput) (*Key, error) {
+func (c *KeysClient) Create(ctx context.Context, input *CreateKeyInput) (*Key, error) {
 	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,

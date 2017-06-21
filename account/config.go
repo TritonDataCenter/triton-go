@@ -23,7 +23,7 @@ type Config struct {
 type GetConfigInput struct{}
 
 // GetConfig outputs configuration for your account.
-func (c *ConfigClient) GetConfig(ctx context.Context, input *GetConfigInput) (*Config, error) {
+func (c *ConfigClient) Get(ctx context.Context, input *GetConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -52,7 +52,7 @@ type UpdateConfigInput struct {
 }
 
 // UpdateConfig updates configuration values for your account.
-func (c *ConfigClient) UpdateConfig(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
+func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,

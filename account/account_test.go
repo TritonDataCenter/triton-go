@@ -13,9 +13,8 @@ func TestAccAccount_Get(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "account",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Accounts().GetAccount(
-						context.Background(), &account.GetAccountInput{})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Get(context.Background(), &account.GetAccountInput{})
 				},
 			},
 			&testutils.StepAssertSet{
