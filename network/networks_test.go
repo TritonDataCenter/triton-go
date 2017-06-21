@@ -13,10 +13,8 @@ func TestAccNetworks_List(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "networks",
-				CallFunc: func(client *NetworkService) (interface{}, error) {
-					return client.Networks().ListNetworks(
-						context.Background(),
-						&ListNetworksInput{})
+				CallFunc: func(client *NetworkClient) (interface{}, error) {
+					return client.List(context.Background(), &ListInput{})
 				},
 			},
 			&testutils.StepAssertFunc{

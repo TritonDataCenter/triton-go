@@ -21,9 +21,9 @@ type FabricVLAN struct {
 	Description string `json:"description"`
 }
 
-type ListFabricVLANsInput struct{}
+type ListVLANsInput struct{}
 
-func (c *FabricsClient) ListFabricVLANs(ctx context.Context, _ *ListFabricVLANsInput) ([]*FabricVLAN, error) {
+func (c *FabricsClient) ListVLANs(ctx context.Context, _ *ListVLANsInput) ([]*FabricVLAN, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -34,25 +34,25 @@ func (c *FabricsClient) ListFabricVLANs(ctx context.Context, _ *ListFabricVLANsI
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListFabricVLANs request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing ListVLANs request: {{err}}", err)
 	}
 
 	var result []*FabricVLAN
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListFabricVLANs response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding ListVLANs response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type CreateFabricVLANInput struct {
+type CreateVLANInput struct {
 	Name        string `json:"name"`
 	ID          int    `json:"vlan_id"`
 	Description string `json:"description"`
 }
 
-func (c *FabricsClient) CreateFabricVLAN(ctx context.Context, input *CreateFabricVLANInput) (*FabricVLAN, error) {
+func (c *FabricsClient) CreateVLAN(ctx context.Context, input *CreateVLANInput) (*FabricVLAN, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -64,25 +64,25 @@ func (c *FabricsClient) CreateFabricVLAN(ctx context.Context, input *CreateFabri
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateFabricVLAN request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing CreateVLAN request: {{err}}", err)
 	}
 
 	var result *FabricVLAN
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateFabricVLAN response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding CreateVLAN response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type UpdateFabricVLANInput struct {
+type UpdateVLANInput struct {
 	ID          int    `json:"-"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
-func (c *FabricsClient) UpdateFabricVLAN(ctx context.Context, input *UpdateFabricVLANInput) (*FabricVLAN, error) {
+func (c *FabricsClient) UpdateVLAN(ctx context.Context, input *UpdateVLANInput) (*FabricVLAN, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
@@ -94,23 +94,23 @@ func (c *FabricsClient) UpdateFabricVLAN(ctx context.Context, input *UpdateFabri
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdateFabricVLAN request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing UpdateVLAN request: {{err}}", err)
 	}
 
 	var result *FabricVLAN
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdateFabricVLAN response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding UpdateVLAN response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type GetFabricVLANInput struct {
+type GetVLANInput struct {
 	ID int `json:"-"`
 }
 
-func (c *FabricsClient) GetFabricVLAN(ctx context.Context, input *GetFabricVLANInput) (*FabricVLAN, error) {
+func (c *FabricsClient) GetVLAN(ctx context.Context, input *GetVLANInput) (*FabricVLAN, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -121,23 +121,23 @@ func (c *FabricsClient) GetFabricVLAN(ctx context.Context, input *GetFabricVLANI
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetFabricVLAN request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing GetVLAN request: {{err}}", err)
 	}
 
 	var result *FabricVLAN
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetFabricVLAN response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding GetVLAN response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type DeleteFabricVLANInput struct {
+type DeleteVLANInput struct {
 	ID int `json:"-"`
 }
 
-func (c *FabricsClient) DeleteFabricVLAN(ctx context.Context, input *DeleteFabricVLANInput) error {
+func (c *FabricsClient) DeleteVLAN(ctx context.Context, input *DeleteVLANInput) error {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -148,17 +148,17 @@ func (c *FabricsClient) DeleteFabricVLAN(ctx context.Context, input *DeleteFabri
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteFabricVLAN request: {{err}}", err)
+		return errwrap.Wrapf("Error executing DeleteVLAN request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type ListFabricNetworksInput struct {
+type ListFabricsInput struct {
 	FabricVLANID int `json:"-"`
 }
 
-func (c *FabricsClient) ListFabricNetworks(ctx context.Context, input *ListFabricNetworksInput) ([]*Network, error) {
+func (c *FabricsClient) List(ctx context.Context, input *ListFabricsInput) ([]*Network, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks", c.client.AccountName, input.FabricVLANID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -169,19 +169,19 @@ func (c *FabricsClient) ListFabricNetworks(ctx context.Context, input *ListFabri
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListFabricNetworks request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing ListFabrics request: {{err}}", err)
 	}
 
 	var result []*Network
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListFabricNetworks response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding ListFabrics response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type CreateFabricNetworkInput struct {
+type CreateFabricInput struct {
 	FabricVLANID     int               `json:"-"`
 	Name             string            `json:"name"`
 	Description      string            `json:"description"`
@@ -194,7 +194,7 @@ type CreateFabricNetworkInput struct {
 	InternetNAT      bool              `json:"internet_nat"`
 }
 
-func (c *FabricsClient) CreateFabricNetwork(ctx context.Context, input *CreateFabricNetworkInput) (*Network, error) {
+func (c *FabricsClient) CreateFabric(ctx context.Context, input *CreateFabricInput) (*Network, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks", c.client.AccountName, input.FabricVLANID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -206,24 +206,24 @@ func (c *FabricsClient) CreateFabricNetwork(ctx context.Context, input *CreateFa
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateFabricNetwork request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing CreateFabric request: {{err}}", err)
 	}
 
 	var result *Network
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateFabricNetwork response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding CreateFabric response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type GetFabricNetworkInput struct {
+type GetFabricInput struct {
 	FabricVLANID int    `json:"-"`
 	NetworkID    string `json:"-"`
 }
 
-func (c *FabricsClient) GetFabricNetwork(ctx context.Context, input *GetFabricNetworkInput) (*Network, error) {
+func (c *FabricsClient) GetFabric(ctx context.Context, input *GetFabricInput) (*Network, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", c.client.AccountName, input.FabricVLANID, input.NetworkID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -234,24 +234,24 @@ func (c *FabricsClient) GetFabricNetwork(ctx context.Context, input *GetFabricNe
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetFabricNetwork request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing GetFabric request: {{err}}", err)
 	}
 
 	var result *Network
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetFabricNetwork response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding GetFabric response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type DeleteFabricNetworkInput struct {
+type DeleteFabricInput struct {
 	FabricVLANID int    `json:"-"`
 	NetworkID    string `json:"-"`
 }
 
-func (c *FabricsClient) DeleteFabricNetwork(ctx context.Context, input *DeleteFabricNetworkInput) error {
+func (c *FabricsClient) DeleteFabric(ctx context.Context, input *DeleteFabricInput) error {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", c.client.AccountName, input.FabricVLANID, input.NetworkID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -262,7 +262,7 @@ func (c *FabricsClient) DeleteFabricNetwork(ctx context.Context, input *DeleteFa
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteFabricNetwork request: {{err}}", err)
+		return errwrap.Wrapf("Error executing DeleteFabric request: {{err}}", err)
 	}
 
 	return nil
