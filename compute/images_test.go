@@ -19,9 +19,9 @@ func TestAccImagesList(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Compute) (interface{}, error) {
-					return client.Images().ListImages(
-						context.Background(), &ListImagesInput{})
+				CallFunc: func(client *ImagesClient) (interface{}, error) {
+					return client.Images().List(
+						context.Background(), &ListInput{})
 				},
 			},
 			&testutils.StepAssertFunc{
@@ -81,10 +81,10 @@ func TestAccImagesGet(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Compute) (interface{}, error) {
-					return client.Images().GetImage(
+				CallFunc: func(client *ImagesClient) (interface{}, error) {
+					return client.Images().Get(
 						context.Background(),
-						&GetImageInput{
+						&GetInput{
 							ImageID: imageId,
 						})
 				},

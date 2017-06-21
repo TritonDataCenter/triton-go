@@ -39,7 +39,7 @@ type ListPackagesInput struct {
 	Group   string `json:"group"`
 }
 
-func (c *PackagesClient) ListPackages(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
+func (c *PackagesClient) List(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
 	path := fmt.Sprintf("/%s/packages", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -51,13 +51,13 @@ func (c *PackagesClient) ListPackages(ctx context.Context, input *ListPackagesIn
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListPackages request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var result []*Package
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListPackages response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 	}
 
 	return result, nil
@@ -67,7 +67,7 @@ type GetPackageInput struct {
 	ID string
 }
 
-func (c *PackagesClient) GetPackage(ctx context.Context, input *GetPackageInput) (*Package, error) {
+func (c *PackagesClient) Get(ctx context.Context, input *GetPackageInput) (*Package, error) {
 	path := fmt.Sprintf("/%s/packages/%s", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -78,13 +78,13 @@ func (c *PackagesClient) GetPackage(ctx context.Context, input *GetPackageInput)
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetPackage request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
 	}
 
 	var result *Package
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetPackage response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
 	}
 
 	return result, nil

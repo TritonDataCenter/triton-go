@@ -22,7 +22,7 @@ type Service struct {
 
 type ListServicesInput struct{}
 
-func (c *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
+func (c *ServicesClient) List(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
 	path := fmt.Sprintf("/%s/services", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -33,13 +33,13 @@ func (c *ServicesClient) ListServices(ctx context.Context, _ *ListServicesInput)
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListServices request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListServices response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 	}
 
 	keys := make([]string, len(intermediate))

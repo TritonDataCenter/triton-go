@@ -13,26 +13,26 @@ import (
 	"github.com/joyent/triton-go/client"
 )
 
-type MachinesClient struct {
+type InstancesClient struct {
 	client *client.Client
 }
 
 const (
-	machineCNSTagDisable    = "triton.cns.disable"
-	machineCNSTagReversePTR = "triton.cns.reverse_ptr"
-	machineCNSTagServices   = "triton.cns.services"
+	CNSTagDisable    = "triton.cns.disable"
+	CNSTagReversePTR = "triton.cns.reverse_ptr"
+	CNSTagServices   = "triton.cns.services"
 )
 
-// MachineCNS is a container for the CNS-specific attributes.  In the API these
-// values are embedded within a Machine's Tags attribute, however they are
+// InstanceCNS is a container for the CNS-specific attributes.  In the API these
+// values are embedded within a Instance's Tags attribute, however they are
 // exposed to the caller as their native types.
-type MachineCNS struct {
+type InstanceCNS struct {
 	Disable    *bool
 	ReversePTR *string
 	Services   []string
 }
 
-type Machine struct {
+type Instance struct {
 	ID              string                 `json:"id"`
 	Name            string                 `json:"name"`
 	Type            string                 `json:"type"`
@@ -53,13 +53,13 @@ type Machine struct {
 	ComputeNode     string                 `json:"compute_node"`
 	Package         string                 `json:"package"`
 	DomainNames     []string               `json:"dns_names"`
-	CNS             MachineCNS
+	CNS             InstanceCNS
 }
 
-// _Machine is a private facade over Machine that handles the necessary API
+// _Instance is a private facade over Instance that handles the necessary API
 // overrides from VMAPI's machine endpoint(s).
-type _Machine struct {
-	Machine
+type _Instance struct {
+	Instance
 	Tags map[string]interface{} `json:"tags"`
 }
 
@@ -73,11 +73,11 @@ type NIC struct {
 	Network string `json:"network"`
 }
 
-type GetMachineInput struct {
+type GetInstancesInput struct {
 	ID string
 }
 
-func (gmi *GetMachineInput) Validate() error {
+func (gmi *GetInstancesInput) Validate() error {
 	if gmi.ID == "" {
 		return fmt.Errorf("machine ID can not be empty")
 	}
@@ -85,7 +85,7 @@ func (gmi *GetMachineInput) Validate() error {
 	return nil
 }
 
-func (c *MachinesClient) GetMachine(ctx context.Context, input *GetMachineInput) (*Machine, error) {
+func (c *InstancesClient) Get(ctx context.Context, input *GetInstancesInput) (*Instance, error) {
 	if err := input.Validate(); err != nil {
 		return nil, errwrap.Wrapf("unable to get machine: {{err}}", err)
 	}
@@ -106,27 +106,27 @@ func (c *MachinesClient) GetMachine(ctx context.Context, input *GetMachineInput)
 		}
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetMachine request: {{err}}",
+		return nil, errwrap.Wrapf("Error executing Get request: {{err}}",
 			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
-	var result *_Machine
+	var result *_Instance
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetMachine response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
 	}
 
 	native, err := result.toNative()
 	if err != nil {
-		return nil, errwrap.Wrapf("unable to convert API response for machines to native type: {{err}}", err)
+		return nil, errwrap.Wrapf("unable to convert API response for instances to native type: {{err}}", err)
 	}
 
 	return native, nil
 }
 
-type ListMachinesInput struct{}
+type ListInstancesInput struct{}
 
-func (c *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesInput) ([]*Machine, error) {
+func (c *InstancesClient) List(ctx context.Context, _ *ListInstancesInput) ([]*Instance, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -143,28 +143,28 @@ func (c *MachinesClient) ListMachines(ctx context.Context, _ *ListMachinesInput)
 		}
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListMachines request: {{err}}",
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}",
 			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
-	var results []*_Machine
+	var results []*_Instance
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&results); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListMachines response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 	}
 
-	machines := make([]*Machine, 0, len(results))
+	machines := make([]*Instance, 0, len(results))
 	for _, machineAPI := range results {
 		native, err := machineAPI.toNative()
 		if err != nil {
-			return nil, errwrap.Wrapf("unable to convert API response for machines to native type: {{err}}", err)
+			return nil, errwrap.Wrapf("unable to convert API response for instances to native type: {{err}}", err)
 		}
 		machines = append(machines, native)
 	}
 	return machines, nil
 }
 
-type CreateMachineInput struct {
+type CreateInstanceInput struct {
 	Name            string
 	Package         string
 	Image           string
@@ -175,10 +175,10 @@ type CreateMachineInput struct {
 	Metadata        map[string]string
 	Tags            map[string]string
 	FirewallEnabled bool
-	CNS             MachineCNS
+	CNS             InstanceCNS
 }
 
-func (input *CreateMachineInput) toAPI() map[string]interface{} {
+func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 	const numExtraParams = 8
 	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
 
@@ -225,7 +225,7 @@ func (input *CreateMachineInput) toAPI() map[string]interface{} {
 	return result
 }
 
-func (c *MachinesClient) CreateMachine(ctx context.Context, input *CreateMachineInput) (*Machine, error) {
+func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput) (*Instance, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -237,23 +237,23 @@ func (c *MachinesClient) CreateMachine(ctx context.Context, input *CreateMachine
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateMachine request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Create request: {{err}}", err)
 	}
 
-	var result *Machine
+	var result *Instance
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateMachine response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding Create response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type DeleteMachineInput struct {
+type DeleteInstanceInput struct {
 	ID string
 }
 
-func (c *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMachineInput) error {
+func (c *InstancesClient) Delete(ctx context.Context, input *DeleteInstanceInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -267,18 +267,18 @@ func (c *MachinesClient) DeleteMachine(ctx context.Context, input *DeleteMachine
 		return nil
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteMachine request: {{err}}",
+		return errwrap.Wrapf("Error executing Delete request: {{err}}",
 			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
 }
 
-type DeleteMachineTagsInput struct {
+type DeleteTagsInput struct {
 	ID string
 }
 
-func (c *MachinesClient) DeleteMachineTags(ctx context.Context, input *DeleteMachineTagsInput) error {
+func (c *InstancesClient) DeleteTags(ctx context.Context, input *DeleteTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -292,19 +292,19 @@ func (c *MachinesClient) DeleteMachineTags(ctx context.Context, input *DeleteMac
 		return nil
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteMachineTags request: {{err}}",
+		return errwrap.Wrapf("Error executing DeleteTags request: {{err}}",
 			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
 }
 
-type DeleteMachineTagInput struct {
+type DeleteTagInput struct {
 	ID  string
 	Key string
 }
 
-func (c *MachinesClient) DeleteMachineTag(ctx context.Context, input *DeleteMachineTagInput) error {
+func (c *InstancesClient) DeleteTag(ctx context.Context, input *DeleteTagInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
@@ -318,19 +318,19 @@ func (c *MachinesClient) DeleteMachineTag(ctx context.Context, input *DeleteMach
 		return nil
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteMachineTag request: {{err}}",
+		return errwrap.Wrapf("Error executing DeleteTag request: {{err}}",
 			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	return nil
 }
 
-type RenameMachineInput struct {
+type RenameInstanceInput struct {
 	ID   string
 	Name string
 }
 
-func (c *MachinesClient) RenameMachine(ctx context.Context, input *RenameMachineInput) error {
+func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
@@ -347,18 +347,18 @@ func (c *MachinesClient) RenameMachine(ctx context.Context, input *RenameMachine
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing RenameMachine request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Rename request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type ReplaceMachineTagsInput struct {
+type ReplaceTagsInput struct {
 	ID   string
 	Tags map[string]string
 }
 
-func (c *MachinesClient) ReplaceMachineTags(ctx context.Context, input *ReplaceMachineTagsInput) error {
+func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
@@ -370,18 +370,18 @@ func (c *MachinesClient) ReplaceMachineTags(ctx context.Context, input *ReplaceM
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing ReplaceMachineTags request: {{err}}", err)
+		return errwrap.Wrapf("Error executing ReplaceTags request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type AddMachineTagsInput struct {
+type AddTagsInput struct {
 	ID   string
 	Tags map[string]string
 }
 
-func (c *MachinesClient) AddMachineTags(ctx context.Context, input *AddMachineTagsInput) error {
+func (c *InstancesClient) AddTags(ctx context.Context, input *AddTagsInput) error {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -393,18 +393,18 @@ func (c *MachinesClient) AddMachineTags(ctx context.Context, input *AddMachineTa
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing AddMachineTags request: {{err}}", err)
+		return errwrap.Wrapf("Error executing AddTags request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type GetMachineTagInput struct {
+type GetTagInput struct {
 	ID  string
 	Key string
 }
 
-func (c *MachinesClient) GetMachineTag(ctx context.Context, input *GetMachineTagInput) (string, error) {
+func (c *InstancesClient) GetTag(ctx context.Context, input *GetTagInput) (string, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -415,23 +415,23 @@ func (c *MachinesClient) GetMachineTag(ctx context.Context, input *GetMachineTag
 		defer respReader.Close()
 	}
 	if err != nil {
-		return "", errwrap.Wrapf("Error executing GetMachineTag request: {{err}}", err)
+		return "", errwrap.Wrapf("Error executing GetTag request: {{err}}", err)
 	}
 
 	var result string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return "", errwrap.Wrapf("Error decoding GetMachineTag response: {{err}}", err)
+		return "", errwrap.Wrapf("Error decoding GetTag response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type ListMachineTagsInput struct {
+type ListTagsInput struct {
 	ID string
 }
 
-func (c *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachineTagsInput) (map[string]interface{}, error) {
+func (c *InstancesClient) ListTags(ctx context.Context, input *ListTagsInput) (map[string]interface{}, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -442,25 +442,25 @@ func (c *MachinesClient) ListMachineTags(ctx context.Context, input *ListMachine
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListMachineTags request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing ListTags request: {{err}}", err)
 	}
 
 	var result map[string]interface{}
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListMachineTags response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding ListTags response: {{err}}", err)
 	}
 
-	_, tags := machineTagsExtractMeta(result)
+	_, tags := tagsExtractMeta(result)
 	return tags, nil
 }
 
-type UpdateMachineMetadataInput struct {
+type UpdateMetadataInput struct {
 	ID       string
 	Metadata map[string]string
 }
 
-func (c *MachinesClient) UpdateMachineMetadata(ctx context.Context, input *UpdateMachineMetadataInput) (map[string]string, error) {
+func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetadataInput) (map[string]string, error) {
 	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -472,24 +472,24 @@ func (c *MachinesClient) UpdateMachineMetadata(ctx context.Context, input *Updat
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdateMachineMetadata request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing UpdateMetadata request: {{err}}", err)
 	}
 
 	var result map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdateMachineMetadata response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding UpdateMetadata response: {{err}}", err)
 	}
 
 	return result, nil
 }
 
-type ResizeMachineInput struct {
+type ResizeInstanceInput struct {
 	ID      string
 	Package string
 }
 
-func (c *MachinesClient) ResizeMachine(ctx context.Context, input *ResizeMachineInput) error {
+func (c *InstancesClient) Resize(ctx context.Context, input *ResizeInstanceInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
@@ -506,17 +506,17 @@ func (c *MachinesClient) ResizeMachine(ctx context.Context, input *ResizeMachine
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing ResizeMachine request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Resize request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type EnableMachineFirewallInput struct {
+type EnableFirewallInput struct {
 	ID string
 }
 
-func (c *MachinesClient) EnableMachineFirewall(ctx context.Context, input *EnableMachineFirewallInput) error {
+func (c *InstancesClient) EnableFirewall(ctx context.Context, input *EnableFirewallInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
@@ -532,17 +532,17 @@ func (c *MachinesClient) EnableMachineFirewall(ctx context.Context, input *Enabl
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing EnableMachineFirewall request: {{err}}", err)
+		return errwrap.Wrapf("Error executing EnableFirewall request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type DisableMachineFirewallInput struct {
+type DisableFirewallInput struct {
 	ID string
 }
 
-func (c *MachinesClient) DisableMachineFirewall(ctx context.Context, input *DisableMachineFirewallInput) error {
+func (c *InstancesClient) DisableFirewall(ctx context.Context, input *DisableFirewallInput) error {
 	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
 
 	params := &url.Values{}
@@ -558,18 +558,18 @@ func (c *MachinesClient) DisableMachineFirewall(ctx context.Context, input *Disa
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DisableMachineFirewall request: {{err}}", err)
+		return errwrap.Wrapf("Error executing DisableFirewall request: {{err}}", err)
 	}
 
 	return nil
 }
 
 type ListNICsInput struct {
-	MachineID string
+	InstanceID string
 }
 
-func (c *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
+func (c *InstancesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
+	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.InstanceID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   path,
@@ -592,13 +592,13 @@ func (c *MachinesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]
 }
 
 type GetNICInput struct {
-	MachineID string
-	MAC       string
+	InstanceID string
+	MAC        string
 }
 
-func (c *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
+func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.InstanceID, mac)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   path,
@@ -628,17 +628,17 @@ func (c *MachinesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, 
 }
 
 type AddNICInput struct {
-	MachineID string `json:"-"`
-	Network   string `json:"network"`
+	InstanceID string `json:"-"`
+	Network    string `json:"network"`
 }
 
-// AddNIC asynchronously adds a NIC to a given machine.  If a NIC for a given
+// AddNIC asynchronously adds a NIC to a given instance.  If a NIC for a given
 // network already exists, a ResourceFound error will be returned.  The status
 // of the addition of a NIC can be polled by calling GetNIC()'s and testing NIC
 // until its state is set to "running".  Only one NIC per network may exist.
-// Warning: this operation causes the machine to restart.
-func (c *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.MachineID)
+// Warning: this operation causes the instance to restart.
+func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
+	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.InstanceID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
 		Path:   path,
@@ -670,17 +670,17 @@ func (c *MachinesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, 
 }
 
 type RemoveNICInput struct {
-	MachineID string
-	MAC       string
+	InstanceID string
+	MAC        string
 }
 
 // RemoveNIC removes a given NIC from a machine asynchronously.  The status of
 // the removal can be polled via GetNIC().  When GetNIC() returns a 404, the NIC
 // has been removed from the instance.  Warning: this operation causes the
 // machine to restart.
-func (c *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
+func (c *InstancesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.MachineID, mac)
+	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.InstanceID, mac)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   path,
@@ -703,12 +703,12 @@ func (c *MachinesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) e
 	return nil
 }
 
-type StopMachineInput struct {
-	MachineID string
+type StopInstanceInput struct {
+	InstanceID string
 }
 
-func (c *MachinesClient) StopMachine(ctx context.Context, input *StopMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.MachineID)
+func (c *InstancesClient) Stop(ctx context.Context, input *StopInstanceInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
 
 	params := &url.Values{}
 	params.Set("action", "stop")
@@ -723,18 +723,18 @@ func (c *MachinesClient) StopMachine(ctx context.Context, input *StopMachineInpu
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing StopMachine request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Stop request: {{err}}", err)
 	}
 
 	return nil
 }
 
-type StartMachineInput struct {
-	MachineID string
+type StartInstanceInput struct {
+	InstanceID string
 }
 
-func (c *MachinesClient) StartMachine(ctx context.Context, input *StartMachineInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.MachineID)
+func (c *InstancesClient) Start(ctx context.Context, input *StartInstanceInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
 
 	params := &url.Values{}
 	params.Set("action", "start")
@@ -749,33 +749,33 @@ func (c *MachinesClient) StartMachine(ctx context.Context, input *StartMachineIn
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing StartMachine request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Start request: {{err}}", err)
 	}
 
 	return nil
 }
 
-var reservedMachineCNSTags = map[string]struct{}{
-	machineCNSTagDisable:    {},
-	machineCNSTagReversePTR: {},
-	machineCNSTagServices:   {},
+var reservedInstanceCNSTags = map[string]struct{}{
+	CNSTagDisable:    {},
+	CNSTagReversePTR: {},
+	CNSTagServices:   {},
 }
 
-// machineTagsExtractMeta() extracts all of the misc parameters from Tags and
-// returns a clean CNS and Tags struct.
-func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string]interface{}) {
-	nativeCNS := MachineCNS{}
+// tagsExtractMeta() extracts all of the misc parameters from Tags and returns a
+// clean CNS and Tags struct.
+func tagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]interface{}) {
+	nativeCNS := InstanceCNS{}
 	nativeTags := make(map[string]interface{}, len(tags))
 	for k, raw := range tags {
-		if _, found := reservedMachineCNSTags[k]; found {
+		if _, found := reservedInstanceCNSTags[k]; found {
 			switch k {
-			case machineCNSTagDisable:
+			case CNSTagDisable:
 				b := raw.(bool)
 				nativeCNS.Disable = &b
-			case machineCNSTagReversePTR:
+			case CNSTagReversePTR:
 				s := raw.(string)
 				nativeCNS.ReversePTR = &s
-			case machineCNSTagServices:
+			case CNSTagServices:
 				nativeCNS.Services = strings.Split(raw.(string), ",")
 			default:
 				// TODO(seanc@): should assert, logic fail
@@ -788,27 +788,27 @@ func machineTagsExtractMeta(tags map[string]interface{}) (MachineCNS, map[string
 	return nativeCNS, nativeTags
 }
 
-// toNative() exports a given _Machine (API representation) to its native object
+// toNative() exports a given _Instance (API representation) to its native object
 // format.
-func (api *_Machine) toNative() (*Machine, error) {
-	m := Machine(api.Machine)
-	m.CNS, m.Tags = machineTagsExtractMeta(api.Tags)
+func (api *_Instance) toNative() (*Instance, error) {
+	m := Instance(api.Instance)
+	m.CNS, m.Tags = tagsExtractMeta(api.Tags)
 	return &m, nil
 }
 
 // toTags() injects its state information into a Tags map suitable for use to
 // submit an API call to the vmapi machine endpoint
-func (mcns *MachineCNS) toTags(m map[string]interface{}) {
+func (mcns *InstanceCNS) toTags(m map[string]interface{}) {
 	if mcns.Disable != nil {
 		s := fmt.Sprintf("%t", mcns.Disable)
-		m[machineCNSTagDisable] = &s
+		m[CNSTagDisable] = &s
 	}
 
 	if mcns.ReversePTR != nil {
-		m[machineCNSTagReversePTR] = &mcns.ReversePTR
+		m[CNSTagReversePTR] = &mcns.ReversePTR
 	}
 
 	if len(mcns.Services) > 0 {
-		m[machineCNSTagServices] = strings.Join(mcns.Services, ",")
+		m[CNSTagServices] = strings.Join(mcns.Services, ",")
 	}
 }

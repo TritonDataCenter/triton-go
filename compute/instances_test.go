@@ -7,11 +7,8 @@ import (
 	"testing"
 )
 
-func getAnyMachineID(t *testing.T, c *Compute) (string, error) {
-	machines, err := c.Machines().ListMachines(
-		context.Background(),
-		&ListMachinesInput{},
-	)
+func getAnyMachineID(t *testing.T, c *InstancesClient) (string, error) {
+	machines, err := c.Instances().List(context.Background(), &ListInstancesInput{})
 	if err != nil {
 		return "", err
 	}
@@ -26,20 +23,20 @@ func getAnyMachineID(t *testing.T, c *Compute) (string, error) {
 	return "", errors.New("no machines configured")
 }
 
-func TestAccMachine_GetMachine(t *testing.T) {
+func TestAccMachine_Get(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "machine",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *InstancesClient) (interface{}, error) {
 					machineID, err := getAnyMachineID(t, client)
 					if err != nil {
 						return nil, err
 					}
 
-					return client.Machines().GetMachine(
+					return client.Instances().Get(
 						context.Background(),
-						&GetMachineInput{
+						&GetInstanceInput{
 							ID: machineID,
 						})
 				},
@@ -59,15 +56,15 @@ func TestAccMachine_ListMachineTags(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "machine",
-				CallFunc: func(client *Compute) (interface{}, error) {
+				CallFunc: func(client *InstancesClient) (interface{}, error) {
 					machineID, err := getAnyMachineID(t, client)
 					if err != nil {
 						return nil, err
 					}
 
-					return client.Machines().ListMachineTags(
+					return client.Instances().ListTags(
 						context.Background(),
-						&testutils.ListMachineTagsInput{
+						&ListTagsInput{
 							ID: machineID,
 						})
 				},

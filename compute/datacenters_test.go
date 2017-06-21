@@ -18,10 +18,10 @@ func TestAccDataCenters_Get(t *testing.T) {
 		Steps: []Step{
 			&StepAPICall{
 				StateBagKey: "datacenter",
-				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Datacenters().GetDataCenter(
+				CallFunc: func(client *DataCentersClient) (interface{}, error) {
+					return client.Datacenters().Get(
 						context.Background(),
-						&GetDataCenterInput{
+						&GetInput{
 							Name: dataCenterName,
 						})
 				},
@@ -44,10 +44,10 @@ func TestAccDataCenters_List(t *testing.T) {
 		Steps: []Step{
 			&StepAPICall{
 				StateBagKey: "datacenters",
-				CallFunc: func(client *Client) (interface{}, error) {
-					return client.Datacenters().ListDataCenters(
+				CallFunc: func(client *DataCentersClient) (interface{}, error) {
+					return client.Datacenters().List(
 						context.Background(),
-						&ListDataCentersInput{})
+						&ListInput{})
 				},
 			},
 			&StepAssertFunc{

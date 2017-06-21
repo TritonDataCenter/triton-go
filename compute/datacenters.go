@@ -22,9 +22,9 @@ type DataCenter struct {
 	URL  string `json:"url"`
 }
 
-type ListDataCentersInput struct{}
+type ListInput struct{}
 
-func (c *DataCentersClient) ListDataCenters(ctx context.Context, _ *ListDataCentersInput) ([]*DataCenter, error) {
+func (c *DataCentersClient) List(ctx context.Context, _ *ListInput) ([]*DataCenter, error) {
 	path := fmt.Sprintf("/%s/datacenters", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -35,13 +35,13 @@ func (c *DataCentersClient) ListDataCenters(ctx context.Context, _ *ListDataCent
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListDatacenters request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListDatacenters response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 	}
 
 	keys := make([]string, len(intermediate))
@@ -65,11 +65,11 @@ func (c *DataCentersClient) ListDataCenters(ctx context.Context, _ *ListDataCent
 	return result, nil
 }
 
-type GetDataCenterInput struct {
+type GetInput struct {
 	Name string
 }
 
-func (c *DataCentersClient) GetDataCenter(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
+func (c *DataCentersClient) Get(ctx context.Context, input *GetInput) (*DataCenter, error) {
 	path := fmt.Sprintf("/%s/datacenters/%s", c.client.AccountName, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -77,17 +77,17 @@ func (c *DataCentersClient) GetDataCenter(ctx context.Context, input *GetDataCen
 	}
 	resp, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetDatacenter request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
 	}
 
 	if resp.StatusCode != http.StatusFound {
-		return nil, fmt.Errorf("Error executing GetDatacenter request: expected status code 302, got %s",
+		return nil, fmt.Errorf("Error executing Get request: expected status code 302, got %s",
 			resp.StatusCode)
 	}
 
 	location := resp.Header.Get("Location")
 	if location == "" {
-		return nil, errors.New("Error decoding GetDatacenter response: no Location header")
+		return nil, errors.New("Error decoding Get response: no Location header")
 	}
 
 	return &DataCenter{
