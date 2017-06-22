@@ -26,7 +26,8 @@ var MissingKeyIdError = errors.New("Default SSH agent authentication requires SD
 type Client struct {
 	HTTPClient  *http.Client
 	Authorizers []authentication.Signer
-	APIURL      url.URL
+	CloudURL    url.URL
+	MantaURL    url.URL
 	AccountName string
 	Endpoint    string
 }
@@ -36,10 +37,15 @@ type Client struct {
 //
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
-func New(endpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
-	apiURL, err := url.Parse(endpoint)
+func New(endpoint string, mantaEndpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
+	cloudURL, err := url.Parse(endpoint)
 	if err != nil {
-		return nil, errwrap.Wrapf("invalid endpoint: {{err}}", err)
+		return nil, errwrap.Wrapf("invalid endpoint URL: {{err}}", err)
+	}
+
+	mantaURL, err := url.Parse(mantaEndpoint)
+	if err != nil {
+		return nil, errwrap.Wrapf("invalid manta URL: {{err}}", err)
 	}
 
 	if accountName == "" {
@@ -54,7 +60,8 @@ func New(endpoint string, accountName string, signers ...authentication.Signer) 
 	newClient := &Client{
 		HTTPClient:  httpClient,
 		Authorizers: signers,
-		APIURL:      *apiURL,
+		CloudURL:    *cloudURL,
+		MantaURL:    *mantaURL,
 		AccountName: accountName,
 		Endpoint:    endpoint,
 	}
@@ -159,7 +166,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	endpoint := c.APIURL
+	endpoint := c.CloudURL
 	endpoint.Path = path
 	if query != nil {
 		endpoint.RawQuery = query.Encode()
@@ -218,7 +225,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	endpoint := c.APIURL
+	endpoint := c.CloudURL
 	endpoint.Path = path
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
@@ -259,6 +266,9 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 	headers := inputs.Headers
 	body := inputs.Body
 
+	endpoint := c.MantaURL
+	endpoint.Path = path
+
 	var requestBody io.ReadSeeker
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
@@ -267,13 +277,6 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		}
 		requestBody = bytes.NewReader(marshaled)
 	}
-
-	// TODO(justinwr): Need to move this into the client constructor
-	endpoint, err := url.Parse(os.Getenv("MANTA_URL"))
-	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error parsing MANTA_URL: {{err}}", err)
-	}
-	endpoint.Path = path
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
@@ -341,11 +344,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 	headers := inputs.Headers
 	body := inputs.Body
 
-	// TODO(justinwr): Need to move this into the client constructor
-	endpoint, err := url.Parse(os.Getenv("MANTA_URL"))
-	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error parsing MANTA_URL: {{err}}", err)
-	}
+	endpoint := c.MantaURL
 	endpoint.Path = path
 
 	req, err := http.NewRequest(method, endpoint.String(), body)
