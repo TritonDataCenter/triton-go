@@ -5,7 +5,12 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
+
+type SnapLinksClient struct {
+	client *client.Client
+}
 
 // PutSnapLinkInput represents parameters to a PutSnapLink operation.
 type PutSnapLinkInput struct {
@@ -14,18 +19,18 @@ type PutSnapLinkInput struct {
 }
 
 // PutSnapLink creates a SnapLink to an object.
-func (s *Storage) PutSnapLink(input *PutSnapLinkInput) error {
-	path := fmt.Sprintf("/%s%s", s.Client.AccountName, input.LinkPath)
+func (s *SnapLinksClient) Put(input *PutSnapLinkInput) error {
+	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.LinkPath)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=link")
 	headers.Set("Location", input.SourcePath)
 
-	reqInput := RequestInput{
+	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
 		Path:    path,
 		Headers: headers,
 	}
-	respBody, _, err := s.executeRequest(reqInput)
+	respBody, _, err := s.client.ExecuteRequestStorage(reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
