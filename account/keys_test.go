@@ -14,20 +14,16 @@ func TestAccKey_Create(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Keys().CreateKey(
-						context.Background(),
-						&CreateKeyInput{
-							Name: keyName,
-							Key:  testAccCreateKeyMaterial,
-						})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Keys().Create(context.Background(), &CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
 				},
-				CleanupFunc: func(client *AccountService, callState interface{}) {
-					client.Keys().DeleteKey(
-						context.Background(),
-						&DeleteKeyInput{
-							KeyName: keyName,
-						})
+				CleanupFunc: func(client *AccountClient, callState interface{}) {
+					client.Keys().Delete(context.Background(), &DeleteKeyInput{
+						KeyName: keyName,
+					})
 				},
 			},
 			&testutils.StepAssert{
@@ -49,26 +45,22 @@ func TestAccKey_Get(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Keys().CreateKey(
-						context.Background(),
-						&CreateKeyInput{
-							Name: keyName,
-							Key:  testAccCreateKeyMaterial,
-						})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Keys().Create(context.Background(), &CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
 				},
-				CleanupFunc: func(client *AccountService, callState interface{}) {
-					client.Keys().DeleteKey(
-						context.Background(),
-						&DeleteKeyInput{
-							KeyName: keyName,
-						})
+				CleanupFunc: func(client *AccountClient, callState interface{}) {
+					client.Keys().Delete(context.Background(), &DeleteKeyInput{
+						KeyName: keyName,
+					})
 				},
 			},
 			&testutils.StepAPICall{
 				StateBagKey: "getKey",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Keys().GetKey(context.Background(),
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Keys().Get(context.Background(),
 						&GetKeyInput{
 							KeyName: keyName,
 						})
@@ -93,40 +85,32 @@ func TestAccKey_Delete(t *testing.T) {
 		Steps: []testutils.Step{
 			&testutils.StepAPICall{
 				StateBagKey: "key",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Keys().CreateKey(
-						context.Background(),
-						&CreateKeyInput{
-							Name: keyName,
-							Key:  testAccCreateKeyMaterial,
-						})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Keys().Create(context.Background(), &CreateKeyInput{
+						Name: keyName,
+						Key:  testAccCreateKeyMaterial,
+					})
 				},
-				CleanupFunc: func(client *AccountService, callState interface{}) {
-					client.Keys().DeleteKey(
-						context.Background(),
-						&DeleteKeyInput{
-							KeyName: keyName,
-						})
+				CleanupFunc: func(client *AccountClient, callState interface{}) {
+					client.Keys().Delete(context.Background(), &DeleteKeyInput{
+						KeyName: keyName,
+					})
 				},
 			},
 			&testutils.StepAPICall{
 				StateBagKey: "noop",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return nil, client.Keys().DeleteKey(
-						context.Background(),
-						&DeleteKeyInput{
-							KeyName: keyName,
-						})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return nil, client.Keys().Delete(context.Background(), &DeleteKeyInput{
+						KeyName: keyName,
+					})
 				},
 			},
 			&testutils.StepAPICall{
 				ErrorKey: "getKeyError",
-				CallFunc: func(client *AccountService) (interface{}, error) {
-					return client.Keys().GetKey(
-						context.Background(),
-						&GetKeyInput{
-							KeyName: keyName,
-						})
+				CallFunc: func(client *AccountClient) (interface{}, error) {
+					return client.Keys().Get(context.Background(), &GetKeyInput{
+						KeyName: keyName,
+					})
 				},
 			},
 			&testutils.StepAssertTritonError{
