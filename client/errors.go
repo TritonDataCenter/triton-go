@@ -6,6 +6,19 @@ import (
 	"github.com/hashicorp/errwrap"
 )
 
+// ClientError represents an error code and message along with the status code
+// of the HTTP request which resulted in the error message.
+type ClientError struct {
+	StatusCode int
+	Code       string
+	Message    string
+}
+
+// Error implements interface Error on the TritonError type.
+func (e ClientError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
+}
+
 // MantaError represents an error code and message along with
 // the status code of the HTTP request which resulted in the error
 // message. Error codes used by the Manta API are listed at

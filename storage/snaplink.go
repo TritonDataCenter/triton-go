@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -19,7 +20,7 @@ type PutSnapLinkInput struct {
 }
 
 // PutSnapLink creates a SnapLink to an object.
-func (s *SnapLinksClient) Put(input *PutSnapLinkInput) error {
+func (s *SnapLinksClient) Put(ctx context.Context, input *PutSnapLinkInput) error {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.LinkPath)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=link")
@@ -30,7 +31,7 @@ func (s *SnapLinksClient) Put(input *PutSnapLinkInput) error {
 		Path:    path,
 		Headers: headers,
 	}
-	respBody, _, err := s.client.ExecuteRequestStorage(reqInput)
+	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}

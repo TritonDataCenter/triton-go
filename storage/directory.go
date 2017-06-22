@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,7 +41,7 @@ type ListDirectoryOutput struct {
 }
 
 // List lists the contents of a directory on the Triton Object Store service.
-func (s *DirectoryClient) List(input *ListDirectoryInput) (*ListDirectoryOutput, error) {
+func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (*ListDirectoryOutput, error) {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
 	query := &url.Values{}
 	if input.Limit != 0 {
@@ -55,7 +56,7 @@ func (s *DirectoryClient) List(input *ListDirectoryInput) (*ListDirectoryOutput,
 		Path:   path,
 		Query:  query,
 	}
-	respBody, respHeader, err := s.client.ExecuteRequestStorage(reqInput)
+	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -96,7 +97,7 @@ type PutDirectoryInput struct {
 // Put puts a directoy into the Triton Object Storage service is an idempotent
 // create-or-update operation. Your private namespace starts at /:login, and you
 // can create any nested set of directories or objects within it.
-func (s *DirectoryClient) Put(input *PutDirectoryInput) error {
+func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) error {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
@@ -106,7 +107,7 @@ func (s *DirectoryClient) Put(input *PutDirectoryInput) error {
 		Path:    path,
 		Headers: headers,
 	}
-	respBody, _, err := s.client.ExecuteRequestStorage(reqInput)
+	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -124,14 +125,14 @@ type DeleteDirectoryInput struct {
 
 // Delete deletes a directory on the Triton Object Storage. The directory must
 // be empty.
-func (s *DirectoryClient) Delete(input *DeleteDirectoryInput) error {
+func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
 
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   path,
 	}
-	respBody, _, err := s.client.ExecuteRequestStorage(reqInput)
+	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}

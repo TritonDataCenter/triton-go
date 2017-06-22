@@ -22,30 +22,13 @@ const nilContext = "nil context"
 
 var MissingKeyIdError = errors.New("Default SSH agent authentication requires SDC_KEY_ID")
 
-// Client represents a connection to the Triton API.
+// Client represents a connection to the Triton Compute or Object Storage APIs.
 type Client struct {
 	HTTPClient  *http.Client
 	Authorizers []authentication.Signer
 	APIURL      url.URL
 	AccountName string
 	Endpoint    string
-}
-
-type Config struct {
-	endpoint    string
-	accountName string
-	signers     []authentication.Signer
-}
-
-type ClientError struct {
-	StatusCode int
-	Code       string
-	Message    string
-}
-
-// Error implements interface Error on the TritonError type.
-func (e ClientError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 // New is used to construct a Client in order to make API
@@ -269,7 +252,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	return resp, nil
 }
 
-func (c *Client) ExecuteRequestStorage(inputs RequestInput) (io.ReadCloser, http.Header, error) {
+func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput) (io.ReadCloser, http.Header, error) {
 	method := inputs.Method
 	path := inputs.Path
 	query := inputs.Query
@@ -323,9 +306,7 @@ func (c *Client) ExecuteRequestStorage(inputs RequestInput) (io.ReadCloser, http
 		req.URL.RawQuery = query.Encode()
 	}
 
-	// TODO(justinwr): Need to utilize context here as well
-	// resp, err := c.HTTPClient.Do(req.WithContext(ctx))
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
 	}
@@ -353,7 +334,7 @@ type RequestNoEncodeInput struct {
 	Body    io.ReadSeeker
 }
 
-func (c *Client) ExecuteRequestNoEncode(inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
+func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
 	method := inputs.Method
 	path := inputs.Path
 	query := inputs.Query
@@ -395,9 +376,7 @@ func (c *Client) ExecuteRequestNoEncode(inputs RequestNoEncodeInput) (io.ReadClo
 		req.URL.RawQuery = query.Encode()
 	}
 
-	// TODO(justinwr): Need to utilize context here as well
-	// resp, err := c.HTTPClient.Do(req.WithContext(ctx))
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
 	}
