@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/network"
+	"github.com/joyent/triton-go/testutils"
 )
 
 // Note that this is specific to Joyent Public Cloud and will not pass on
@@ -11,23 +15,37 @@ import (
 func TestAccNetworks_List(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
-			&testutils.StepAPICall{
-				StateBagKey: "networks",
-				CallFunc: func(client *NetworkClient) (interface{}, error) {
-					return client.List(context.Background(), &ListInput{})
+
+			&testutils.StepClient{
+				StateBagKey: "datacenter",
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return network.NewClient(config)
 				},
 			},
+
+			&testutils.StepAPICall{
+				StateBagKey: "networks",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					ctx := context.Background()
+					input := &network.ListInput{}
+					if c, ok := client.(*network.NetworkClient); ok {
+						return c.List(ctx, input)
+					}
+					return nil, fmt.Errorf("Bad client initialization")
+				},
+			},
+
 			&testutils.StepAssertFunc{
 				AssertFunc: func(state testutils.TritonStateBag) error {
 					dcs, ok := state.GetOk("networks")
 					if !ok {
-						return fmt.Errorf("State key %q not found", "datacenters")
+						return fmt.Errorf("State key %q not found", "networks")
 					}
 
 					toFind := []string{"Joyent-SDC-Private", "Joyent-SDC-Public"}
 					for _, dcName := range toFind {
 						found := false
-						for _, dc := range dcs.([]*Network) {
+						for _, dc := range dcs.([]*network.Network) {
 							if dc.Name == dcName {
 								found = true
 								if dc.Id == "" {

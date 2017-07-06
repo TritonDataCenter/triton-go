@@ -6,6 +6,9 @@ import (
 	"testing"
 
 	"github.com/abdullin/seq"
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-go/testutils"
 )
 
 // Note that this is specific to Joyent Public Cloud and will not pass on
@@ -14,19 +17,29 @@ func TestAccDataCenters_Get(t *testing.T) {
 	const dataCenterName = "us-east-1"
 	const dataCenterURL = "https://us-east-1.api.joyentcloud.com"
 
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepClient{
 				StateBagKey: "datacenter",
-				CallFunc: func(client *DataCentersClient) (interface{}, error) {
-					return client.Datacenters().Get(
-						context.Background(),
-						&GetInput{
-							Name: dataCenterName,
-						})
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
 				},
 			},
-			&StepAssert{
+
+			&testutils.StepAPICall{
+				StateBagKey: "datacenter",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.GetInput{
+						Name: dataCenterName,
+					}
+					return c.Datacenters().Get(ctx, input)
+				},
+			},
+
+			&testutils.StepAssert{
 				StateBagKey: "datacenter",
 				Assertions: seq.Map{
 					"name": dataCenterName,
@@ -40,18 +53,28 @@ func TestAccDataCenters_Get(t *testing.T) {
 // Note that this is specific to Joyent Public Cloud and will not pass on
 // private installations of Triton.
 func TestAccDataCenters_List(t *testing.T) {
-	AccTest(t, TestCase{
-		Steps: []Step{
-			&StepAPICall{
-				StateBagKey: "datacenters",
-				CallFunc: func(client *DataCentersClient) (interface{}, error) {
-					return client.Datacenters().List(
-						context.Background(),
-						&ListInput{})
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepClient{
+				StateBagKey: "datacenter",
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
 				},
 			},
-			&StepAssertFunc{
-				AssertFunc: func(state TritonStateBag) error {
+
+			&testutils.StepAPICall{
+				StateBagKey: "datacenters",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.ListInput{}
+					return c.Datacenters().List(ctx, input)
+				},
+			},
+
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
 					dcs, ok := state.GetOk("datacenters")
 					if !ok {
 						return fmt.Errorf("State key %q not found", "datacenters")
@@ -60,7 +83,7 @@ func TestAccDataCenters_List(t *testing.T) {
 					toFind := []string{"us-east-1", "eu-ams-1"}
 					for _, dcName := range toFind {
 						found := false
-						for _, dc := range dcs.([]*DataCenter) {
+						for _, dc := range dcs.([]*compute.DataCenter) {
 							if dc.Name == dcName {
 								found = true
 								if dc.URL == "" {

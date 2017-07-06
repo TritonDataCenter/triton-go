@@ -3,11 +3,13 @@ package compute
 import (
 	"fmt"
 	"testing"
-
-	"context"
 	"time"
 
+	"context"
+
 	"github.com/abdullin/seq"
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -15,15 +17,27 @@ func TestAccImagesList(t *testing.T) {
 	const stateKey = "images"
 	const image1Id = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
 	const image2Id = "70e3ae72-96b6-11e6-9056-9737fd4d0764"
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
-			&testutils.StepAPICall{
+
+			&testutils.StepClient{
 				StateBagKey: stateKey,
-				CallFunc: func(client *ImagesClient) (interface{}, error) {
-					return client.Images().List(
-						context.Background(), &ListInput{})
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
 				},
 			},
+
+			&testutils.StepAPICall{
+				StateBagKey: stateKey,
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.ListImagesInput{}
+					return c.Images().List(ctx, input)
+				},
+			},
+
 			&testutils.StepAssertFunc{
 				AssertFunc: func(state testutils.TritonStateBag) error {
 					images, ok := state.GetOk(stateKey)
@@ -34,7 +48,7 @@ func TestAccImagesList(t *testing.T) {
 					toFind := []string{image1Id, image2Id}
 					for _, imageID := range toFind {
 						found := false
-						for _, image := range images.([]*Image) {
+						for _, image := range images.([]*compute.Image) {
 							if image.ID == imageID {
 								found = true
 								state.Put(imageID, image)
@@ -48,6 +62,7 @@ func TestAccImagesList(t *testing.T) {
 					return nil
 				},
 			},
+
 			&testutils.StepAssert{
 				StateBagKey: image1Id,
 				Assertions: seq.Map{
@@ -57,6 +72,7 @@ func TestAccImagesList(t *testing.T) {
 					"requirements.min_ram":    3840,
 				},
 			},
+
 			&testutils.StepAssert{
 				StateBagKey: image2Id,
 				Assertions: seq.Map{
@@ -77,18 +93,29 @@ func TestAccImagesGet(t *testing.T) {
 	if err != nil {
 		t.Fatal("Reference time does not parse as RFC3339")
 	}
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
-			&testutils.StepAPICall{
+
+			&testutils.StepClient{
 				StateBagKey: stateKey,
-				CallFunc: func(client *ImagesClient) (interface{}, error) {
-					return client.Images().Get(
-						context.Background(),
-						&GetInput{
-							ImageID: imageId,
-						})
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
 				},
 			},
+
+			&testutils.StepAPICall{
+				StateBagKey: stateKey,
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.GetImageInput{
+						ImageID: imageId,
+					}
+					return c.Images().Get(ctx, input)
+				},
+			},
+
 			&testutils.StepAssert{
 				StateBagKey: stateKey,
 				Assertions: seq.Map{

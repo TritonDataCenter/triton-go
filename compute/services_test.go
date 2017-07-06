@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-go/testutils"
 )
 
 func TestAccServicesList(t *testing.T) {
@@ -11,14 +15,24 @@ func TestAccServicesList(t *testing.T) {
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
-			&testutils.StepAPICall{
+
+			&testutils.StepClient{
 				StateBagKey: stateKey,
-				CallFunc: func(client *Compute) (interface{}, error) {
-					return client.Services().ListServices(
-						context.Background(),
-						&ListServicesInput{})
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
 				},
 			},
+
+			&testutils.StepAPICall{
+				StateBagKey: stateKey,
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.ListServicesInput{}
+					return c.Services().List(ctx, input)
+				},
+			},
+
 			&testutils.StepAssertFunc{
 				AssertFunc: func(state testutils.TritonStateBag) error {
 					services, ok := state.GetOk(stateKey)
@@ -29,7 +43,7 @@ func TestAccServicesList(t *testing.T) {
 					toFind := []string{"docker"}
 					for _, serviceName := range toFind {
 						found := false
-						for _, service := range services.([]*Service) {
+						for _, service := range services.([]*compute.Service) {
 							if service.Name == serviceName {
 								found = true
 								if service.Endpoint == "" {
