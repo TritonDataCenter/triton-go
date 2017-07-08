@@ -2,6 +2,8 @@ package testutils
 
 import (
 	"sync"
+
+	triton "github.com/joyent/triton-go"
 )
 
 type TritonStateBag interface {
@@ -10,7 +12,10 @@ type TritonStateBag interface {
 	Put(string, interface{})
 	Remove(string)
 
-	Client() *Client
+	Config() *triton.ClientConfig
+
+	Client() interface{}
+	PutClient(interface{})
 
 	AppendError(error)
 	ErrorsOrNil() []error
@@ -19,7 +24,8 @@ type TritonStateBag interface {
 // TritonStateBag implements StateBag by using a normal map underneath
 // protected by a RWMutex.
 type basicTritonStateBag struct {
-	TritonClient *Client
+	TritonConfig *triton.ClientConfig
+	TritonClient interface{}
 
 	errors []error
 	data   map[string]interface{}
@@ -28,11 +34,25 @@ type basicTritonStateBag struct {
 	once sync.Once
 }
 
-func (b *basicTritonStateBag) Client() *Client {
+func (b *basicTritonStateBag) Config() *triton.ClientConfig {
+	b.l.RLock()
+	defer b.l.RUnlock()
+
+	return b.TritonConfig
+}
+
+func (b *basicTritonStateBag) Client() interface{} {
 	b.l.RLock()
 	defer b.l.RUnlock()
 
 	return b.TritonClient
+}
+
+func (b *basicTritonStateBag) PutClient(client interface{}) {
+	b.l.Lock()
+	defer b.l.Unlock()
+
+	b.TritonClient = client
 }
 
 func (b *basicTritonStateBag) AppendError(err error) {

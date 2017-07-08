@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 )
 
@@ -37,6 +38,7 @@ func AccTest(t *testing.T, c TestCase) {
 	sdcAccount := os.Getenv("SDC_ACCOUNT")
 	sdcKeyId := os.Getenv("SDC_KEY_ID")
 	sdcKeyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+	mantaURL := os.Getenv("MANTA_URL")
 
 	var prerollErrors []error
 	if sdcURL == "" {
@@ -74,13 +76,23 @@ func AccTest(t *testing.T, c TestCase) {
 		}
 	}
 
-	client, err := NewClient(sdcURL, sdcAccount, signer)
-	if err != nil {
-		t.Fatalf("Error creating Triton Client: %s", err)
+	// Old world... we spun up a universal client. This is pushed deeper into
+	// the process within `testutils.StepClient`.
+	//
+	// client, err := NewClient(sdcURL, sdcAccount, signer)
+	// if err != nil {
+	//         t.Fatalf("Error creating Triton Client: %s", err)
+	// }
+
+	config := &triton.ClientConfig{
+		Endpoint:    sdcURL,
+		MantaURL:    mantaURL,
+		AccountName: sdcAccount,
+		Signers:     []authentication.Signer{signer},
 	}
 
 	state := &basicTritonStateBag{
-		TritonClient: client,
+		TritonConfig: config,
 	}
 
 	runner := &basicRunner{

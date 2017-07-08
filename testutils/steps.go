@@ -9,13 +9,42 @@ import (
 
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 )
+
+type StepClient struct {
+	StateBagKey string
+	ErrorKey    string
+	CallFunc    func(config *triton.ClientConfig) (interface{}, error)
+	CleanupFunc func(client interface{}, callState interface{})
+}
+
+func (s *StepClient) Run(state TritonStateBag) StepAction {
+	client, err := s.CallFunc(state.Config())
+	if err != nil {
+		if s.ErrorKey == "" {
+			state.AppendError(err)
+			return Halt
+		}
+
+		state.Put(s.ErrorKey, err)
+		return Continue
+	}
+
+	state.PutClient(client)
+	return Continue
+}
+
+func (s *StepClient) Cleanup(state TritonStateBag) {
+	return
+}
 
 type StepAPICall struct {
 	StateBagKey string
 	ErrorKey    string
-	CallFunc    func(client *Client) (interface{}, error)
-	CleanupFunc func(client *Client, callState interface{})
+	CallFunc    func(client interface{}) (interface{}, error)
+	CleanupFunc func(client interface{}, callState interface{})
 }
 
 func (s *StepAPICall) Run(state TritonStateBag) StepAction {
@@ -165,13 +194,13 @@ func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 		return Halt
 	}
 
-	tritonErrorInterface := errwrap.GetType(err.(error), &TritonError{})
+	tritonErrorInterface := errwrap.GetType(err.(error), &compute.TritonError{})
 	if tritonErrorInterface == nil {
 		state.AppendError(errors.New("Expected a TritonError in wrapped error chain"))
 		return Halt
 	}
 
-	tritonErr := tritonErrorInterface.(*TritonError)
+	tritonErr := tritonErrorInterface.(*compute.TritonError)
 	if tritonErr.Code == s.Code {
 		return Continue
 	}
