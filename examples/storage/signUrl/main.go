@@ -2,32 +2,36 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/jen20/manta-go"
-	"github.com/jen20/manta-go/authentication"
 	"net/http"
 	"time"
+
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/storage"
 )
 
-const accountName = "tritongo"
-
 func main() {
+	const accountName = os.Getenv("MANTA_USER")
+
 	sshKeySigner, err := authentication.NewSSHAgentSigner(
 		"fd:9e:9a:9c:28:99:57:05:18:9f:b6:44:6b:cc:fd:3a", accountName)
 	if err != nil {
 		log.Fatalf("NewSSHAgentSigner: %s", err)
 	}
 
-	client, err := manta.NewClient(&manta.ClientOptions{
-		Endpoint:    "https://us-east.manta.joyent.com/",
+	config := &triton.ClientConfig{
+		MantaURL:    "https://us-east.manta.joyent.com/",
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	})
+	}
+	client, err := storage.NewClient(config)
 	if err != nil {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	signed, err := client.SignURL(&manta.SignURLInput{
+	signed, err := client.SignURL(&storage.SignURLInput{
 		ObjectPath:     "books/treasure_island.txt",
 		Method:         http.MethodGet,
 		ValidityPeriod: 5 * time.Minute,

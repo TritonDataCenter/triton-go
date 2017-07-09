@@ -2,35 +2,46 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
-	"github.com/jen20/manta-go"
-	"github.com/jen20/manta-go/authentication"
+	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/storage"
 )
 
-const accountName = "tritongo"
-
 func main() {
-	sshKeySigner, err := authentication.NewSSHAgentSigner(
-		"fd:9e:9a:9c:28:99:57:05:18:9f:b6:44:6b:cc:fd:3a", accountName)
+	keyID := os.Getenv("SDC_KEY_ID")
+	accountName := os.Getenv("SDC_ACCOUNT")
+	keyPath := os.Getenv("SDC_KEY_FILE")
+
+	privateKey, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		log.Fatalf("NewSSHAgentSigner: %s", err)
+		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
 	}
 
-	client, err := manta.NewClient(&manta.ClientOptions{
-		Endpoint:    "https://us-east.manta.joyent.com/",
+	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config := &triton.ClientConfig{
+		MantaURL:    os.Getenv("MANTA_URL"),
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	})
+	}
+	client, err := storage.NewClient(config)
 	if err != nil {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	job, err := client.CreateJob(&manta.CreateJobInput{
+	job, err := client.Jobs().Create(context.Background(), &storage.CreateJobInput{
 		Name: "WordCount",
-		Phases: []*manta.JobPhase{
+		Phases: []*storage.JobPhase{
 			{
 				Type: "map",
 				Exec: "wc",
@@ -47,7 +58,7 @@ func main() {
 
 	fmt.Printf("Job ID: %s\n", job.JobID)
 
-	err = client.AddJobInputs(&manta.AddJobInputsInput{
+	err = client.Jobs().AddInputs(context.Background(), &storage.AddJobInputsInput{
 		JobID: job.JobID,
 		ObjectPaths: []string{
 			fmt.Sprintf("/%s/stor/books/treasure_island.txt", accountName),
@@ -60,7 +71,7 @@ func main() {
 		log.Fatalf("AddJobInputs: %s", err)
 	}
 
-	err = client.AddJobInputs(&manta.AddJobInputsInput{
+	err = client.Jobs().AddInputs(context.Background(), &storage.AddJobInputsInput{
 		JobID: job.JobID,
 		ObjectPaths: []string{
 			fmt.Sprintf("/%s/stor/books/sherlock_holmes.txt", accountName),
@@ -70,33 +81,34 @@ func main() {
 		log.Fatalf("AddJobInputs: %s", err)
 	}
 
-	gjo, err := client.GetJob(&manta.GetJobInput{
+	gjo, err := client.Jobs().Get(context.Background(), &storage.GetJobInput{
 		JobID: job.JobID,
 	})
 	if err != nil {
 		log.Fatalf("GetJob: %s", err)
 	}
 
-	fmt.Printf("%+v", gjo.Job)
+	fmt.Printf("%+v\n", gjo.Job)
+	fmt.Printf("%+v\n", gjo.Job.Stats)
 
-	err = client.EndJobInput(&manta.EndJobInputInput{
+	err = client.Jobs().EndInput(context.Background(), &storage.EndJobInputInput{
 		JobID: job.JobID,
 	})
 	if err != nil {
 		log.Fatalf("EndJobInput: %s", err)
 	}
 
-	jobs, err := client.ListJobs(&manta.ListJobsInput{})
+	jobs, err := client.Jobs().List(context.Background(), &storage.ListJobsInput{})
 	if err != nil {
 		log.Fatalf("ListJobs: %s", err)
 	}
 
-	fmt.Printf("Result set size: %d\n", jobs.ResultSetSize)
+	fmt.Printf("Number of jobs: %d\n", jobs.ResultSetSize)
 	for _, j := range jobs.Jobs {
 		fmt.Printf(" - %s\n", j.ID)
 	}
 
-	gjio, err := client.GetJobInput(&manta.GetJobInputInput{
+	gjio, err := client.Jobs().GetInput(context.Background(), &storage.GetJobInputInput{
 		JobID: job.JobID,
 	})
 	if err != nil {
@@ -112,7 +124,7 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
-	gjoo, err := client.GetJobOutput(&manta.GetJobOutputInput{
+	gjoo, err := client.Jobs().GetOutput(context.Background(), &storage.GetJobOutputInput{
 		JobID: job.JobID,
 	})
 	if err != nil {

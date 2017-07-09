@@ -3,70 +3,6 @@
 `go-triton` is an idiomatic library exposing a client SDK for Go applications
 using Joyent's Triton Compute and Storage (Manta) APIs.
 
-## Example
-
-The following is a complete example of how to initialize the `compute` package
-client and list all instances under an account. More detailed usage of this
-library follows.
-
-```go
-
-package main
-
-import (
-    "context"
-    "fmt"
-    "io/ioutil"
-    "log"
-    "os"
-    "time"
-
-    triton "github.com/joyent/triton-go"
-    "github.com/joyent/triton-go/authentication"
-    "github.com/joyent/triton-go/compute"
-)
-
-func main() {
-    keyID := os.Getenv("SDC_KEY_ID")
-    accountName := os.Getenv("SDC_ACCOUNT")
-    keyPath := os.Getenv("SDC_KEY_FILE")
-
-    privateKey, err := ioutil.ReadFile(keyPath)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    config := &triton.ClientConfig{
-        Endpoint:    os.Getenv("SDC_URL"),
-        MantaURL:    os.Getenv("MANTA_URL"),
-        AccountName: accountName,
-        Signers:     []authentication.Signer{sshKeySigner},
-    }
-
-    c, err := compute.NewClient(config)
-    if err != nil {
-        log.Fatalf("compute.NewClient: %s", err)
-    }
-
-    listInput := &compute.ListInstancesInput{}
-    instances, err := c.Instances().List(context.Background(), listInput)
-    if err != nil {
-        log.Fatalf("compute.Instances.List: %v", err)
-    }
-    numInstances := 0
-    for _, instance := range instances {
-        numInstances++
-        fmt.Println(fmt.Sprintf("-- Instance: %v", instance.Name))
-    }
-}
-
-```
-
 ## Usage
 
 Triton uses [HTTP Signature][4] to sign the Date header in each HTTP request
@@ -87,47 +23,34 @@ if err != nil {
 }
 ```
 
-An appropriate key fingerprint can be generated using `ssh-keygen`:
+An appropriate key fingerprint can be generated using `ssh-keygen`.
 
 ```
 ssh-keygen -Emd5 -lf ~/.ssh/id_rsa.pub | cut -d " " -f 2 | sed 's/MD5://'
 ```
 
-To construct a Client, use the `NewClient` function, passing in the endpoint,
-account name and constructed signer:
+Each top level package, `account`, `compute`, `identity`, `network`, all have
+their own seperate client. In order to initialize a package client, simply pass
+the global `triton.ClientConfig` struct into the client's constructor function.
 
 ```go
-client, err := triton.NewClient("https://us-sw-1.api.joyent.com/", "AccountName",	sshKeySigner)
-if err != nil {
-    log.Fatalf("NewClient: %s", err)
-}
-```
+    config := &triton.ClientConfig{
+        TritonURL:   os.Getenv("SDC_URL"),
+        MantaURL:    os.Getenv("MANTA_URL"),
+        AccountName: accountName,
+        Signers:     []authentication.Signer{sshKeySigner},
+    }
 
-Having constructed a `triton.Client`, use the methods available to access
-functionality by functional grouping. For example, for access to operations on
-SSH keys, use the `Keys()` method to obtain a client which has access to the
-`CreateKey`, `ListKeys` and `DeleteKey` operations. For access to operations on
-Machines, use the `Machines()` method to obtain a client which has access to the
-`RenameMachine`, `GetMachineMetadata`, `GetMachineTag`, and other operations.
-
-Operation methods take their formal parameters via a struct named
-`OperationInput` - for example when creating an SSH key, the `CreateKeyInput`
-struct is used with the `func CreateKey(*CreateKeyInput) (*Key, error)`
-method. This allows specification of named parameters:
+    c, err := compute.NewClient(config)
+    if err != nil {
+        log.Fatalf("compute.NewClient: %s", err)
+    }
 
 ```
-client := state.Client().Keys()
 
-key, err := client.CreateKey(&CreateKeyInput{
-    Name: "tempKey",
-    Key:  "ssh-rsa .....",
-})
-if err != nil {
-    panic(err)
-}
-
-// Key contains the return value.
-```
+Constructing `compute.Client` returns an interface which exposes `compute` API
+resources. The same goes for all other packages. Reference their unique
+documentation for more information.
 
 ## Error Handling
 
@@ -176,7 +99,81 @@ PASS
 ok  	github.com/joyent/triton-go	31.861s
 ```
 
+## Example API
+
+There's an `examples/` directory available with sample code setup for many of
+the APIs within this library. Most of these can be run using `go run` and
+referencing your SSH key file use by your active `triton` CLI profile.
+
+```sh
+$ eval "$(triton env us-sw-1)"
+$ SDC_KEY_FILE=~/.ssh/triton-id_rsa go run examples/compute/instances.go
+```
+
+The following is a complete example of how to initialize the `compute` package
+client and list all instances under an account. More detailed usage of this
+library follows.
+
+```go
+
+
+package main
+
+import (
+    "context"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "os"
+    "time"
+
+    triton "github.com/joyent/triton-go"
+    "github.com/joyent/triton-go/authentication"
+    "github.com/joyent/triton-go/compute"
+)
+
+func main() {
+    keyID := os.Getenv("SDC_KEY_ID")
+    accountName := os.Getenv("SDC_ACCOUNT")
+    keyPath := os.Getenv("SDC_KEY_FILE")
+
+    privateKey, err := ioutil.ReadFile(keyPath)
+    if err != nil {
+        log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+    }
+
+    sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    config := &triton.ClientConfig{
+        Endpoint:    os.Getenv("SDC_URL"),
+        MantaURL:    os.Getenv("MANTA_URL"),
+        AccountName: accountName,
+        Signers:     []authentication.Signer{sshKeySigner},
+    }
+
+    c, err := compute.NewClient(config)
+    if err != nil {
+        log.Fatalf("compute.NewClient: %s", err)
+    }
+
+    listInput := &compute.ListInstancesInput{}
+    instances, err := c.Instances().List(context.Background(), listInput)
+    if err != nil {
+        log.Fatalf("compute.Instances.List: %v", err)
+    }
+    numInstances := 0
+    for _, instance := range instances {
+        numInstances++
+        fmt.Println(fmt.Sprintf("-- Instance: %v", instance.Name))
+    }
+}
+
+```
+
 [4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md
-[5]: https://godoc.org/github.com/joyent/go-triton/authentication
-[6]: https://godoc.org/github.com/joyent/go-triton/authentication
+[5]: https://godoc.org/github.com/joyent/triton-go/authentication
+[6]: https://godoc.org/github.com/joyent/triton-go/authentication
 [7]: https://github.com/hashicorp/go-errwrap

@@ -47,8 +47,10 @@ func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObj
 		Path:   path,
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
+	if respBody != nil {
+		defer respBody.Close()
+	}
 	if err != nil {
-		respBody.Close()
 		return nil, errwrap.Wrapf("Error executing GetDirectory request: {{err}}", err)
 	}
 

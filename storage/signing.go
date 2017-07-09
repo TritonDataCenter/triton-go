@@ -51,13 +51,8 @@ func (output *SignURLOutput) SignedURL(scheme string) string {
 // SignURL creates a time-expiring URL that can be shared with others.
 // This is useful to generate HTML links, for example.
 func (s *StorageClient) SignURL(input *SignURLInput) (*SignURLOutput, error) {
-	hostUrl, err := url.Parse(s.Client.Endpoint)
-	if err != nil {
-		return nil, errwrap.Wrapf("Error parsing endpoint URL: {{err}}", err)
-	}
-
 	output := &SignURLOutput{
-		host:       hostUrl.Host,
+		host:       s.Client.MantaURL.Host,
 		objectPath: fmt.Sprintf("/%s%s", s.Client.AccountName, input.ObjectPath),
 		Method:     input.Method,
 		Algorithm:  strings.ToUpper(s.Client.Authorizers[0].DefaultAlgorithm()),
@@ -67,7 +62,7 @@ func (s *StorageClient) SignURL(input *SignURLInput) (*SignURLOutput, error) {
 
 	toSign := bytes.Buffer{}
 	toSign.WriteString(input.Method + "\n")
-	toSign.WriteString(hostUrl.Host + "\n")
+	toSign.WriteString(s.Client.MantaURL.Host + "\n")
 	toSign.WriteString(fmt.Sprintf("/%s%s\n", s.Client.AccountName, input.ObjectPath))
 
 	query := &url.Values{}
