@@ -11,7 +11,7 @@ import (
 // a client constructor through the implementation's runtime environment
 // (SDC/MANTA env vars).
 type ClientConfig struct {
-	Endpoint    string
+	TritonURL   string
 	MantaURL    string
 	AccountName string
 	Signers     []authentication.Signer

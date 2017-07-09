@@ -26,7 +26,7 @@ var MissingKeyIdError = errors.New("Default SSH agent authentication requires SD
 type Client struct {
 	HTTPClient  *http.Client
 	Authorizers []authentication.Signer
-	CloudURL    url.URL
+	TritonURL   url.URL
 	MantaURL    url.URL
 	AccountName string
 	Endpoint    string
@@ -37,13 +37,13 @@ type Client struct {
 //
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
-func New(endpoint string, mantaEndpoint string, accountName string, signers ...authentication.Signer) (*Client, error) {
-	cloudURL, err := url.Parse(endpoint)
+func New(tritonURL string, mantaURL string, accountName string, signers ...authentication.Signer) (*Client, error) {
+	cloudURL, err := url.Parse(tritonURL)
 	if err != nil {
 		return nil, errwrap.Wrapf("invalid endpoint URL: {{err}}", err)
 	}
 
-	mantaURL, err := url.Parse(mantaEndpoint)
+	storageURL, err := url.Parse(mantaURL)
 	if err != nil {
 		return nil, errwrap.Wrapf("invalid manta URL: {{err}}", err)
 	}
@@ -60,10 +60,10 @@ func New(endpoint string, mantaEndpoint string, accountName string, signers ...a
 	newClient := &Client{
 		HTTPClient:  httpClient,
 		Authorizers: signers,
-		CloudURL:    *cloudURL,
-		MantaURL:    *mantaURL,
+		TritonURL:   *cloudURL,
+		MantaURL:    *storageURL,
 		AccountName: accountName,
-		Endpoint:    endpoint,
+		Endpoint:    tritonURL,
 	}
 
 	var authorizers []authentication.Signer
@@ -166,7 +166,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	endpoint := c.CloudURL
+	endpoint := c.TritonURL
 	endpoint.Path = path
 	if query != nil {
 		endpoint.RawQuery = query.Encode()
@@ -225,7 +225,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		requestBody = bytes.NewReader(marshaled)
 	}
 
-	endpoint := c.CloudURL
+	endpoint := c.TritonURL
 	endpoint.Path = path
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)

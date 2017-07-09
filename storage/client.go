@@ -19,7 +19,7 @@ func newStorageClient(client *client.Client) *StorageClient {
 // resources within CloudAPI
 func NewClient(config *triton.ClientConfig) (*StorageClient, error) {
 	// TODO: Utilize config interface within the function itself
-	client, err := client.New(config.Endpoint, config.MantaURL, config.AccountName, config.Signers...)
+	client, err := client.New(config.TritonURL, config.MantaURL, config.AccountName, config.Signers...)
 	if err != nil {
 		return nil, err
 	}

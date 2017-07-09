@@ -85,7 +85,7 @@ func AccTest(t *testing.T, c TestCase) {
 	// }
 
 	config := &triton.ClientConfig{
-		Endpoint:    sdcURL,
+		TritonURL:   sdcURL,
 		MantaURL:    mantaURL,
 		AccountName: sdcAccount,
 		Signers:     []authentication.Signer{signer},
