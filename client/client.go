@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -63,7 +62,8 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		TritonURL:   *cloudURL,
 		MantaURL:    *storageURL,
 		AccountName: accountName,
-		Endpoint:    tritonURL,
+		// TODO(justinwr): Deprecated?
+		// Endpoint:    tritonURL,
 	}
 
 	var authorizers []authentication.Signer
@@ -124,9 +124,10 @@ func doNotFollowRedirects(*http.Request, []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
-func (c *Client) FormatURL(path string) string {
-	return fmt.Sprintf("%s%s", c.Endpoint, path)
-}
+// TODO(justinwr): Deprecated?
+// func (c *Client) FormatURL(path string) string {
+// 	return fmt.Sprintf("%s%s", c.Endpoint, path)
+// }
 
 func (c *Client) DecodeError(statusCode int, body io.Reader) error {
 	err := &ClientError{
