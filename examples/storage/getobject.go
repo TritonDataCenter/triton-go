@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,16 +13,22 @@ import (
 )
 
 func main() {
-	const accountName = os.Getenv("MANTA_USER")
+	keyID := os.Getenv("SDC_KEY_ID")
+	accountName := os.Getenv("SDC_ACCOUNT")
+	keyPath := os.Getenv("SDC_KEY_FILE")
 
-	sshKeySigner, err := authentication.NewSSHAgentSigner(
-		"fd:9e:9a:9c:28:99:57:05:18:9f:b6:44:6b:cc:fd:3a", accountName)
+	privateKey, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		log.Fatalf("NewSSHAgentSigner: %s", err)
+		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+	}
+
+	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	config := &triton.ClientConfig{
-		MantaURL:    "https://us-east.manta.joyent.com/",
+		MantaURL:    os.Getenv("MANTA_URL"),
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
 	}
@@ -30,23 +37,23 @@ func main() {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	output, err := client.Objects().Get(&storage.GetObjectInput{
-		ObjectPath: "tempstate.tfstate",
+	obj, err := client.Objects().Get(context.Background(), &storage.GetObjectInput{
+		ObjectPath: "/stor/books/dracula.txt",
 	})
 	if err != nil {
-		log.Fatalf("GetObject(): %s", err)
+		log.Fatalf("compute.Objects.Get: %s", err)
 	}
 
-	defer output.ObjectReader.Close()
-	body, err := ioutil.ReadAll(output.ObjectReader)
+	body, err := ioutil.ReadAll(obj.ObjectReader)
 	if err != nil {
-		log.Fatalf("Reading Object: %s", err)
+		log.Fatalf("compute.Objects.Get: %s", err)
 	}
+	defer obj.ObjectReader.Close()
 
-	fmt.Printf("Content-Length: %d\n", output.ContentLength)
-	fmt.Printf("Content-MD5: %s\n", output.ContentMD5)
-	fmt.Printf("Content-Type: %s\n", output.ContentType)
-	fmt.Printf("ETag: %s\n", output.ETag)
-	fmt.Printf("Date-Modified: %s\n", output.LastModified.String())
-	fmt.Printf("Object:\n\n%s", string(body))
+	fmt.Printf("Content-Length: %d\n", obj.ContentLength)
+	fmt.Printf("Content-MD5: %s\n", obj.ContentMD5)
+	fmt.Printf("Content-Type: %s\n", obj.ContentType)
+	fmt.Printf("ETag: %s\n", obj.ETag)
+	fmt.Printf("Date-Modified: %s\n", obj.LastModified.String())
+	fmt.Printf("Length: %d\n", len(body))
 }
