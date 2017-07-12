@@ -157,7 +157,7 @@ func main() {
     }
 
     config := &triton.ClientConfig{
-        Endpoint:    os.Getenv("SDC_URL"),
+        TritonURL:   os.Getenv("SDC_URL"),
         MantaURL:    os.Getenv("MANTA_URL"),
         AccountName: accountName,
         Signers:     []authentication.Signer{sshKeySigner},
