@@ -1,6 +1,6 @@
 # triton-go
 
-`go-triton` is an idiomatic library exposing a client SDK for Go applications
+`triton-go` is an idiomatic library exposing a client SDK for Go applications
 using Joyent's Triton Compute and Storage (Manta) APIs.
 
 ## Usage
@@ -45,12 +45,21 @@ the global `triton.ClientConfig` struct into the client's constructor function.
     if err != nil {
         log.Fatalf("compute.NewClient: %s", err)
     }
-
 ```
 
 Constructing `compute.Client` returns an interface which exposes `compute` API
 resources. The same goes for all other packages. Reference their unique
 documentation for more information.
+
+The same `triton.ClientConfig` will initialize the Manta `storage` client as
+well...
+
+```go
+    c, err := storage.NewClient(config)
+    if err != nil {
+        log.Fatalf("storage.NewClient: %s", err)
+    }
+```
 
 ## Error Handling
 
