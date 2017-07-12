@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -10,17 +13,23 @@ import (
 )
 
 func main() {
-	const accountName = os.Getenv("MANTA_USER")
+	keyID := os.Getenv("SDC_KEY_ID")
+	accountName := os.Getenv("SDC_ACCOUNT")
+	keyPath := os.Getenv("SDC_KEY_FILE")
 
-	sshKeySigner, err := authentication.NewSSHAgentSigner(
-		"fd:9e:9a:9c:28:99:57:05:18:9f:b6:44:6b:cc:fd:3a", accountName)
+	privateKey, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		log.Fatalf("NewSSHAgentSigner: %s", err)
+		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
 	}
 
-	config := &triton.ClientOptions{
-		MantaURL:    "https://us-east.manta.joyent.com/",
-		AccountName: "tritongo",
+	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config := &triton.ClientConfig{
+		MantaURL:    os.Getenv("MANTA_URL"),
+		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
 	}
 	client, err := storage.NewClient(config)
@@ -28,17 +37,18 @@ func main() {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	reader, err := os.Open("foo.txt")
+	reader, err := os.Open("/tmp/foo.txt")
 	if err != nil {
 		log.Fatalf("os.Open: %s", err)
 	}
 	defer reader.Close()
 
-	err = client.Objects().Put(&storage.PutObjectInput{
-		ObjectPath:   "foo.txt",
+	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
+		ObjectPath:   "/stor/foo.txt",
 		ObjectReader: reader,
 	})
 	if err != nil {
-		log.Fatalf("GetObject(): %s", err)
+		log.Fatalf("storage.Objects.Put: %s", err)
 	}
+	fmt.Println("Successfully uploaded /tmp/foo.txt!")
 }
