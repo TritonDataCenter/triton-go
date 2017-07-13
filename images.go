@@ -47,11 +47,25 @@ type Image struct {
 	Error        TritonError            `json:"error"`
 }
 
-type ListImagesInput struct{}
+type ListImagesInput struct {
+	Name    string `json:"name"`
+	OS      string `json:"os"`
+	Version string `json:"version"`
+	Public  bool   `json:"public"`
+	State   string
+	Owner   string `json:"owner"`
+	Type    string `json:"state"`
+}
 
-func (client *ImagesClient) ListImages(ctx context.Context, _ *ListImagesInput) ([]*Image, error) {
+func (client *ImagesClient) ListImages(ctx context.Context, input *ListImagesInput) ([]*Image, error) {
 	path := fmt.Sprintf("/%s/images", client.accountName)
-	respReader, err := client.executeRequest(ctx, http.MethodGet, path, nil)
+
+	query := &url.Values{}
+	if input.State != "" {
+		query.Set("state", input.State)
+	}
+
+	respReader, err := client.executeRequestURIParams(ctx, http.MethodGet, path, input, query)
 	if respReader != nil {
 		defer respReader.Close()
 	}
