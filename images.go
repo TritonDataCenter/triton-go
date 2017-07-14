@@ -48,24 +48,42 @@ type Image struct {
 }
 
 type ListImagesInput struct {
-	Name    string `json:"name"`
-	OS      string `json:"os"`
-	Version string `json:"version"`
-	Public  bool   `json:"public"`
+	Name    string
+	OS      string
+	Version string
+	Public  bool
 	State   string
-	Owner   string `json:"owner"`
-	Type    string `json:"state"`
+	Owner   string
+	Type    string
 }
 
 func (client *ImagesClient) ListImages(ctx context.Context, input *ListImagesInput) ([]*Image, error) {
 	path := fmt.Sprintf("/%s/images", client.accountName)
 
 	query := &url.Values{}
+	if input.Name != "" {
+		query.Set("name", input.Name)
+	}
+	if input.OS != "" {
+		query.Set("os", input.OS)
+	}
+	if input.Version != "" {
+		query.Set("version", input.Version)
+	}
+	if input.Public {
+		query.Set("public", "true")
+	}
 	if input.State != "" {
 		query.Set("state", input.State)
 	}
+	if input.Owner != "" {
+		query.Set("owner", input.Owner)
+	}
+	if input.Type != "" {
+		query.Set("type", input.Type)
+	}
 
-	respReader, err := client.executeRequestURIParams(ctx, http.MethodGet, path, input, query)
+	respReader, err := client.executeRequestURIParams(ctx, http.MethodGet, path, nil, query)
 	if respReader != nil {
 		defer respReader.Close()
 	}
