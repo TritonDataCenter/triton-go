@@ -106,7 +106,7 @@ func TestAccImagesListInput(t *testing.T) {
 					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
 					input := &compute.ListImagesInput{
-						Name:    "ubuntu",
+						Name:    "ubuntu-14.04",
 						Type:    "lx-dataset",
 						Version: "20160219",
 					}
