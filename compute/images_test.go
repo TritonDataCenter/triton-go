@@ -86,10 +86,76 @@ func TestAccImagesList(t *testing.T) {
 	})
 }
 
+func TestAccImagesListInput(t *testing.T) {
+	const stateKey = "images"
+	const image1Id = "5cdc6dde-d6ad-11e5-8b11-8337e6f86725"
+
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepClient{
+				StateBagKey: stateKey,
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
+				},
+			},
+
+			&testutils.StepAPICall{
+				StateBagKey: stateKey,
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.ListImagesInput{
+						Name:    "ubuntu",
+						Type:    "lx-dataset",
+						Version: "20160219",
+					}
+					return c.Images().List(ctx, input)
+				},
+			},
+
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
+					images, ok := state.GetOk(stateKey)
+					if !ok {
+						return fmt.Errorf("State key %q not found", stateKey)
+					}
+
+					toFind := []string{image1Id}
+					for _, imageID := range toFind {
+						found := false
+						for _, image := range images.([]*compute.Image) {
+							if image.ID == imageID {
+								found = true
+								state.Put(imageID, image)
+							}
+						}
+						if !found {
+							return fmt.Errorf("Did not find Image %q", imageID)
+						}
+					}
+
+					return nil
+				},
+			},
+
+			&testutils.StepAssert{
+				StateBagKey: image1Id,
+				Assertions: seq.Map{
+					"id":                  "5cdc6dde-d6ad-11e5-8b11-8337e6f86725",
+					"name":                "ubuntu-14.04",
+					"owner":               "9dce1460-0c4c-4417-ab8b-25ca478c5a78",
+					"tags.kernel_version": "3.13.0",
+				},
+			},
+		},
+	})
+}
+
 func TestAccImagesGet(t *testing.T) {
 	const stateKey = "image"
 	const imageId = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
-	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:07:38Z")
+	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:05:28Z")
 	if err != nil {
 		t.Fatal("Reference time does not parse as RFC3339")
 	}
