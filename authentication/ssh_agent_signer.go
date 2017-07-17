@@ -16,6 +16,7 @@ import (
 type SSHAgentSigner struct {
 	formattedKeyFingerprint string
 	keyFingerprint          string
+	algorithm               string
 	accountName             string
 	keyIdentifier           string
 
@@ -60,14 +61,22 @@ func NewSSHAgentSigner(keyFingerprint, accountName string) (*SSHAgentSigner, err
 
 	formattedKeyFingerprint := formatPublicKeyFingerprint(matchingKey, true)
 
-	return &SSHAgentSigner{
+	signer := &SSHAgentSigner{
 		formattedKeyFingerprint: formattedKeyFingerprint,
 		keyFingerprint:          keyFingerprint,
 		accountName:             accountName,
 		agent:                   ag,
 		key:                     matchingKey,
 		keyIdentifier:           fmt.Sprintf("/%s/keys/%s", accountName, formattedKeyFingerprint),
-	}, nil
+	}
+
+	_, algorithm, err := signer.SignRaw("HelloWorld")
+	if err != nil {
+		return nil, fmt.Errorf("Cannot sign using ssh agent: %s", err)
+	}
+	signer.algorithm = algorithm
+
+	return signer, nil
 }
 
 func (s *SSHAgentSigner) Sign(dateHeader string) (string, error) {
@@ -101,4 +110,42 @@ func (s *SSHAgentSigner) Sign(dateHeader string) (string, error) {
 
 	return fmt.Sprintf(authorizationHeaderFormat, s.keyIdentifier,
 		authSignature.SignatureType(), headerName, authSignature.String()), nil
+}
+
+func (s *SSHAgentSigner) SignRaw(toSign string) (string, string, error) {
+	signature, err := s.agent.Sign(s.key, []byte(toSign))
+	if err != nil {
+		return "", "", errwrap.Wrapf("Error signing string: {{err}}", err)
+	}
+
+	keyFormat, err := keyFormatToKeyType(signature.Format)
+	if err != nil {
+		return "", "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+	}
+
+	var authSignature httpAuthSignature
+	switch keyFormat {
+	case "rsa":
+		authSignature, err = newRSASignature(signature.Blob)
+		if err != nil {
+			return "", "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+		}
+	case "ecdsa":
+		authSignature, err = newECDSASignature(signature.Blob)
+		if err != nil {
+			return "", "", errwrap.Wrapf("Error reading signature: {{err}}", err)
+		}
+	default:
+		return "", "", fmt.Errorf("Unsupported algorithm from SSH agent: %s", signature.Format)
+	}
+
+	return authSignature.String(), authSignature.SignatureType(), nil
+}
+
+func (s *SSHAgentSigner) KeyFingerprint() string {
+	return s.formattedKeyFingerprint
+}
+
+func (s *SSHAgentSigner) DefaultAlgorithm() string {
+	return s.algorithm
 }
