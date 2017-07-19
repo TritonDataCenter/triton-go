@@ -73,11 +73,11 @@ type NIC struct {
 	Network string `json:"network"`
 }
 
-type GetInstancesInput struct {
+type GetInstanceInput struct {
 	ID string
 }
 
-func (gmi *GetInstancesInput) Validate() error {
+func (gmi *GetInstanceInput) Validate() error {
 	if gmi.ID == "" {
 		return fmt.Errorf("machine ID can not be empty")
 	}
@@ -85,7 +85,7 @@ func (gmi *GetInstancesInput) Validate() error {
 	return nil
 }
 
-func (c *InstancesClient) Get(ctx context.Context, input *GetInstancesInput) (*Instance, error) {
+func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*Instance, error) {
 	if err := input.Validate(); err != nil {
 		return nil, errwrap.Wrapf("unable to get machine: {{err}}", err)
 	}

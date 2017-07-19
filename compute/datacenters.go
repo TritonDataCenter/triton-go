@@ -22,9 +22,9 @@ type DataCenter struct {
 	URL  string `json:"url"`
 }
 
-type ListInput struct{}
+type ListDataCentersInput struct{}
 
-func (c *DataCentersClient) List(ctx context.Context, _ *ListInput) ([]*DataCenter, error) {
+func (c *DataCentersClient) List(ctx context.Context, _ *ListDataCentersInput) ([]*DataCenter, error) {
 	path := fmt.Sprintf("/%s/datacenters", c.client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -65,11 +65,11 @@ func (c *DataCentersClient) List(ctx context.Context, _ *ListInput) ([]*DataCent
 	return result, nil
 }
 
-type GetInput struct {
+type GetDataCenterInput struct {
 	Name string
 }
 
-func (c *DataCentersClient) Get(ctx context.Context, input *GetInput) (*DataCenter, error) {
+func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
 	path := fmt.Sprintf("/%s/datacenters/%s", c.client.AccountName, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,

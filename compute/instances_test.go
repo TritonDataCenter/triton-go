@@ -51,7 +51,7 @@ func TestAccMachine_Get(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.GetInstancesInput{
+					input := &compute.GetInstanceInput{
 						ID: machineID,
 					}
 					return c.Instances().Get(ctx, input)
