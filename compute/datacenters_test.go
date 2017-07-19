@@ -32,7 +32,7 @@ func TestAccDataCenters_Get(t *testing.T) {
 				CallFunc: func(client interface{}) (interface{}, error) {
 					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &compute.GetInput{
+					input := &compute.GetDataCenterInput{
 						Name: dataCenterName,
 					}
 					return c.Datacenters().Get(ctx, input)
@@ -68,7 +68,7 @@ func TestAccDataCenters_List(t *testing.T) {
 				CallFunc: func(client interface{}) (interface{}, error) {
 					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &compute.ListInput{}
+					input := &compute.ListDataCentersInput{}
 					return c.Datacenters().List(ctx, input)
 				},
 			},
