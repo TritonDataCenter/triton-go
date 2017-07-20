@@ -194,7 +194,7 @@ type CreateFabricInput struct {
 	InternetNAT      bool              `json:"internet_nat"`
 }
 
-func (c *FabricsClient) CreateFabric(ctx context.Context, input *CreateFabricInput) (*Network, error) {
+func (c *FabricsClient) Create(ctx context.Context, input *CreateFabricInput) (*Network, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks", c.client.AccountName, input.FabricVLANID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -223,7 +223,7 @@ type GetFabricInput struct {
 	NetworkID    string `json:"-"`
 }
 
-func (c *FabricsClient) GetFabric(ctx context.Context, input *GetFabricInput) (*Network, error) {
+func (c *FabricsClient) Get(ctx context.Context, input *GetFabricInput) (*Network, error) {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", c.client.AccountName, input.FabricVLANID, input.NetworkID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
@@ -251,7 +251,7 @@ type DeleteFabricInput struct {
 	NetworkID    string `json:"-"`
 }
 
-func (c *FabricsClient) DeleteFabric(ctx context.Context, input *DeleteFabricInput) error {
+func (c *FabricsClient) Delete(ctx context.Context, input *DeleteFabricInput) error {
 	path := fmt.Sprintf("/%s/fabrics/default/vlans/%d/networks/%s", c.client.AccountName, input.FabricVLANID, input.NetworkID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
