@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -124,31 +125,68 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 	return native, nil
 }
 
-type ListInstancesInput struct{}
+type ListInstancesInput struct {
+	Brand       string
+	Alias       string
+	Name        string
+	Image       string
+	State       string
+	Memory      uint16
+	Limit       uint16
+	Offset      uint16
+	Tags        []string // query by arbitrary tags prefixed with "tag."
+	Tombstone   bool
+	Docker      bool
+	Credentials bool
+}
 
-func (c *InstancesClient) List(ctx context.Context, _ *ListInstancesInput) ([]*Instance, error) {
+func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) ([]*Instance, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+
+	query := &url.Values{}
+	if input.Brand != "" {
+		query.Set("brand", input.Brand)
+	}
+	if input.Name != "" {
+		query.Set("name", input.Name)
+	}
+	if input.Image != "" {
+		query.Set("image", input.Image)
+	}
+	if input.State != "" {
+		query.Set("state", input.State)
+	}
+	if input.Memory >= 1 && input.Memory <= 1000 {
+		query.Set("memory", fmt.Sprintf("%d", input.Memory))
+	}
+	if input.Limit >= 1 {
+		query.Set("limit", fmt.Sprintf("%d", input.Limit))
+	}
+	if input.Offset >= 0 {
+		query.Set("offset", fmt.Sprintf("%d", input.Offset))
+	}
+	if input.Tombstone {
+		query.Set("tombstone", "true")
+	}
+	if input.Docker {
+		query.Set("docker", "true")
+	}
+	if input.Credentials {
+		query.Set("credentials", "true")
+	}
+
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   path,
+		Query:  query,
 	}
-	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
-	if response != nil {
-		defer response.Body.Close()
-	}
-	if response.StatusCode == http.StatusNotFound {
-		return nil, &TritonError{
-			StatusCode: response.StatusCode,
-			Code:       "ResourceNotFound",
-		}
-	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}",
-			c.client.DecodeError(response.StatusCode, response.Body))
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var results []*_Instance
-	decoder := json.NewDecoder(response.Body)
+	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&results); err != nil {
 		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 	}
@@ -161,6 +199,7 @@ func (c *InstancesClient) List(ctx context.Context, _ *ListInstancesInput) ([]*I
 		}
 		machines = append(machines, native)
 	}
+
 	return machines, nil
 }
 
@@ -455,13 +494,88 @@ func (c *InstancesClient) ListTags(ctx context.Context, input *ListTagsInput) (m
 	return tags, nil
 }
 
+type GetMetadataInput struct {
+	ID  string
+	Key string
+}
+
+// GetMetadata returns a single metadata entry associated with an instance.
+func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInput) (string, error) {
+	if input.Key == "" {
+		return "", fmt.Errorf("Missing metadata Key from input: %s", input.Key)
+	}
+
+	path := fmt.Sprintf("/%s/machines/%s/metadata/%s", c.client.AccountName, input.ID, input.Key)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+	}
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
+		return "", &TritonError{
+			StatusCode: response.StatusCode,
+			Code:       "ResourceNotFound",
+		}
+	}
+	if err != nil {
+		return "", errwrap.Wrapf("Error executing Get request: {{err}}",
+			c.client.DecodeError(response.StatusCode, response.Body))
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", errwrap.Wrapf("Error unwrapping request body: {{err}}",
+			c.client.DecodeError(response.StatusCode, response.Body))
+	}
+
+	return fmt.Sprintf("%s", body), nil
+}
+
+type ListMetadataInput struct {
+	ID          string
+	Credentials bool
+}
+
+func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataInput) (map[string]string, error) {
+	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
+
+	query := &url.Values{}
+	if input.Credentials {
+		query.Set("credentials", "true")
+	}
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   path,
+		Query:  query,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing ListMetadata request: {{err}}", err)
+	}
+
+	var result map[string]string
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding ListMetadata response: {{err}}", err)
+	}
+
+	return result, nil
+}
+
 type UpdateMetadataInput struct {
 	ID       string
 	Metadata map[string]string
 }
 
 func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetadataInput) (map[string]string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
 		Path:   path,
@@ -482,6 +596,55 @@ func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetad
 	}
 
 	return result, nil
+}
+
+type DeleteMetadataInput struct {
+	ID  string
+	Key string
+}
+
+// DeleteMetadata deletes a single metadata key from an instance
+func (c *InstancesClient) DeleteMetadata(ctx context.Context, input *DeleteMetadataInput) error {
+	if input.Key == "" {
+		return fmt.Errorf("Missing metadata Key from input: %s", input.Key)
+	}
+
+	path := fmt.Sprintf("/%s/machines/%s/metadata/%s", c.client.AccountName, input.ID, input.Key)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing DeleteMetadata request: {{err}}", err)
+	}
+
+	return nil
+}
+
+type DeleteAllMetadataInput struct {
+	ID string
+}
+
+// DeleteAllMetadata deletes all metadata keys from this instance
+func (c *InstancesClient) DeleteAllMetadata(ctx context.Context, input *DeleteAllMetadataInput) error {
+	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
+	reqInputs := client.RequestInput{
+		Method: http.MethodDelete,
+		Path:   path,
+	}
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing DeleteAllMetadata request: {{err}}", err)
+	}
+
+	return nil
 }
 
 type ResizeInstanceInput struct {
