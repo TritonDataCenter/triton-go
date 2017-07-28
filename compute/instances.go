@@ -28,8 +28,8 @@ const (
 // values are embedded within a Instance's Tags attribute, however they are
 // exposed to the caller as their native types.
 type InstanceCNS struct {
-	Disable    *bool
-	ReversePTR *string
+	Disable    bool
+	ReversePTR string
 	Services   []string
 }
 
@@ -406,6 +406,18 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 type ReplaceTagsInput struct {
 	ID   string
 	Tags map[string]string
+	CNS  InstanceCNS
+}
+
+// toAPI() merges both Tags and CNS tags into the same map of strings used as
+// the body of our ReplaceTags request.
+func (input ReplaceTagsInput) toAPI() map[string]interface{} {
+	result := map[string]interface{}{}
+	for key, value := range input.Tags {
+		result[key] = value
+	}
+	input.CNS.toTags(result)
+	return result
 }
 
 func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInput) error {
@@ -413,7 +425,7 @@ func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInp
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
 		Path:   path,
-		Body:   input.Tags,
+		Body:   input.toAPI(),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -945,10 +957,10 @@ func tagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]inter
 			switch k {
 			case CNSTagDisable:
 				b := raw.(bool)
-				nativeCNS.Disable = &b
+				nativeCNS.Disable = b
 			case CNSTagReversePTR:
 				s := raw.(string)
-				nativeCNS.ReversePTR = &s
+				nativeCNS.ReversePTR = s
 			case CNSTagServices:
 				nativeCNS.Services = strings.Split(raw.(string), ",")
 			default:
@@ -972,16 +984,14 @@ func (api *_Instance) toNative() (*Instance, error) {
 
 // toTags() injects its state information into a Tags map suitable for use to
 // submit an API call to the vmapi machine endpoint
-func (mcns *InstanceCNS) toTags(m map[string]interface{}) {
-	if mcns.Disable != nil {
-		m[CNSTagDisable] = fmt.Sprintf("%t", *mcns.Disable)
+func (cns *InstanceCNS) toTags(m map[string]interface{}) {
+	if cns.Disable {
+		m[CNSTagDisable] = cns.Disable
 	}
-
-	if mcns.ReversePTR != nil {
-		m[CNSTagReversePTR] = &mcns.ReversePTR
+	if cns.ReversePTR != "" {
+		m[CNSTagReversePTR] = cns.ReversePTR
 	}
-
-	if len(mcns.Services) > 0 {
-		m[CNSTagServices] = strings.Join(mcns.Services, ",")
+	if len(cns.Services) > 0 {
+		m[CNSTagServices] = strings.Join(cns.Services, ",")
 	}
 }
