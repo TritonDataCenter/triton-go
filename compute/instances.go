@@ -249,13 +249,24 @@ func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 		Far:    input.LocalityFar,
 	}
 	result["locality"] = locality
+
 	for key, value := range input.Tags {
 		result[fmt.Sprintf("tag.%s", key)] = value
 	}
 
 	// Deliberately clobber any user-specified Tags with the attributes from the
 	// CNS struct.
+	//
+	// NOTE(justinwr): CNSTagServices needs to be tagged so that our instance
+	// can be provisioned with CNS. No other CNS tags will be handled at this
+	// time.
 	input.CNS.toTags(result)
+	for key, value := range result {
+		if key == CNSTagServices {
+			result[fmt.Sprintf("tag.%s", key)] = value
+			delete(result, key)
+		}
+	}
 
 	for key, value := range input.Metadata {
 		result[fmt.Sprintf("metadata.%s", key)] = value
@@ -963,8 +974,7 @@ func (api *_Instance) toNative() (*Instance, error) {
 // submit an API call to the vmapi machine endpoint
 func (mcns *InstanceCNS) toTags(m map[string]interface{}) {
 	if mcns.Disable != nil {
-		s := fmt.Sprintf("%t", mcns.Disable)
-		m[CNSTagDisable] = &s
+		m[CNSTagDisable] = fmt.Sprintf("%t", *mcns.Disable)
 	}
 
 	if mcns.ReversePTR != nil {
