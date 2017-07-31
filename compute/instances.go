@@ -28,8 +28,8 @@ const (
 // values are embedded within a Instance's Tags attribute, however they are
 // exposed to the caller as their native types.
 type InstanceCNS struct {
-	Disable    *bool
-	ReversePTR *string
+	Disable    bool
+	ReversePTR string
 	Services   []string
 }
 
@@ -249,13 +249,18 @@ func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 		Far:    input.LocalityFar,
 	}
 	result["locality"] = locality
+
 	for key, value := range input.Tags {
 		result[fmt.Sprintf("tag.%s", key)] = value
 	}
 
-	// Deliberately clobber any user-specified Tags with the attributes from the
-	// CNS struct.
+	// NOTE(justinwr): CNSTagServices needs to be a tag if available. No other
+	// CNS tags will be handled at this time.
 	input.CNS.toTags(result)
+	if val, found := result[CNSTagServices]; found {
+		result["tag."+CNSTagServices] = val
+		delete(result, CNSTagServices)
+	}
 
 	for key, value := range input.Metadata {
 		result[fmt.Sprintf("metadata.%s", key)] = value
@@ -395,6 +400,18 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 type ReplaceTagsInput struct {
 	ID   string
 	Tags map[string]string
+	CNS  InstanceCNS
+}
+
+// toAPI is used to join Tags and CNS tags into the same JSON object before
+// sending an API request to the API gateway.
+func (input ReplaceTagsInput) toAPI() map[string]interface{} {
+	result := map[string]interface{}{}
+	for key, value := range input.Tags {
+		result[key] = value
+	}
+	input.CNS.toTags(result)
+	return result
 }
 
 func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInput) error {
@@ -402,7 +419,7 @@ func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInp
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
 		Path:   path,
-		Body:   input.Tags,
+		Body:   input.toAPI(),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -934,10 +951,10 @@ func tagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]inter
 			switch k {
 			case CNSTagDisable:
 				b := raw.(bool)
-				nativeCNS.Disable = &b
+				nativeCNS.Disable = b
 			case CNSTagReversePTR:
 				s := raw.(string)
-				nativeCNS.ReversePTR = &s
+				nativeCNS.ReversePTR = s
 			case CNSTagServices:
 				nativeCNS.Services = strings.Split(raw.(string), ",")
 			default:
@@ -961,17 +978,16 @@ func (api *_Instance) toNative() (*Instance, error) {
 
 // toTags() injects its state information into a Tags map suitable for use to
 // submit an API call to the vmapi machine endpoint
-func (mcns *InstanceCNS) toTags(m map[string]interface{}) {
-	if mcns.Disable != nil {
-		s := fmt.Sprintf("%t", mcns.Disable)
-		m[CNSTagDisable] = &s
+func (cns *InstanceCNS) toTags(m map[string]interface{}) {
+	if cns.Disable {
+		// NOTE(justinwr): The JSON encoder and API require the CNSTagDisable
+		// attribute to be an actual boolean, not a bool string.
+		m[CNSTagDisable] = cns.Disable
 	}
-
-	if mcns.ReversePTR != nil {
-		m[CNSTagReversePTR] = &mcns.ReversePTR
+	if cns.ReversePTR != "" {
+		m[CNSTagReversePTR] = cns.ReversePTR
 	}
-
-	if len(mcns.Services) > 0 {
-		m[CNSTagServices] = strings.Join(mcns.Services, ",")
+	if len(cns.Services) > 0 {
+		m[CNSTagServices] = strings.Join(cns.Services, ",")
 	}
 }
