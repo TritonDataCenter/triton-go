@@ -254,18 +254,12 @@ func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 		result[fmt.Sprintf("tag.%s", key)] = value
 	}
 
-	// Deliberately clobber any user-specified Tags with the attributes from the
-	// CNS struct.
-	//
-	// NOTE(justinwr): CNSTagServices needs to be tagged so that our instance
-	// can be provisioned with CNS. No other CNS tags will be handled at this
-	// time.
+	// NOTE(justinwr): CNSTagServices needs to be a tag if available. No other
+	// CNS tags will be handled at this time.
 	input.CNS.toTags(result)
-	for key, value := range result {
-		if key == CNSTagServices {
-			result[fmt.Sprintf("tag.%s", key)] = value
-			delete(result, key)
-		}
+	if val, found := result[CNSTagServices]; found {
+		result["tag."+CNSTagServices] = val
+		delete(result, CNSTagServices)
 	}
 
 	for key, value := range input.Metadata {
@@ -409,8 +403,8 @@ type ReplaceTagsInput struct {
 	CNS  InstanceCNS
 }
 
-// toAPI() merges both Tags and CNS tags into the same map of strings used as
-// the body of our ReplaceTags request.
+// toAPI is used to join Tags and CNS tags into the same JSON object before
+// sending an API request to the API gateway.
 func (input ReplaceTagsInput) toAPI() map[string]interface{} {
 	result := map[string]interface{}{}
 	for key, value := range input.Tags {
@@ -986,6 +980,8 @@ func (api *_Instance) toNative() (*Instance, error) {
 // submit an API call to the vmapi machine endpoint
 func (cns *InstanceCNS) toTags(m map[string]interface{}) {
 	if cns.Disable {
+		// NOTE(justinwr): The JSON encoder and API require the CNSTagDisable
+		// attribute to be an actual boolean, not a bool string.
 		m[CNSTagDisable] = cns.Disable
 	}
 	if cns.ReversePTR != "" {
