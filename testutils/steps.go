@@ -10,7 +10,7 @@ import (
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-go/client"
 )
 
 type StepClient struct {
@@ -194,13 +194,13 @@ func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 		return Halt
 	}
 
-	tritonErrorInterface := errwrap.GetType(err.(error), &compute.TritonError{})
+	tritonErrorInterface := errwrap.GetType(err.(error), &client.TritonError{})
 	if tritonErrorInterface == nil {
 		state.AppendError(errors.New("Expected a TritonError in wrapped error chain"))
 		return Halt
 	}
 
-	tritonErr := tritonErrorInterface.(*compute.TritonError)
+	tritonErr := tritonErrorInterface.(*client.TritonError)
 	if tritonErr.Code == s.Code {
 		return Continue
 	}
