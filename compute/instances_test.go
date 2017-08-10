@@ -12,14 +12,13 @@ import (
 	"time"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
 )
 
-func getAnyInstanceID(t *testing.T, client *compute.ComputeClient) (string, error) {
+func getAnyInstanceID(t *testing.T, client *ComputeClient) (string, error) {
 	ctx := context.Background()
-	input := &compute.ListInstancesInput{}
+	input := &ListInstancesInput{}
 	instances, err := client.Instances().List(ctx, input)
 	if err != nil {
 		return "", err
@@ -58,7 +57,7 @@ func TestAccInstances_Create(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					computeClient, err := compute.NewClient(config)
+					computeClient, err := NewClient(config)
 					if err != nil {
 						return nil, err
 					}
@@ -79,10 +78,10 @@ func TestAccInstances_Create(t *testing.T) {
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
 					clients := client.([]interface{})
-					c := clients[0].(*compute.ComputeClient)
+					c := clients[0].(*ComputeClient)
 					n := clients[1].(*network.NetworkClient)
 
-					images, err := c.Images().List(context.Background(), &compute.ListImagesInput{
+					images, err := c.Images().List(context.Background(), &ListImagesInput{
 						Name:    "ubuntu-16.04",
 						Version: "20170403",
 					})
@@ -100,7 +99,7 @@ func TestAccInstances_Create(t *testing.T) {
 						}
 					}
 
-					input := &compute.CreateInstanceInput{
+					input := &CreateInstanceInput{
 						Name:     testInstanceName,
 						Package:  "g4-highcpu-128M",
 						Image:    img.ID,
@@ -111,7 +110,7 @@ func TestAccInstances_Create(t *testing.T) {
 						Tags: map[string]string{
 							"tag1": "value1",
 						},
-						CNS: compute.InstanceCNS{
+						CNS: InstanceCNS{
 							Services: []string{"testapp", "testweb"},
 						},
 					}
@@ -120,11 +119,11 @@ func TestAccInstances_Create(t *testing.T) {
 						return nil, err
 					}
 
-					state := make(chan *compute.Instance, 1)
-					go func(createdID string, c *compute.ComputeClient) {
+					state := make(chan *Instance, 1)
+					go func(createdID string, c *ComputeClient) {
 						for {
 							time.Sleep(1 * time.Second)
-							instance, err := c.Instances().Get(context.Background(), &compute.GetInstanceInput{
+							instance, err := c.Instances().Get(context.Background(), &GetInstanceInput{
 								ID: createdID,
 							})
 							if err != nil {
@@ -144,9 +143,9 @@ func TestAccInstances_Create(t *testing.T) {
 					}
 				},
 				CleanupFunc: func(client interface{}, stateBag interface{}) {
-					instance, instOk := stateBag.(*compute.Instance)
+					instance, instOk := stateBag.(*Instance)
 					if !instOk {
-						log.Println("Expected instance to be compute.Instance")
+						log.Println("Expected instance to be Instance")
 						return
 					}
 
@@ -157,13 +156,13 @@ func TestAccInstances_Create(t *testing.T) {
 					}
 
 					clients := client.([]interface{})
-					c, clientOk := clients[0].(*compute.ComputeClient)
+					c, clientOk := clients[0].(*ComputeClient)
 					if !clientOk {
-						log.Println("Expected client to be compute.ComputeClient")
+						log.Println("Expected client to be ComputeClient")
 						return
 					}
 
-					err := c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
+					err := c.Instances().Delete(context.Background(), &DeleteInstanceInput{
 						ID: instance.ID,
 					})
 					if err != nil {
@@ -179,7 +178,7 @@ func TestAccInstances_Create(t *testing.T) {
 					if !found {
 						return fmt.Errorf("State key %q not found", "instances")
 					}
-					instance, ok := instanceRaw.(*compute.Instance)
+					instance, ok := instanceRaw.(*Instance)
 					if !ok {
 						return errors.New("Expected state to include instance")
 					}
@@ -238,14 +237,14 @@ func TestAccInstances_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -253,7 +252,7 @@ func TestAccInstances_Get(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.GetInstanceInput{
+					input := &GetInstanceInput{
 						ID: instanceID,
 					}
 					return c.Instances().Get(ctx, input)
@@ -277,14 +276,14 @@ func TestAccInstances_ListTags(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -292,7 +291,7 @@ func TestAccInstances_ListTags(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.ListTagsInput{
+					input := &ListTagsInput{
 						ID: instanceID,
 					}
 					return c.Instances().ListTags(ctx, input)
@@ -324,14 +323,14 @@ func TestAccInstances_UpdateMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -339,7 +338,7 @@ func TestAccInstances_UpdateMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.UpdateMetadataInput{
+					input := &UpdateMetadataInput{
 						ID: instanceID,
 						Metadata: map[string]string{
 							"tester": os.Getenv("USER"),
@@ -378,14 +377,14 @@ func TestAccInstances_ListMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -393,7 +392,7 @@ func TestAccInstances_ListMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.ListMetadataInput{
+					input := &ListMetadataInput{
 						ID: instanceID,
 					}
 					return c.Instances().ListMetadata(ctx, input)
@@ -429,14 +428,14 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -444,7 +443,7 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &compute.UpdateMetadataInput{
+					input := &UpdateMetadataInput{
 						ID: instanceID,
 						Metadata: map[string]string{
 							"testkey": os.Getenv("USER"),
@@ -456,7 +455,7 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 					}
 
 					ctx2 := context.Background()
-					input2 := &compute.GetMetadataInput{
+					input2 := &GetMetadataInput{
 						ID:  instanceID,
 						Key: "testkey",
 					}

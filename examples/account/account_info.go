@@ -53,14 +53,14 @@ func main() {
 	printAccount(acct)
 
 	input := &account.UpdateInput{
-		CompanyName: fmt.Sprintf("%s-old", oldName)
+		CompanyName: fmt.Sprintf("%s-old", acct.CompanyName),
 	}
 
-	acct, err := a.Update(context.Background(), input)
+	updatedAcct, err := a.Update(context.Background(), input)
 	if err != nil {
 		log.Fatalf("account.Update: %v", err)
 	}
 
 	fmt.Println("New ----")
-	printAccount(acct)
+	printAccount(updatedAcct)
 }

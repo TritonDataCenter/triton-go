@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -19,16 +18,16 @@ func TestAccServicesList(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: stateKey,
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
+					c := client.(*ComputeClient)
 					ctx := context.Background()
-					input := &compute.ListServicesInput{}
+					input := &ListServicesInput{}
 					return c.Services().List(ctx, input)
 				},
 			},
@@ -43,7 +42,7 @@ func TestAccServicesList(t *testing.T) {
 					toFind := []string{"docker"}
 					for _, serviceName := range toFind {
 						found := false
-						for _, service := range services.([]*compute.Service) {
+						for _, service := range services.([]*Service) {
 							if service.Name == serviceName {
 								found = true
 								if service.Endpoint == "" {

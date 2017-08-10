@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -16,16 +15,16 @@ func TestAccConfig_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "config",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return account.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "config",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*account.AccountClient)
+					c := client.(*AccountClient)
 					ctx := context.Background()
-					input := &account.GetConfigInput{}
+					input := &GetConfigInput{}
 					return c.Config().Get(ctx, input)
 				},
 			},
