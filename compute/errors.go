@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/joyent/triton-go/client"
 )
 
 // TritonError represents an error code and message along with
@@ -117,12 +118,12 @@ func isSpecificError(err error, errorCode string) bool {
 		return false
 	}
 
-	tritonErrorInterface := errwrap.GetType(err.(error), &TritonError{})
+	tritonErrorInterface := errwrap.GetType(err.(error), &client.ClientError{})
 	if tritonErrorInterface == nil {
 		return false
 	}
 
-	tritonErr := tritonErrorInterface.(*TritonError)
+	tritonErr := tritonErrorInterface.(*client.ClientError)
 	if tritonErr.Code == errorCode {
 		return true
 	}
