@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -19,7 +18,7 @@ func TestAccNetworks_List(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "datacenter",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return network.NewClient(config)
+					return NewClient(config)
 				},
 			},
 
@@ -27,8 +26,8 @@ func TestAccNetworks_List(t *testing.T) {
 				StateBagKey: "networks",
 				CallFunc: func(client interface{}) (interface{}, error) {
 					ctx := context.Background()
-					input := &network.ListInput{}
-					if c, ok := client.(*network.NetworkClient); ok {
+					input := &ListInput{}
+					if c, ok := client.(*NetworkClient); ok {
 						return c.List(ctx, input)
 					}
 					return nil, fmt.Errorf("Bad client initialization")
@@ -45,7 +44,7 @@ func TestAccNetworks_List(t *testing.T) {
 					toFind := []string{"Joyent-SDC-Private", "Joyent-SDC-Public"}
 					for _, dcName := range toFind {
 						found := false
-						for _, dc := range dcs.([]*network.Network) {
+						for _, dc := range dcs.([]*Network) {
 							if dc.Name == dcName {
 								found = true
 								if dc.Id == "" {
