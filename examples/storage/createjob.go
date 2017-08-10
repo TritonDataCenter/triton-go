@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -15,26 +14,20 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyPath := os.Getenv("SDC_KEY_FILE")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	accountName := "tritongo"
+	mantaURL := os.Getenv("MANTA_URL")
 
-	privateKey, err := ioutil.ReadFile(keyPath)
+	sshKeySigner, err := authentication.NewSSHAgentSigner(keyID, os.Getenv("MANTA_USER"))
 	if err != nil {
-		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+		log.Fatalf("NewSSHAgentSigner: %s", err)
 	}
 
-	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("MANTA_URL"),
+	client, err := storage.NewClient(&triton.ClientConfig{
+		MantaURL:    mantaURL,
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	}
-	client, err := storage.NewClient(config)
+	})
 	if err != nil {
 		log.Fatalf("NewClient: %s", err)
 	}
@@ -88,8 +81,7 @@ func main() {
 		log.Fatalf("GetJob: %s", err)
 	}
 
-	fmt.Printf("%+v\n", gjo.Job)
-	fmt.Printf("%+v\n", gjo.Job.Stats)
+	fmt.Printf("%+v", gjo.Job)
 
 	err = client.Jobs().EndInput(context.Background(), &storage.EndJobInputInput{
 		JobID: job.JobID,
@@ -103,7 +95,7 @@ func main() {
 		log.Fatalf("ListJobs: %s", err)
 	}
 
-	fmt.Printf("Number of jobs: %d\n", jobs.ResultSetSize)
+	fmt.Printf("Result set size: %d\n", jobs.ResultSetSize)
 	for _, j := range jobs.Jobs {
 		fmt.Printf(" - %s\n", j.ID)
 	}

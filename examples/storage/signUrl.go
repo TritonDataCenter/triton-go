@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -14,36 +13,29 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyPath := os.Getenv("SDC_KEY_FILE")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	accountName := os.Getenv("MANTA_USER")
+	mantaURL := os.Getenv("MANTA_URL")
 
-	privateKey, err := ioutil.ReadFile(keyPath)
+	sshKeySigner, err := authentication.NewSSHAgentSigner(keyID, accountName)
 	if err != nil {
-		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+		log.Fatalf("NewSSHAgentSigner: %s", err)
 	}
 
-	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("MANTA_URL"),
+	client, err := storage.NewClient(&triton.ClientConfig{
+		MantaURL:    mantaURL,
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	}
-	client, err := storage.NewClient(config)
+	})
 	if err != nil {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	input := &storage.SignURLInput{
-		ObjectPath:     "/stor/books/treasure_island.txt",
+	signed, err := client.SignURL(&storage.SignURLInput{
+		ObjectPath:     "/stor/foo.txt",
 		Method:         http.MethodGet,
 		ValidityPeriod: 5 * time.Minute,
-	}
-	signed, err := client.SignURL(input)
+	})
 	if err != nil {
 		log.Fatalf("SignURL: %s", err)
 	}

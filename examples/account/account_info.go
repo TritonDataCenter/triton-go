@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -21,46 +20,25 @@ func printAccount(acct *account.Account) {
 func main() {
 	keyID := os.Getenv("SDC_KEY_ID")
 	accountName := os.Getenv("SDC_ACCOUNT")
-	keyPath := os.Getenv("SDC_KEY_FILE")
 
-	privateKey, err := ioutil.ReadFile(keyPath)
+	sshKeySigner, err := authentication.NewSSHAgentSigner(keyID, accountName)
 	if err != nil {
-		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+		log.Fatalf("NewSSHAgentSigner: %s", err)
 	}
 
-	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config := &triton.ClientConfig{
+	client, err := account.NewClient(&triton.ClientConfig{
 		TritonURL:   os.Getenv("SDC_URL"),
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	}
-
-	a, err := account.NewClient(config)
+	})
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("NewClient: %s", err)
 	}
 
-	acct, err := a.Get(context.Background(), &account.GetInput{})
+	acct, err := client.Get(context.Background(), &account.GetInput{})
 	if err != nil {
 		log.Fatalf("account.Get: %v", err)
 	}
 
-	fmt.Println("New ----")
-	printAccount(acct)
-
-	input := &account.UpdateInput{
-		CompanyName: fmt.Sprintf("%s-old", oldName)
-	}
-
-	acct, err := a.Update(context.Background(), input)
-	if err != nil {
-		log.Fatalf("account.Update: %v", err)
-	}
-
-	fmt.Println("New ----")
 	printAccount(acct)
 }

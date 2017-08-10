@@ -13,47 +13,55 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyPath := os.Getenv("SDC_KEY_FILE")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	accountName := "tritongo"
+	mantaURL := os.Getenv("MANTA_URL")
 
-	privateKey, err := ioutil.ReadFile(keyPath)
+	sshKeySigner, err := authentication.NewSSHAgentSigner(keyID, os.Getenv("MANTA_USER"))
 	if err != nil {
-		log.Fatalf("Couldn't find key file matching %s\n%s", keyID, err)
+		log.Fatalf("NewSSHAgentSigner: %s", err)
 	}
 
-	sshKeySigner, err := authentication.NewPrivateKeySigner(keyID, privateKey, accountName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("MANTA_URL"),
+	client, err := storage.NewClient(&triton.ClientConfig{
+		MantaURL:    mantaURL,
 		AccountName: accountName,
 		Signers:     []authentication.Signer{sshKeySigner},
-	}
-	client, err := storage.NewClient(config)
+	})
 	if err != nil {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	obj, err := client.Objects().Get(context.Background(), &storage.GetObjectInput{
-		ObjectPath: "/stor/books/dracula.txt",
+	reader, err := os.Open("foo.txt")
+	if err != nil {
+		log.Fatalf("os.Open: %s", err)
+	}
+	defer reader.Close()
+
+	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
+		ObjectPath:   "/stor/foo.txt",
+		ObjectReader: reader,
 	})
 	if err != nil {
-		log.Fatalf("compute.Objects.Get: %s", err)
+		log.Fatalf("GetObject(): %s", err)
 	}
 
-	body, err := ioutil.ReadAll(obj.ObjectReader)
+	output, err := client.Objects().Get(context.Background(), &storage.GetObjectInput{
+		ObjectPath: "/stor/foo.txt",
+	})
 	if err != nil {
-		log.Fatalf("compute.Objects.Get: %s", err)
+		log.Fatalf("GetObject(): %s", err)
 	}
-	defer obj.ObjectReader.Close()
 
-	fmt.Printf("Content-Length: %d\n", obj.ContentLength)
-	fmt.Printf("Content-MD5: %s\n", obj.ContentMD5)
-	fmt.Printf("Content-Type: %s\n", obj.ContentType)
-	fmt.Printf("ETag: %s\n", obj.ETag)
-	fmt.Printf("Date-Modified: %s\n", obj.LastModified.String())
-	fmt.Printf("Length: %d\n", len(body))
+	defer output.ObjectReader.Close()
+	body, err := ioutil.ReadAll(output.ObjectReader)
+	if err != nil {
+		log.Fatalf("Reading Object: %s", err)
+	}
+
+	fmt.Printf("Content-Length: %d\n", output.ContentLength)
+	fmt.Printf("Content-MD5: %s\n", output.ContentMD5)
+	fmt.Printf("Content-Type: %s\n", output.ContentType)
+	fmt.Printf("ETag: %s\n", output.ETag)
+	fmt.Printf("Date-Modified: %s\n", output.LastModified.String())
+	fmt.Printf("Object:\n\n%s", string(body))
 }
