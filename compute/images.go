@@ -39,7 +39,7 @@ type Image struct {
 	Tags         map[string]string      `json:"tags"`
 	EULA         string                 `json:"eula"`
 	ACL          []string               `json:"acl"`
-	Error        TritonError            `json:"error"`
+	Error        client.TritonError     `json:"error"`
 }
 
 type ListImagesInput struct {
