@@ -130,7 +130,7 @@ func doNotFollowRedirects(*http.Request, []*http.Request) error {
 // }
 
 func (c *Client) DecodeError(statusCode int, body io.Reader) error {
-	err := &ClientError{
+	err := &TritonError{
 		StatusCode: statusCode,
 	}
 

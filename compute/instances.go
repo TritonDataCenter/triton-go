@@ -101,7 +101,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		defer response.Body.Close()
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return nil, &TritonError{
+		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -532,7 +532,7 @@ func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInp
 		defer response.Body.Close()
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return "", &TritonError{
+		return "", &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -789,7 +789,7 @@ func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC,
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound:
-		return nil, &TritonError{
+		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -830,7 +830,7 @@ func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC,
 	}
 	switch response.StatusCode {
 	case http.StatusFound:
-		return nil, &TritonError{
+		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceFound",
 			Message:    response.Header.Get("Location"),
@@ -871,7 +871,7 @@ func (c *InstancesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) 
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound:
-		return &TritonError{
+		return &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
