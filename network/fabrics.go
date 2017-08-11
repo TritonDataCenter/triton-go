@@ -49,7 +49,7 @@ func (c *FabricsClient) ListVLANs(ctx context.Context, _ *ListVLANsInput) ([]*Fa
 type CreateVLANInput struct {
 	Name        string `json:"name"`
 	ID          int    `json:"vlan_id"`
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 }
 
 func (c *FabricsClient) CreateVLAN(ctx context.Context, input *CreateVLANInput) (*FabricVLAN, error) {
@@ -184,13 +184,13 @@ func (c *FabricsClient) List(ctx context.Context, input *ListFabricsInput) ([]*N
 type CreateFabricInput struct {
 	FabricVLANID     int               `json:"-"`
 	Name             string            `json:"name"`
-	Description      string            `json:"description"`
+	Description      string            `json:"description,omitempty"`
 	Subnet           string            `json:"subnet"`
 	ProvisionStartIP string            `json:"provision_start_ip"`
 	ProvisionEndIP   string            `json:"provision_end_ip"`
-	Gateway          string            `json:"gateway"`
-	Resolvers        []string          `json:"resolvers"`
-	Routes           map[string]string `json:"routes"`
+	Gateway          string            `json:"gateway,omitempty"`
+	Resolvers        []string          `json:"resolvers,omitempty"`
+	Routes           map[string]string `json:"routes,omitempty"`
 	InternetNAT      bool              `json:"internet_nat"`
 }
 

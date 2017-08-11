@@ -87,7 +87,7 @@ func (c *FirewallClient) GetRule(ctx context.Context, input *GetRuleInput) (*Fir
 type CreateRuleInput struct {
 	Enabled     bool   `json:"enabled"`
 	Rule        string `json:"rule"`
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 }
 
 func (c *FirewallClient) CreateRule(ctx context.Context, input *CreateRuleInput) (*FirewallRule, error) {
@@ -118,7 +118,7 @@ type UpdateRuleInput struct {
 	ID          string `json:"-"`
 	Enabled     bool   `json:"enabled"`
 	Rule        string `json:"rule"`
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 }
 
 func (c *FirewallClient) UpdateRule(ctx context.Context, input *UpdateRuleInput) (*FirewallRule, error) {
