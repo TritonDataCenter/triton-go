@@ -180,6 +180,9 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", "triton-go Client API")
 
 	// NewClient ensures there's always an authorizer (unless this is called
 	// outside that constructor).
@@ -188,9 +191,6 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
 	req.Header.Set("Authorization", authHeader)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go Client API")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -236,6 +236,9 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", "triton-go c API")
 
 	// NewClient ensures there's always an authorizer (unless this is called
 	// outside that constructor).
@@ -244,9 +247,6 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
 	}
 	req.Header.Set("Authorization", authHeader)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go c API")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -297,14 +297,17 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
-
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
-	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
-	}
-	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("User-Agent", "manta-go client API")
+
+	mantaNoAuth, envOk := os.LookupEnv("MANTA_NO_AUTH")
+	if !envOk || mantaNoAuth != "1" {
+		authHeader, err := c.Authorizers[0].Sign(dateHeader)
+		if err != nil {
+			return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		}
+		req.Header.Set("Authorization", authHeader)
+	}
 
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
@@ -338,6 +341,8 @@ type RequestNoEncodeInput struct {
 	Body    io.ReadSeeker
 }
 
+// ExecuteRequestNoEncode generates and executes HTTP requests for Manta
+// endpoints which do not require encoding.
 func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
 	method := inputs.Method
 	path := inputs.Path
@@ -363,14 +368,17 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
 	req.Header.Set("date", dateHeader)
-
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
-	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
-	}
-	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("User-Agent", "manta-go client API")
+
+	mantaNoAuth, envOk := os.LookupEnv("MANTA_NO_AUTH")
+	if !envOk || mantaNoAuth != "1" {
+		authHeader, err := c.Authorizers[0].Sign(dateHeader)
+		if err != nil {
+			return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		}
+		req.Header.Set("Authorization", authHeader)
+	}
 
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
