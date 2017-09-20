@@ -100,7 +100,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 	if response != nil {
 		defer response.Body.Close()
 	}
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
+	if response == nil || response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
