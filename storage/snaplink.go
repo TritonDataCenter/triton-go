@@ -23,7 +23,6 @@ type PutSnapLinkInput struct {
 func (s *SnapLinksClient) Put(ctx context.Context, input *PutSnapLinkInput) error {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.LinkPath)
 	headers := &http.Header{}
-	headers.Set("Content-Type", "application/json; type=link")
 	headers.Set("Location", input.SourcePath)
 
 	reqInput := client.RequestInput{
