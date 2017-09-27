@@ -208,6 +208,7 @@ type CreateInstanceInput struct {
 	Package         string
 	Image           string
 	Networks        []string
+	Affinity        []string
 	LocalityStrict  bool
 	LocalityNear    []string
 	LocalityFar     []string
@@ -217,7 +218,7 @@ type CreateInstanceInput struct {
 	CNS             InstanceCNS
 }
 
-func (input *CreateInstanceInput) toAPI() map[string]interface{} {
+func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 	const numExtraParams = 8
 	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
 
@@ -239,16 +240,28 @@ func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 		result["networks"] = input.Networks
 	}
 
-	locality := struct {
-		Strict bool     `json:"strict"`
-		Near   []string `json:"near,omitempty"`
-		Far    []string `json:"far,omitempty"`
-	}{
-		Strict: input.LocalityStrict,
-		Near:   input.LocalityNear,
-		Far:    input.LocalityFar,
+	// validate that affinity and locality are not included together
+	hasAffinity := len(input.Affinity) > 0
+	hasLocality := len(input.LocalityNear) > 0 || len(input.LocalityFar) > 0
+	if hasAffinity && hasLocality {
+		return nil, fmt.Errorf("Cannot include both Affinity and Locality")
 	}
-	result["locality"] = locality
+
+	// affinity takes precendence over locality regardless
+	if len(input.Affinity) > 0 {
+		result["affinity"] = input.Affinity
+	} else {
+		locality := struct {
+			Strict bool     `json:"strict"`
+			Near   []string `json:"near,omitempty"`
+			Far    []string `json:"far,omitempty"`
+		}{
+			Strict: input.LocalityStrict,
+			Near:   input.LocalityNear,
+			Far:    input.LocalityFar,
+		}
+		result["locality"] = locality
+	}
 
 	for key, value := range input.Tags {
 		result[fmt.Sprintf("tag.%s", key)] = value
@@ -266,15 +279,20 @@ func (input *CreateInstanceInput) toAPI() map[string]interface{} {
 		result[fmt.Sprintf("metadata.%s", key)] = value
 	}
 
-	return result
+	return result, nil
 }
 
 func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput) (*Instance, error) {
 	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+	body, err := input.toAPI()
+	if err != nil {
+		return nil, errwrap.Wrapf("Error preparing Create request: {{err}}", err)
+	}
+
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
 		Path:   path,
-		Body:   input.toAPI(),
+		Body:   body,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
