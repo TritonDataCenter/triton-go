@@ -322,6 +322,9 @@ func (c *InstancesClient) Delete(ctx context.Context, input *DeleteInstanceInput
 		Path:   path,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if response == nil {
+		return fmt.Errorf("Delete request has empty response")
+	}
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -347,6 +350,9 @@ func (c *InstancesClient) DeleteTags(ctx context.Context, input *DeleteTagsInput
 		Path:   path,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if response == nil {
+		return fmt.Errorf("DeleteTags request has empty response")
+	}
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -373,6 +379,9 @@ func (c *InstancesClient) DeleteTag(ctx context.Context, input *DeleteTagInput) 
 		Path:   path,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if response == nil {
+		return fmt.Errorf("DeleteTag request has empty response")
+	}
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
