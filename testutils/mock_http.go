@@ -3,6 +3,9 @@ package testutils
 import (
 	"errors"
 	"net/http"
+
+	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/client"
 )
 
 // Responders are callbacks that receive http requests and return a mocked
@@ -83,4 +86,26 @@ func DeactivateClient() {
 // table.
 func RegisterResponder(method, url string, responder Responder) {
 	DefaultMockTransport.RegisterResponder(method, url, responder)
+}
+
+// DefaultMockClient uses NewMockClient to construct a mocked out client.Client
+var DefaultMockClient = NewMockClient()
+
+// NewMockClient returns a new client.Client that includes our
+// DefaultMockTransport which allows us to attach custom HTTP client request
+// responders.
+func NewMockClient() *client.Client {
+	testSigner, _ := authentication.NewTestSigner()
+
+	httpClient := &http.Client{
+		Transport: DefaultMockTransport,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	return &client.Client{
+		Authorizers: []authentication.Signer{testSigner},
+		HTTPClient:  httpClient,
+	}
 }
