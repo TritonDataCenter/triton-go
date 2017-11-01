@@ -962,6 +962,32 @@ func (c *InstancesClient) Start(ctx context.Context, input *StartInstanceInput) 
 	return nil
 }
 
+type RebootInstanceInput struct {
+	InstanceID string
+}
+
+func (c *InstancesClient) Reboot(ctx context.Context, input *RebootInstanceInput) error {
+	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
+
+	params := &url.Values{}
+	params.Set("action", "reboot")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   path,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return errwrap.Wrapf("Error executing Start request: {{err}}", err)
+	}
+
+	return nil
+}
+
 var reservedInstanceCNSTags = map[string]struct{}{
 	CNSTagDisable:    {},
 	CNSTagReversePTR: {},
