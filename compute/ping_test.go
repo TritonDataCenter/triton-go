@@ -9,18 +9,19 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/client"
 	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
 )
 
-// test borked 404 response (TritonError)
-// test borked 410 response (TritonError)
-// test bad JSON decode
+var (
+	mockVersions  = []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
+	testError     = errors.New("we got the funk")
+	defaultHeader = http.Header{}
+	blankError    = "Ping request has empty response"
+)
 
 func TestPing(t *testing.T) {
-	computeClient := buildClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, pc *compute.ComputeClient) (*compute.PingOutput, error) {
 		defer testutils.DeactivateClient()
@@ -44,9 +45,8 @@ func TestPing(t *testing.T) {
 			t.Errorf("ping was not pong: expected %s", resp.Ping)
 		}
 
-		versions := []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
-		if !reflect.DeepEqual(resp.CloudAPI.Versions, versions) {
-			t.Errorf("ping did not contain CloudAPI versions: expected %s", versions)
+		if !reflect.DeepEqual(resp.CloudAPI.Versions, mockVersions) {
+			t.Errorf("ping did not contain CloudAPI versions: expected %s", mockVersions)
 		}
 	})
 
@@ -66,15 +66,16 @@ func TestPing(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		testutils.RegisterResponder("GET", "/--ping", pingErrorFunc)
 
-		_, err := do(context.Background(), computeClient)
+		out, err := do(context.Background(), computeClient)
 		if err == nil {
 			t.Fatal(err)
 		}
-
-		blankError := "Ping request has empty response"
+		if out != nil {
+			t.Error("expected pingOut to be nil")
+		}
 
 		if err.Error() != blankError {
-			t.Errorf("expected error to equal defaultError: found %s", err)
+			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
 
@@ -118,9 +119,6 @@ func TestPing(t *testing.T) {
 	})
 }
 
-var defaultError = errors.New("we got the funk")
-var defaultHeader = http.Header{}
-
 func pingSuccessFunc(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
@@ -154,7 +152,6 @@ func ping404Func(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 404,
 		Header:     header,
-		Body:       ioutil.NopCloser(strings.NewReader("")),
 	}, nil
 }
 
@@ -164,12 +161,11 @@ func ping410Func(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 410,
 		Header:     header,
-		Body:       ioutil.NopCloser(strings.NewReader("")),
 	}, nil
 }
 
 func pingErrorFunc(req *http.Request) (*http.Response, error) {
-	return nil, defaultError
+	return nil, testError
 }
 
 func pingDecodeFunc(req *http.Request) (*http.Response, error) {
@@ -187,18 +183,8 @@ func pingDecodeFunc(req *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-func buildClient() *compute.ComputeClient {
-	testSigner, _ := authentication.NewTestSigner()
-	httpClient := &client.Client{
-		Authorizers: []authentication.Signer{testSigner},
-		HTTPClient: &http.Client{
-			Transport: testutils.DefaultMockTransport,
-			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		},
-	}
+func MockComputeClient() *compute.ComputeClient {
 	return &compute.ComputeClient{
-		Client: httpClient,
+		Client: testutils.DefaultMockClient,
 	}
 }
