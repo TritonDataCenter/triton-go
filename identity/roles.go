@@ -18,7 +18,7 @@ type Role struct {
 	ID             string   `json:"id"`
 	Name           string   `json:"name"`
 	Policies       []string `json:"policies"`
-	Members        []string `json:"policies"`
+	Members        []string `json:"members"`
 	DefaultMembers []string `json:"default_members"`
 }
 
