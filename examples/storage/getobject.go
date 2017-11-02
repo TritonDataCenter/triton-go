@@ -7,10 +7,11 @@ import (
 	"log"
 	"os"
 
+	"encoding/pem"
+
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/storage"
-	"encoding/pem"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 	if keyMaterial == "" {
 		signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: {{err}}", err)
+			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
 		}
 	} else {
 		var keyBytes []byte
@@ -52,7 +53,7 @@ func main() {
 
 		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: {{err}}", err)
+			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
 		}
 	}
 
