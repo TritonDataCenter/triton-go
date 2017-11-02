@@ -5,7 +5,7 @@ default: vet errcheck test
 
 tools:: ## Download and install all dev/code tools
 	@echo "==> Installing dev tools"
-	go get -u github.com/kardianos/govendor
+	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck
 	@echo "==> Installing test package dependencies"
@@ -40,9 +40,6 @@ fmtcheck:: ## Check if code format is canonical Go
 
 errcheck:: ## Check for unhandled errors
 	@bash $(CURDIR)/scripts/errcheck.sh
-
-vendor-status:: ## Check govendor status
-	@govendor status
 
 .PHONY: help
 help:: ## Display this help message
