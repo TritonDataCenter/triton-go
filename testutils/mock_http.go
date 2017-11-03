@@ -89,12 +89,16 @@ func RegisterResponder(method, url string, responder Responder) {
 }
 
 // DefaultMockClient uses NewMockClient to construct a mocked out client.Client
-var DefaultMockClient = NewMockClient()
+var DefaultMockClient = NewMockClient(MockClientInput{})
+
+type MockClientInput struct {
+	AccountName string
+}
 
 // NewMockClient returns a new client.Client that includes our
 // DefaultMockTransport which allows us to attach custom HTTP client request
 // responders.
-func NewMockClient() *client.Client {
+func NewMockClient(input MockClientInput) *client.Client {
 	testSigner, _ := authentication.NewTestSigner()
 
 	httpClient := &http.Client{
@@ -104,8 +108,14 @@ func NewMockClient() *client.Client {
 		},
 	}
 
-	return &client.Client{
+	client := &client.Client{
 		Authorizers: []authentication.Signer{testSigner},
 		HTTPClient:  httpClient,
 	}
+
+	if input.AccountName != "" {
+		client.AccountName = input.AccountName
+	}
+
+	return client
 }
