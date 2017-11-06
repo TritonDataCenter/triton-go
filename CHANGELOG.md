@@ -2,6 +2,7 @@
 
 - Introduce CloudAPI's Ping under compute
 - Introduce CloudAPI's RebootMachine under compute instances
+- Introduce CloudAPI's ListUsers, GetUser, CreateUser, UpdateUser and DeleteUser under identity package
 - tools: Introduce unit testing and scripts for linting, etc.
 - bug: Fix the `compute.ListMachineRules` endpoint
 
