@@ -227,7 +227,7 @@ type ListMachineRulesInput struct {
 }
 
 func (c *FirewallClient) ListMachineRules(ctx context.Context, input *ListMachineRulesInput) ([]*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/machines/%s/firewallrules", c.client.AccountName, input.MachineID)
+	path := fmt.Sprintf("/%s/machines/%s/fwrules", c.client.AccountName, input.MachineID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   path,
@@ -243,7 +243,7 @@ func (c *FirewallClient) ListMachineRules(ctx context.Context, input *ListMachin
 	var result []*FirewallRule
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListRules response: {{err}}", err)
+		return nil, errwrap.Wrapf("Error decoding ListMachineRules response: {{err}}", err)
 	}
 
 	return result, nil
