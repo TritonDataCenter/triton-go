@@ -26,8 +26,14 @@ func NewClient(config *triton.ClientConfig) (*IdentityClient, error) {
 	return newIdentityClient(client), nil
 }
 
-// Roles returns a Compute client used for accessing functions pertaining to
+// Roles returns a Roles client used for accessing functions pertaining to
 // Role functionality in the Triton API.
 func (c *IdentityClient) Roles() *RolesClient {
 	return &RolesClient{c.Client}
+}
+
+// Users returns a Users client used for accessing functions pertaining to
+// User functionality in the Triton API.
+func (c *IdentityClient) Users() *UsersClient {
+	return &UsersClient{c.Client}
 }
