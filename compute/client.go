@@ -55,3 +55,9 @@ func (c *ComputeClient) Packages() *PackagesClient {
 func (c *ComputeClient) Services() *ServicesClient {
 	return &ServicesClient{c.Client}
 }
+
+// Snapshots returns a Compute client used for accessing functions pertaining to
+// Snapshots functionality in the Triton API.
+func (c *ComputeClient) Snapshots() *SnapshotsClient {
+	return &SnapshotsClient{c.Client}
+}
