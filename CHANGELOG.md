@@ -1,9 +1,9 @@
-## 0.2.0 (Unreleased)
+## 0.2.0 (November 7)
 
 - Introduce CloudAPI's Ping under compute
 - Introduce CloudAPI's RebootMachine under compute instances
 - Introduce CloudAPI's ListUsers, GetUser, CreateUser, UpdateUser and DeleteUser under identity package
-- Introduce CloudAPI's ListMachineSnapshots, GetMachineSnapshot and DeleteMachineSnapshot under compute package
+- Introduce CloudAPI's ListMachineSnapshots, GetMachineSnapshot, CreateSnapshot, DeleteMachineSnapshot and StartMachineFromSnapshot under compute package
 - tools: Introduce unit testing and scripts for linting, etc.
 - bug: Fix the `compute.ListMachineRules` endpoint
 
