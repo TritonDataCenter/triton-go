@@ -3,6 +3,8 @@
 `triton-go` is an idiomatic library exposing a client SDK for Go applications
 using Joyent's Triton Compute and Storage (Manta) APIs.
 
+[![Build Status](https://travis-ci.org/joyent/triton-go.svg?branch=master)](https://travis-ci.org/joyent/triton-go)
+
 ## Usage
 
 Triton uses [HTTP Signature][4] to sign the Date header in each HTTP request
