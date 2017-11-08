@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.2.1 (November 8)
+
+- Fixing a bug where CreateUser and UpdateUser didn't return the UserID
+
 ## 0.2.0 (November 7)
 
 - Introduce CloudAPI's Ping under compute
