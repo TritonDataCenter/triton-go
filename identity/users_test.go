@@ -208,20 +208,25 @@ func TestDeleteUser(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	identityClient := MockIdentityClient()
 
-	do := func(ctx context.Context, ic *identity.IdentityClient) error {
+	do := func(ctx context.Context, ic *identity.IdentityClient) (*identity.User, error) {
 		defer testutils.DeactivateClient()
 
-		return ic.Users().Create(ctx, &identity.CreateUserInput{
+		user, err := ic.Users().Create(ctx, &identity.CreateUserInput{
 			Email:    "fake@fake.com",
 			Login:    "testuser",
 			Password: "Password123",
 		})
+
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
 	}
 
 	t.Run("successful", func(t *testing.T) {
 		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users", accountUrl), createUserSuccess)
 
-		err := do(context.Background(), identityClient)
+		_, err := do(context.Background(), identityClient)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -230,7 +235,7 @@ func TestCreateUser(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users", accountUrl), createUserError)
 
-		err := do(context.Background(), identityClient)
+		_, err := do(context.Background(), identityClient)
 		if err == nil {
 			t.Fatal(err)
 		}
@@ -244,19 +249,23 @@ func TestCreateUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	identityClient := MockIdentityClient()
 
-	do := func(ctx context.Context, ic *identity.IdentityClient) error {
+	do := func(ctx context.Context, ic *identity.IdentityClient) (*identity.User, error) {
 		defer testutils.DeactivateClient()
 
-		return ic.Users().Update(ctx, &identity.UpdateUserInput{
+		user, err := ic.Users().Update(ctx, &identity.UpdateUserInput{
 			UserID: "123-3456-2335",
 			Login:  "testuser1",
 		})
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
 	}
 
 	t.Run("successful", func(t *testing.T) {
 		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), updateUserSuccess)
 
-		err := do(context.Background(), identityClient)
+		_, err := do(context.Background(), identityClient)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -265,7 +274,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), updateUserError)
 
-		err := do(context.Background(), identityClient)
+		_, err := do(context.Background(), identityClient)
 		if err == nil {
 			t.Fatal(err)
 		}

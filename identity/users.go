@@ -122,7 +122,7 @@ type CreateUserInput struct {
 	Phone       string `json:"phone,omitempty"`
 }
 
-func (c *UsersClient) Create(ctx context.Context, input *CreateUserInput) error {
+func (c *UsersClient) Create(ctx context.Context, input *CreateUserInput) (*User, error) {
 	path := fmt.Sprintf("/%s/users", c.Client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -134,10 +134,16 @@ func (c *UsersClient) Create(ctx context.Context, input *CreateUserInput) error 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing Create request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Create request: {{err}}", err)
 	}
 
-	return nil
+	var result *User
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding Create response: {{err}}", err)
+	}
+
+	return result, nil
 }
 
 type UpdateUserInput struct {
@@ -155,7 +161,7 @@ type UpdateUserInput struct {
 	Phone       string `json:"phone,omitempty"`
 }
 
-func (c *UsersClient) Update(ctx context.Context, input *UpdateUserInput) error {
+func (c *UsersClient) Update(ctx context.Context, input *UpdateUserInput) (*User, error) {
 	path := fmt.Sprintf("/%s/users/%s", c.Client.AccountName, input.UserID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -167,8 +173,14 @@ func (c *UsersClient) Update(ctx context.Context, input *UpdateUserInput) error 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing Create request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Update request: {{err}}", err)
 	}
 
-	return nil
+	var result *User
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errwrap.Wrapf("Error decoding Update response: {{err}}", err)
+	}
+
+	return result, nil
 }
