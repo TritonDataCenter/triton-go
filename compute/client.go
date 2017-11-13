@@ -38,7 +38,7 @@ func (c *ComputeClient) Images() *ImagesClient {
 	return &ImagesClient{c.Client}
 }
 
-// Machines returns a Compute client used for accessing functions pertaining to
+// Machine returns a Compute client used for accessing functions pertaining to
 // machine functionality in the Triton API.
 func (c *ComputeClient) Instances() *InstancesClient {
 	return &InstancesClient{c.Client}
