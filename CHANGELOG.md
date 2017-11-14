@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add support for ListRulesMachines Endpoint
+
 ## 0.2.1 (November 8)
 
 - Fixing a bug where CreateUser and UpdateUser didn't return the UserID
