@@ -1,6 +1,6 @@
 ## Unreleased
 
-- Add support for ListRulesMachines Endpoint
+- Introduce CloudAPI's ListRulesMachines under networking
 
 ## 0.2.1 (November 8)
 
