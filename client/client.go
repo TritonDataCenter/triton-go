@@ -128,8 +128,8 @@ func httpTransport(insecureSkipTLSVerify bool) *http.Transport {
 			KeepAlive: 30 * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
-		DisableKeepAlives:   true,
-		MaxIdleConnsPerHost: -1,
+		MaxIdleConns:        10,
+		IdleConnTimeout:     15 * time.Second,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: insecureSkipTLSVerify,
 		},
