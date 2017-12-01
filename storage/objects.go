@@ -22,6 +22,7 @@ type ObjectsClient struct {
 // GetObjectInput represents parameters to a GetObject operation.
 type GetObjectInput struct {
 	ObjectPath string
+	Headers    map[string]string
 }
 
 // GetObjectOutput contains the outputs for a GetObject operation. It is your
@@ -42,9 +43,15 @@ type GetObjectOutput struct {
 func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObjectOutput, error) {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.ObjectPath)
 
+	headers := &http.Header{}
+	for key, value := range input.Headers {
+		headers.Set(key, value)
+	}
+
 	reqInput := client.RequestInput{
-		Method: http.MethodGet,
-		Path:   path,
+		Method:  http.MethodGet,
+		Path:    path,
+		Headers: headers,
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if err != nil {
@@ -82,15 +89,22 @@ func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObj
 // DeleteObjectInput represents parameters to a DeleteObject operation.
 type DeleteObjectInput struct {
 	ObjectPath string
+	Headers    map[string]string
 }
 
 // DeleteObject deletes an object.
 func (s *ObjectsClient) Delete(ctx context.Context, input *DeleteObjectInput) error {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.ObjectPath)
 
+	headers := &http.Header{}
+	for key, value := range input.Headers {
+		headers.Set(key, value)
+	}
+
 	reqInput := client.RequestInput{
-		Method: http.MethodDelete,
-		Path:   path,
+		Method:  http.MethodDelete,
+		Path:    path,
+		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
@@ -158,6 +172,7 @@ type PutObjectInput struct {
 	ContentLength    uint64
 	MaxContentLength uint64
 	ObjectReader     io.ReadSeeker
+	Headers          map[string]string
 }
 
 func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
@@ -168,6 +183,9 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 	}
 
 	headers := &http.Header{}
+	for key, value := range input.Headers {
+		headers.Set(key, value)
+	}
 	if input.DurabilityLevel != 0 {
 		headers.Set("Durability-Level", strconv.FormatUint(input.DurabilityLevel, 10))
 	}
