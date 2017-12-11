@@ -55,7 +55,7 @@ func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObj
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetDirectory request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
 	}
 
 	response := &GetObjectOutput{
@@ -111,7 +111,7 @@ func (s *ObjectsClient) Delete(ctx context.Context, input *DeleteObjectInput) er
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteObject request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
 	}
 
 	return nil
@@ -155,7 +155,7 @@ func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadat
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing PutObjectMetadata request: {{err}}", err)
+		return errwrap.Wrapf("Error executing PutMetadata request: {{err}}", err)
 	}
 
 	return nil
@@ -219,7 +219,7 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing PutObjectMetadata request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Put request: {{err}}", err)
 	}
 
 	return nil
