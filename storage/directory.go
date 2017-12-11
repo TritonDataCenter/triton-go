@@ -27,14 +27,14 @@ type DirectoryEntry struct {
 	Type         string    `json:"type"`
 }
 
-// ListDirectoryInput represents parameters to a ListDirectory operation.
+// ListDirectoryInput represents parameters to a List operation.
 type ListDirectoryInput struct {
 	DirectoryName string
 	Limit         uint64
 	Marker        string
 }
 
-// ListDirectoryOutput contains the outputs of a ListDirectory operation.
+// ListDirectoryOutput contains the outputs of a List operation.
 type ListDirectoryOutput struct {
 	Entries       []*DirectoryEntry
 	ResultSetSize uint64
@@ -61,7 +61,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListDirectory request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var results []*DirectoryEntry
@@ -72,7 +72,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 			if err == io.EOF {
 				break
 			}
-			return nil, errwrap.Wrapf("Error decoding ListDirectory response: {{err}}", err)
+			return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 		}
 		results = append(results, current)
 	}
@@ -89,7 +89,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 	return output, nil
 }
 
-// PutDirectoryInput represents parameters to a PutDirectory operation.
+// PutDirectoryInput represents parameters to a Put operation.
 type PutDirectoryInput struct {
 	DirectoryName string
 }
@@ -112,13 +112,13 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing PutDirectory request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Put request: {{err}}", err)
 	}
 
 	return nil
 }
 
-// DeleteDirectoryInput represents parameters to a DeleteDirectory operation.
+// DeleteDirectoryInput represents parameters to a Delete operation.
 type DeleteDirectoryInput struct {
 	DirectoryName string
 }
@@ -137,7 +137,7 @@ func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInpu
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteDirectory request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
 	}
 
 	return nil
