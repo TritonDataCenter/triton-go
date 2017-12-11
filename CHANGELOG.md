@@ -5,6 +5,7 @@
   connections per host, total of 10x connections per client.
 - Expose an optional Headers attribute to clients to allow them to customize
   HTTP headers when making Object requests.
+- Fix a bug in Directory ListIndex (#69)
 
 ## 0.2.1 (November 8)
 
