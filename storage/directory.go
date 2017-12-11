@@ -3,10 +3,10 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"time"
 
@@ -42,7 +42,7 @@ type ListDirectoryOutput struct {
 
 // List lists the contents of a directory on the Triton Object Store service.
 func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (*ListDirectoryOutput, error) {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 	query := &url.Values{}
 	if input.Limit != 0 {
 		query.Set("limit", strconv.FormatUint(input.Limit, 10))
@@ -53,7 +53,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -98,13 +98,13 @@ type PutDirectoryInput struct {
 // create-or-update operation. Your private namespace starts at /:login, and you
 // can create any nested set of directories or objects within it.
 func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) error {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    path,
+		Path:    fullPath,
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -126,11 +126,11 @@ type DeleteDirectoryInput struct {
 // Delete deletes a directory on the Triton Object Storage. The directory must
 // be empty.
 func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
