@@ -37,9 +37,9 @@ type GetObjectOutput struct {
 	ObjectReader  io.ReadCloser
 }
 
-// GetObject retrieves an object from the Manta service. If error is nil (i.e.
-// the call returns successfully), it is your responsibility to close the io.ReadCloser
-// named ObjectReader in the operation output.
+// Get retrieves an object from the Manta service. If error is nil (i.e. the
+// call returns successfully), it is your responsibility to close the
+// io.ReadCloser named ObjectReader in the operation output.
 func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObjectOutput, error) {
 	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.ObjectPath)
 
