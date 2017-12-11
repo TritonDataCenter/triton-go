@@ -3,10 +3,10 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"time"
 
@@ -27,14 +27,14 @@ type DirectoryEntry struct {
 	Type         string    `json:"type"`
 }
 
-// ListDirectoryInput represents parameters to a ListDirectory operation.
+// ListDirectoryInput represents parameters to a List operation.
 type ListDirectoryInput struct {
 	DirectoryName string
 	Limit         uint64
 	Marker        string
 }
 
-// ListDirectoryOutput contains the outputs of a ListDirectory operation.
+// ListDirectoryOutput contains the outputs of a List operation.
 type ListDirectoryOutput struct {
 	Entries       []*DirectoryEntry
 	ResultSetSize uint64
@@ -42,7 +42,7 @@ type ListDirectoryOutput struct {
 
 // List lists the contents of a directory on the Triton Object Store service.
 func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (*ListDirectoryOutput, error) {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 	query := &url.Values{}
 	if input.Limit != 0 {
 		query.Set("limit", strconv.FormatUint(input.Limit, 10))
@@ -53,7 +53,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -61,7 +61,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListDirectory request: {{err}}", err)
+		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
 
 	var results []*DirectoryEntry
@@ -72,7 +72,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 			if err == io.EOF {
 				break
 			}
-			return nil, errwrap.Wrapf("Error decoding ListDirectory response: {{err}}", err)
+			return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
 		}
 		results = append(results, current)
 	}
@@ -89,7 +89,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 	return output, nil
 }
 
-// PutDirectoryInput represents parameters to a PutDirectory operation.
+// PutDirectoryInput represents parameters to a Put operation.
 type PutDirectoryInput struct {
 	DirectoryName string
 }
@@ -98,13 +98,13 @@ type PutDirectoryInput struct {
 // create-or-update operation. Your private namespace starts at /:login, and you
 // can create any nested set of directories or objects within it.
 func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) error {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    path,
+		Path:    fullPath,
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -112,13 +112,13 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing PutDirectory request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Put request: {{err}}", err)
 	}
 
 	return nil
 }
 
-// DeleteDirectoryInput represents parameters to a DeleteDirectory operation.
+// DeleteDirectoryInput represents parameters to a Delete operation.
 type DeleteDirectoryInput struct {
 	DirectoryName string
 }
@@ -126,18 +126,18 @@ type DeleteDirectoryInput struct {
 // Delete deletes a directory on the Triton Object Storage. The directory must
 // be empty.
 func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
-	path := fmt.Sprintf("/%s%s", s.client.AccountName, input.DirectoryName)
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteDirectory request: {{err}}", err)
+		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
 	}
 
 	return nil
