@@ -1,9 +1,9 @@
 package storage
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -57,24 +57,24 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
-	if respBody != nil {
-		defer respBody.Close()
-	}
 	if err != nil {
 		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
 	}
+	defer respBody.Close()
 
 	var results []*DirectoryEntry
-	for {
+	scanner := bufio.NewScanner(respBody)
+	for scanner.Scan() {
 		current := &DirectoryEntry{}
-		decoder := json.NewDecoder(respBody)
-		if err = decoder.Decode(&current); err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		if err := json.Unmarshal(scanner.Bytes(), current); err != nil {
+			return nil, errwrap.Wrapf("error decoding list response: {{err}}", err)
 		}
+
 		results = append(results, current)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, errwrap.Wrapf("error decoding list responses: {{err}}", err)
 	}
 
 	output := &ListDirectoryOutput{
