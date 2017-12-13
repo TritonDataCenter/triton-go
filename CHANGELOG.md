@@ -5,7 +5,9 @@
   connections per host, total of 10x connections per client.
 - Expose an optional Headers attribute to clients to allow them to customize
   HTTP headers when making Object requests.
-- Fix a bug in Directory ListIndex (#69)
+- Fix a bug in Directory ListIndex [#69](https://github.com/joyent/issues/69)
+- Inputs to Object inputs have been relaxed to `io.Reader` (formerly a
+  `io.ReadSeeker`) [#73](https://github.com/joyent/issues/73).
 
 ## 0.2.1 (November 8)
 
