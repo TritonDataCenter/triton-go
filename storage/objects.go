@@ -34,7 +34,7 @@ type GetObjectOutput struct {
 	ContentMD5    string
 	ETag          string
 	Metadata      map[string]string
-	ObjectReader  io.ReadCloser
+	ObjectReader  io.Reader
 }
 
 // Get retrieves an object from the Manta service. If error is nil (i.e. the
@@ -171,7 +171,7 @@ type PutObjectInput struct {
 	IfModifiedSince  *time.Time
 	ContentLength    uint64
 	MaxContentLength uint64
-	ObjectReader     io.ReadSeeker
+	ObjectReader     io.Reader
 	Headers          map[string]string
 }
 

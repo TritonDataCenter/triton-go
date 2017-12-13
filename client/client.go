@@ -174,7 +174,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 	body := inputs.Body
 	query := inputs.Query
 
-	var requestBody io.ReadSeeker
+	var requestBody io.Reader
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
 		if err != nil {
@@ -233,7 +233,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	path := inputs.Path
 	body := inputs.Body
 
-	var requestBody io.ReadSeeker
+	var requestBody io.Reader
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
 		if err != nil {
@@ -286,7 +286,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 	endpoint := c.MantaURL
 	endpoint.Path = path
 
-	var requestBody io.ReadSeeker
+	var requestBody io.Reader
 	if body != nil {
 		marshaled, err := json.MarshalIndent(body, "", "    ")
 		if err != nil {
@@ -351,7 +351,7 @@ type RequestNoEncodeInput struct {
 	Path    string
 	Query   *url.Values
 	Headers *http.Header
-	Body    io.ReadSeeker
+	Body    io.Reader
 }
 
 func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
