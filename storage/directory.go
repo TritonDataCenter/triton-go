@@ -121,6 +121,7 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 // DeleteDirectoryInput represents parameters to a Delete operation.
 type DeleteDirectoryInput struct {
 	DirectoryName string
+	ForceDelete   bool //Will recursively delete all child directories and objects
 }
 
 // Delete deletes a directory on the Triton Object Storage. The directory must
@@ -128,16 +129,71 @@ type DeleteDirectoryInput struct {
 func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
 	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
 
+	if input.ForceDelete {
+		err := deleteAll(*s, ctx, input.DirectoryName)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := deleteDirectory(*s, ctx, fullPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func deleteAll(c DirectoryClient, ctx context.Context, directoryPath string) error {
+	objs, err := c.List(ctx, &ListDirectoryInput{
+		DirectoryName: directoryPath,
+	})
+	if err != nil {
+		return err
+	}
+	for _, obj := range objs.Entries {
+		newPath := path.Clean(path.Join(directoryPath, obj.Name))
+		if obj.Type == "directory" {
+			err := deleteDirectory(c, ctx, newPath)
+			if err != nil {
+				return deleteAll(c, ctx, newPath)
+			}
+		} else {
+			return deleteObject(c, ctx, path.Clean(path.Join(directoryPath, obj.Name)))
+		}
+	}
+
+	return nil
+}
+
+func deleteDirectory(c DirectoryClient, ctx context.Context, directoryPath string) error {
+	fullPath := path.Clean(path.Join("/", c.client.AccountName, directoryPath))
+
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   fullPath,
 	}
-	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
+	respBody, _, err := c.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
+		return errwrap.Wrapf("Error executing DeleteDirectory request: {{err}}", err)
+	}
+
+	return nil
+}
+
+func deleteObject(c DirectoryClient, ctx context.Context, path string) error {
+	objClient := &ObjectsClient{
+		client: c.client,
+	}
+
+	err := objClient.Delete(ctx, &DeleteObjectInput{
+		ObjectPath: path,
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil
