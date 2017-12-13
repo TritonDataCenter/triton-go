@@ -34,7 +34,7 @@ type GetObjectOutput struct {
 	ContentMD5    string
 	ETag          string
 	Metadata      map[string]string
-	ObjectReader  io.Reader
+	ObjectReader  io.ReadCloser
 }
 
 // Get retrieves an object from the Manta service. If error is nil (i.e. the
