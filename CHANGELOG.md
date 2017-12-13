@@ -8,6 +8,7 @@
 - Fix a bug in Directory ListIndex [#69](https://github.com/joyent/issues/69)
 - Inputs to Object inputs have been relaxed to `io.Reader` (formerly a
   `io.ReadSeeker`) [#73](https://github.com/joyent/issues/73).
+- Add support for ForceDelete of all children of a directory [#71](https://github.com/joyent/issues/71)
 
 ## 0.2.1 (November 8)
 
