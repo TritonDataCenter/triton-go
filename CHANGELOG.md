@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.3.0 (December 14)
+
 - Introduce CloudAPI's ListRulesMachines under networking
 - Enable HTTP KeepAlives by default in the client.  15s idle timeout, 2x
   connections per host, total of 10x connections per client.
