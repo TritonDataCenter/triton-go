@@ -15,12 +15,14 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+	var (
+		signer authentication.Signer
+		err    error
 
-	var signer authentication.Signer
-	var err error
+		keyID       = os.Getenv("MANTA_KEY_ID")
+		accountName = os.Getenv("MANTA_USER")
+		keyMaterial = os.Getenv("MANTA_KEY_MATERIAL")
+	)
 
 	if keyMaterial == "" {
 		signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
@@ -58,7 +60,7 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("SDC_URL"),
+		MantaURL:    os.Getenv("MANTA_URL"),
 		AccountName: accountName,
 		Signers:     []authentication.Signer{signer},
 	}
@@ -68,19 +70,54 @@ func main() {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	obj, err := client.Objects().Get(context.Background(), &storage.GetObjectInput{
-		ObjectPath: "/stor/books/dracula.txt",
+	// You must have this in Manta in order for this file to work.
+	// path := "/stor/books/dracula.txt"
+	path := "/stor/books/dracula.txt"
+
+	ctx := context.Background()
+	info, err := client.Objects().GetInfo(ctx, &storage.GetInfoInput{
+		ObjectPath: path,
 	})
 	if err != nil {
-		log.Fatalf("compute.Objects.Get: %s", err)
+		fmt.Printf("Could not find '%s'\n", path)
+		return
+	}
+
+	fmt.Println("--- HEAD ---")
+	fmt.Printf("Content-Length: %d\n", info.ContentLength)
+	fmt.Printf("Content-MD5: %s\n", info.ContentMD5)
+	fmt.Printf("Content-Type: %s\n", info.ContentType)
+	fmt.Printf("ETag: %s\n", info.ETag)
+	fmt.Printf("Date-Modified: %s\n", info.LastModified.String())
+
+	ctx = context.Background()
+	isDir, err := client.Objects().IsDir(ctx, path)
+	if err != nil {
+		log.Fatalf("failed to detect directory '%s'\n", err)
+		return
+	}
+
+	if isDir {
+		fmt.Printf("'%s' is a directory\n", path)
+	} else {
+		fmt.Printf("'%s' is a file\n", path)
+	}
+
+	ctx = context.Background()
+	obj, err := client.Objects().Get(ctx, &storage.GetObjectInput{
+		ObjectPath: path,
+	})
+	if err != nil {
+		log.Fatalf("failed to get '%s': %s", path, err)
 	}
 
 	body, err := ioutil.ReadAll(obj.ObjectReader)
 	if err != nil {
-		log.Fatalf("compute.Objects.Get: %s", err)
+		log.Fatalf("failed to read response body: %s", err)
 	}
 	defer obj.ObjectReader.Close()
 
+	fmt.Println("--- GET ---")
 	fmt.Printf("Content-Length: %d\n", obj.ContentLength)
 	fmt.Printf("Content-MD5: %s\n", obj.ContentMD5)
 	fmt.Printf("Content-Type: %s\n", obj.ContentType)

@@ -20,6 +20,86 @@ type ObjectsClient struct {
 }
 
 // GetObjectInput represents parameters to a GetObject operation.
+type GetInfoInput struct {
+	ObjectPath string
+	Headers    map[string]string
+}
+
+// GetObjectOutput contains the outputs for a GetObject operation. It is your
+// responsibility to ensure that the io.ReadCloser ObjectReader is closed.
+type GetInfoOutput struct {
+	ContentLength uint64
+	ContentType   string
+	LastModified  time.Time
+	ContentMD5    string
+	ETag          string
+	Metadata      map[string]string
+}
+
+// GetInfo sends a HEAD request to an object in the Manta service. This function
+// does not return a response body.
+func (s *ObjectsClient) GetInfo(ctx context.Context, input *GetInfoInput) (*GetInfoOutput, error) {
+	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+
+	headers := &http.Header{}
+	for key, value := range input.Headers {
+		headers.Set(key, value)
+	}
+
+	reqInput := client.RequestInput{
+		Method:  http.MethodHead,
+		Path:    fullPath,
+		Headers: headers,
+	}
+	_, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
+	if err != nil {
+		return nil, errwrap.Wrapf("Error executing get info request: {{err}}", err)
+	}
+
+	response := &GetInfoOutput{
+		ContentType: respHeaders.Get("Content-Type"),
+		ContentMD5:  respHeaders.Get("Content-MD5"),
+		ETag:        respHeaders.Get("Etag"),
+	}
+
+	lastModified, err := time.Parse(time.RFC1123, respHeaders.Get("Last-Modified"))
+	if err == nil {
+		response.LastModified = lastModified
+	}
+
+	contentLength, err := strconv.ParseUint(respHeaders.Get("Content-Length"), 10, 64)
+	if err == nil {
+		response.ContentLength = contentLength
+	}
+
+	metadata := map[string]string{}
+	for key, values := range respHeaders {
+		if strings.HasPrefix(key, "m-") {
+			metadata[key] = strings.Join(values, ", ")
+		}
+	}
+	response.Metadata = metadata
+
+	return response, nil
+}
+
+// IsDir is a convenience wrapper around the GetInfo function which takes an
+// ObjectPath and returns a boolean whether or not the object is a directory
+// type in Manta. Returns an error if GetInfo failed upstream for some reason.
+func (s *ObjectsClient) IsDir(ctx context.Context, objectPath string) (bool, error) {
+	info, err := s.GetInfo(ctx, &GetInfoInput{
+		ObjectPath: objectPath,
+	})
+	if err != nil {
+		return false, err
+	}
+	if info != nil {
+		return strings.HasSuffix(info.ContentType, "type=directory"), nil
+	}
+	return false, nil
+}
+
+// GetObjectInput represents parameters to a GetObject operation.
 type GetObjectInput struct {
 	ObjectPath string
 	Headers    map[string]string
