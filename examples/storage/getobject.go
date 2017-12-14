@@ -14,6 +14,9 @@ import (
 	"github.com/joyent/triton-go/storage"
 )
 
+// This file stored in Manta is used in the example below.
+const path = "/stor/books/dracula.txt"
+
 func main() {
 	var (
 		signer authentication.Signer
@@ -27,26 +30,26 @@ func main() {
 	if keyMaterial == "" {
 		signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("error creating SSH agent signer: %v", err.Error())
 		}
 	} else {
 		var keyBytes []byte
 		if _, err = os.Stat(keyMaterial); err == nil {
 			keyBytes, err = ioutil.ReadFile(keyMaterial)
 			if err != nil {
-				log.Fatalf("Error reading key material from %s: %s",
+				log.Fatalf("error reading key material from %q: %v",
 					keyMaterial, err)
 			}
 			block, _ := pem.Decode(keyBytes)
 			if block == nil {
 				log.Fatalf(
-					"Failed to read key material '%s': no key found", keyMaterial)
+					"failed to read key material %q: no key found", keyMaterial)
 			}
 
 			if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
-				log.Fatalf(
-					"Failed to read key '%s': password protected keys are\n"+
-						"not currently supported. Please decrypt the key prior to use.", keyMaterial)
+				log.Fatalf("failed to read key %q: password protected keys are\n"+
+					"not currently supported, decrypt key prior to use",
+					keyMaterial)
 			}
 
 		} else {
@@ -55,7 +58,7 @@ func main() {
 
 		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("error creating SSH private key signer: %v", err.Error())
 		}
 	}
 
@@ -67,19 +70,15 @@ func main() {
 
 	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("failed to init storage client: %v", err)
 	}
-
-	// You must have this in Manta in order for this file to work.
-	// path := "/stor/books/dracula.txt"
-	path := "/stor/books/dracula.txt"
 
 	ctx := context.Background()
 	info, err := client.Objects().GetInfo(ctx, &storage.GetInfoInput{
 		ObjectPath: path,
 	})
 	if err != nil {
-		fmt.Printf("Could not find '%s'\n", path)
+		fmt.Printf("could not find %q\n", path)
 		return
 	}
 
@@ -93,14 +92,14 @@ func main() {
 	ctx = context.Background()
 	isDir, err := client.Objects().IsDir(ctx, path)
 	if err != nil {
-		log.Fatalf("failed to detect directory '%s'\n", err)
+		log.Fatalf("failed to detect directory %q: %v\n", path, err)
 		return
 	}
 
 	if isDir {
-		fmt.Printf("'%s' is a directory\n", path)
+		fmt.Printf("%q is a directory\n", path)
 	} else {
-		fmt.Printf("'%s' is a file\n", path)
+		fmt.Printf("%q is a file\n", path)
 	}
 
 	ctx = context.Background()
@@ -108,12 +107,12 @@ func main() {
 		ObjectPath: path,
 	})
 	if err != nil {
-		log.Fatalf("failed to get '%s': %s", path, err)
+		log.Fatalf("failed to get %q: %v", path, err)
 	}
 
 	body, err := ioutil.ReadAll(obj.ObjectReader)
 	if err != nil {
-		log.Fatalf("failed to read response body: %s", err)
+		log.Fatalf("failed to read response body: %v", err)
 	}
 	defer obj.ObjectReader.Close()
 
