@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -339,10 +340,17 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		StatusCode: resp.StatusCode,
 	}
 
-	errorDecoder := json.NewDecoder(resp.Body)
-	if err := errorDecoder.Decode(mantaError); err != nil {
-		return nil, nil, errwrap.Wrapf("Error decoding error response: {{err}}", err)
+	if req.Method != http.MethodHead {
+		errorDecoder := json.NewDecoder(resp.Body)
+		if err := errorDecoder.Decode(mantaError); err != nil {
+			return nil, nil, errwrap.Wrapf("Error decoding error response: {{err}}", err)
+		}
 	}
+
+	if mantaError.Message == "" {
+		mantaError.Message = fmt.Sprintf("HTTP response returned status code %d", resp.StatusCode)
+	}
+
 	return nil, nil, mantaError
 }
 
