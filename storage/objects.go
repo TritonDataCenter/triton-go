@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"log"
-
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
 )
@@ -328,7 +326,6 @@ func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, full
 }
 
 func createDirectory(c ObjectsClient, ctx context.Context, fullPath string) error {
-	log.Printf("Forcing the Creation of the Directory Tree: %q", fullPath)
 	dirClient := &DirectoryClient{
 		client: c.client,
 	}
