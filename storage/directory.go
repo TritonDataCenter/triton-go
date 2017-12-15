@@ -42,7 +42,7 @@ type ListDirectoryOutput struct {
 
 // List lists the contents of a directory on the Triton Object Store service.
 func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (*ListDirectoryOutput, error) {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
+	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
 	query := &url.Values{}
 	if input.Limit != 0 {
 		query.Set("limit", strconv.FormatUint(input.Limit, 10))
@@ -53,7 +53,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   fullPath,
+		Path:   absPath,
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -98,13 +98,14 @@ type PutDirectoryInput struct {
 // create-or-update operation. Your private namespace starts at /:login, and you
 // can create any nested set of directories or objects within it.
 func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) error {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
+	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
+
 	headers := &http.Header{}
 	headers.Set("Content-Type", "application/json; type=directory")
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    fullPath,
+		Path:    absPath,
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -127,7 +128,7 @@ type DeleteDirectoryInput struct {
 // Delete deletes a directory on the Triton Object Storage. The directory must
 // be empty.
 func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.DirectoryName))
+	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
 
 	if input.ForceDelete {
 		err := deleteAll(*s, ctx, input.DirectoryName)
@@ -135,7 +136,7 @@ func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInpu
 			return err
 		}
 	} else {
-		err := deleteDirectory(*s, ctx, fullPath)
+		err := deleteDirectory(*s, ctx, absPath)
 		if err != nil {
 			return err
 		}
@@ -159,7 +160,7 @@ func deleteAll(c DirectoryClient, ctx context.Context, directoryPath string) err
 				return deleteAll(c, ctx, newPath)
 			}
 		} else {
-			return deleteObject(c, ctx, path.Clean(path.Join(directoryPath, obj.Name)))
+			return deleteObject(c, ctx, newPath)
 		}
 	}
 
@@ -167,11 +168,11 @@ func deleteAll(c DirectoryClient, ctx context.Context, directoryPath string) err
 }
 
 func deleteDirectory(c DirectoryClient, ctx context.Context, directoryPath string) error {
-	fullPath := path.Clean(path.Join("/", c.client.AccountName, directoryPath))
+	absPath := absFileInput(c.client.AccountName, directoryPath)
 
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   fullPath,
+		Path:   absPath,
 	}
 	respBody, _, err := c.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
