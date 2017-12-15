@@ -345,15 +345,18 @@ func createDirectory(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath
 		client: c.client,
 	}
 
+	// An abspath starts w/ a leading "/" which gets added to the slice as an
+	// empty string. Start all array math at 1.
 	parts := strings.Split(path.Dir(string(absPath)), "/")
+	if len(parts) < 2 {
+		return errors.New("no path components to create directory")
+	}
 
-	var folderPath string
-	for i, part := range parts[1:] {
-		if i == 0 {
-			folderPath = part
-			continue
-		}
-		folderPath = path.Clean(path.Join(folderPath, part))
+	folderPath := parts[1]
+	// Don't attempt to create a manta account as a directory
+	for i := 2; i < len(parts); i++ {
+		part := parts[i]
+		folderPath = path.Clean(path.Join("/", folderPath, part))
 		err := dirClient.Put(ctx, &PutDirectoryInput{
 			DirectoryName: folderPath,
 		})
