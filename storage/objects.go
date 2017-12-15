@@ -262,12 +262,13 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
 
 	if input.ForceInsert {
-		exists, err := checkDirectoryTreeExists(*s, ctx, input.ObjectPath)
+		exists, err := checkDirectoryTreeExists(*s, ctx, fullPath)
 		if err != nil {
 			return err
 		}
 		if !exists {
-			err := createDirectory(*s, ctx, input.ObjectPath)
+			// a leading / is used to accept paths relative to the account name
+			err := createDirectory(*s, ctx, path.Clean(path.Join("/", input.ObjectPath)))
 			if err != nil {
 				return err
 			}
