@@ -347,7 +347,7 @@ func createDirectory(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath
 
 	// An abspath starts w/ a leading "/" which gets added to the slice as an
 	// empty string. Start all array math at 1.
-	parts := strings.Split(path.Dir(string(absPath)), "/")
+	parts := strings.Split(string(absPath), "/")
 	if len(parts) < 2 {
 		return errors.New("no path components to create directory")
 	}

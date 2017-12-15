@@ -78,7 +78,7 @@ func main() {
 	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
 		ObjectPath:   "/stor/folder1/folder2/folder3/folder4/foo.txt",
 		ObjectReader: reader,
-		ForceInsert:  false,
+		ForceInsert:  true,
 	})
 
 	if err != nil {
