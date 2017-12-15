@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Fix an issue where Manta HEAD requests do not return an error resp body [#77]
+
 ## 0.3.0 (December 14)
 
 - Introduce CloudAPI's ListRulesMachines under networking
