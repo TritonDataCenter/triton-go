@@ -53,7 +53,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   absPath,
+		Path:   string(absPath),
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -105,7 +105,7 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    absPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -131,7 +131,7 @@ func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInpu
 	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
 
 	if input.ForceDelete {
-		err := deleteAll(*s, ctx, input.DirectoryName)
+		err := deleteAll(*s, ctx, absPath)
 		if err != nil {
 			return err
 		}
@@ -145,15 +145,15 @@ func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInpu
 	return nil
 }
 
-func deleteAll(c DirectoryClient, ctx context.Context, directoryPath string) error {
+func deleteAll(c DirectoryClient, ctx context.Context, directoryPath _AbsCleanPath) error {
 	objs, err := c.List(ctx, &ListDirectoryInput{
-		DirectoryName: directoryPath,
+		DirectoryName: string(directoryPath),
 	})
 	if err != nil {
 		return err
 	}
 	for _, obj := range objs.Entries {
-		newPath := path.Clean(path.Join(directoryPath, obj.Name))
+		newPath := absFileInput(c.client.AccountName, path.Join(string(directoryPath), obj.Name))
 		if obj.Type == "directory" {
 			err := deleteDirectory(c, ctx, newPath)
 			if err != nil {
@@ -167,12 +167,10 @@ func deleteAll(c DirectoryClient, ctx context.Context, directoryPath string) err
 	return nil
 }
 
-func deleteDirectory(c DirectoryClient, ctx context.Context, directoryPath string) error {
-	absPath := absFileInput(c.client.AccountName, directoryPath)
-
+func deleteDirectory(c DirectoryClient, ctx context.Context, directoryPath _AbsCleanPath) error {
 	reqInput := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   absPath,
+		Path:   string(directoryPath),
 	}
 	respBody, _, err := c.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
@@ -185,13 +183,13 @@ func deleteDirectory(c DirectoryClient, ctx context.Context, directoryPath strin
 	return nil
 }
 
-func deleteObject(c DirectoryClient, ctx context.Context, path string) error {
+func deleteObject(c DirectoryClient, ctx context.Context, path _AbsCleanPath) error {
 	objClient := &ObjectsClient{
 		client: c.client,
 	}
 
 	err := objClient.Delete(ctx, &DeleteObjectInput{
-		ObjectPath: path,
+		ObjectPath: string(path),
 	})
 	if err != nil {
 		return err

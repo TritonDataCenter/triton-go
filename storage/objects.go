@@ -48,7 +48,7 @@ func (s *ObjectsClient) GetInfo(ctx context.Context, input *GetInfoInput) (*GetI
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodHead,
-		Path:    absPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	_, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -130,7 +130,7 @@ func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObj
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodGet,
-		Path:    absPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -183,7 +183,7 @@ func (s *ObjectsClient) Delete(ctx context.Context, input *DeleteObjectInput) er
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodDelete,
-		Path:    absPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -226,7 +226,7 @@ func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadat
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    absPath,
+		Path:    string(absPath),
 		Query:   query,
 		Headers: headers,
 	}
@@ -261,7 +261,7 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 
 	if input.ForceInsert {
 		// IsDir() uses a path relative to the account
-		absDirName := path.Dir(absPath)
+		absDirName := _AbsCleanPath(path.Dir(string(absPath)))
 		exists, err := checkDirectoryTreeExists(*s, ctx, absDirName)
 		if err != nil {
 			return err
@@ -278,17 +278,21 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 	return putObject(*s, ctx, input, absPath)
 }
 
-func absFileInput(accountName, objPath string) string {
+// _AbsCleanPath is an internal type that means the input has been
+// path.Clean()'ed and is an absolute path.
+type _AbsCleanPath string
+
+func absFileInput(accountName, objPath string) _AbsCleanPath {
 	cleanInput := path.Clean(objPath)
 	if strings.HasPrefix(cleanInput, path.Join("/", accountName, "/")) {
-		return cleanInput
+		return _AbsCleanPath(cleanInput)
 	}
 
 	cleanAbs := path.Clean(path.Join("/", accountName, objPath))
-	return cleanAbs
+	return _AbsCleanPath(cleanAbs)
 }
 
-func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, absPath string) error {
+func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, absPath _AbsCleanPath) error {
 	if input.MaxContentLength != 0 && input.ContentLength != 0 {
 		return errors.New("ContentLength and MaxContentLength may not both be set to non-zero values.")
 	}
@@ -321,7 +325,7 @@ func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, absP
 
 	reqInput := client.RequestNoEncodeInput{
 		Method:  http.MethodPut,
-		Path:    absPath,
+		Path:    string(absPath),
 		Headers: headers,
 		Body:    input.ObjectReader,
 	}
@@ -336,12 +340,12 @@ func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, absP
 	return nil
 }
 
-func createDirectory(c ObjectsClient, ctx context.Context, absPath string) error {
+func createDirectory(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) error {
 	dirClient := &DirectoryClient{
 		client: c.client,
 	}
 
-	parts := strings.Split(path.Dir(absPath), "/")
+	parts := strings.Split(path.Dir(string(absPath)), "/")
 
 	var folderPath string
 	for i, part := range parts[1:] {
@@ -361,8 +365,8 @@ func createDirectory(c ObjectsClient, ctx context.Context, absPath string) error
 	return nil
 }
 
-func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, absPath string) (bool, error) {
-	exists, err := c.IsDir(ctx, absPath)
+func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) (bool, error) {
+	exists, err := c.IsDir(ctx, string(absPath))
 	if err != nil {
 		errType := &client.MantaError{}
 		if errwrap.ContainsType(err, errType) {
