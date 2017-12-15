@@ -39,7 +39,7 @@ type GetInfoOutput struct {
 // GetInfo sends a HEAD request to an object in the Manta service. This function
 // does not return a response body.
 func (s *ObjectsClient) GetInfo(ctx context.Context, input *GetInfoInput) (*GetInfoOutput, error) {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 
 	headers := &http.Header{}
 	for key, value := range input.Headers {
@@ -48,7 +48,7 @@ func (s *ObjectsClient) GetInfo(ctx context.Context, input *GetInfoInput) (*GetI
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodHead,
-		Path:    fullPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	_, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -121,7 +121,7 @@ type GetObjectOutput struct {
 // call returns successfully), it is your responsibility to close the
 // io.ReadCloser named ObjectReader in the operation output.
 func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObjectOutput, error) {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 
 	headers := &http.Header{}
 	for key, value := range input.Headers {
@@ -130,7 +130,7 @@ func (s *ObjectsClient) Get(ctx context.Context, input *GetObjectInput) (*GetObj
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodGet,
-		Path:    fullPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -174,7 +174,7 @@ type DeleteObjectInput struct {
 
 // DeleteObject deletes an object.
 func (s *ObjectsClient) Delete(ctx context.Context, input *DeleteObjectInput) error {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 
 	headers := &http.Header{}
 	for key, value := range input.Headers {
@@ -183,7 +183,7 @@ func (s *ObjectsClient) Delete(ctx context.Context, input *DeleteObjectInput) er
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodDelete,
-		Path:    fullPath,
+		Path:    string(absPath),
 		Headers: headers,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -214,7 +214,7 @@ type PutObjectMetadataInput struct {
 //	- Content-MD5
 //	- Durability-Level
 func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadataInput) error {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 	query := &url.Values{}
 	query.Set("metadata", "true")
 
@@ -226,7 +226,7 @@ func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadat
 
 	reqInput := client.RequestInput{
 		Method:  http.MethodPut,
-		Path:    fullPath,
+		Path:    string(absPath),
 		Query:   query,
 		Headers: headers,
 	}
@@ -257,27 +257,42 @@ type PutObjectInput struct {
 }
 
 func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
-	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
+	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 
 	if input.ForceInsert {
-		exists, err := checkDirectoryTreeExists(*s, ctx, fullPath)
+		// IsDir() uses a path relative to the account
+		absDirName := _AbsCleanPath(path.Dir(string(absPath)))
+		exists, err := checkDirectoryTreeExists(*s, ctx, absDirName)
 		if err != nil {
 			return err
 		}
 		if !exists {
-			// a leading / is used to accept paths relative to the account name
-			err := createDirectory(*s, ctx, path.Clean(path.Join("/", input.ObjectPath)))
+			err := createDirectory(*s, ctx, absDirName)
 			if err != nil {
 				return err
 			}
-			return putObject(*s, ctx, input, fullPath)
+			return putObject(*s, ctx, input, absPath)
 		}
 	}
 
-	return putObject(*s, ctx, input, fullPath)
+	return putObject(*s, ctx, input, absPath)
 }
 
-func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, fullPath string) error {
+// _AbsCleanPath is an internal type that means the input has been
+// path.Clean()'ed and is an absolute path.
+type _AbsCleanPath string
+
+func absFileInput(accountName, objPath string) _AbsCleanPath {
+	cleanInput := path.Clean(objPath)
+	if strings.HasPrefix(cleanInput, path.Join("/", accountName, "/")) {
+		return _AbsCleanPath(cleanInput)
+	}
+
+	cleanAbs := path.Clean(path.Join("/", accountName, objPath))
+	return _AbsCleanPath(cleanAbs)
+}
+
+func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, absPath _AbsCleanPath) error {
 	if input.MaxContentLength != 0 && input.ContentLength != 0 {
 		return errors.New("ContentLength and MaxContentLength may not both be set to non-zero values.")
 	}
@@ -310,7 +325,7 @@ func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, full
 
 	reqInput := client.RequestNoEncodeInput{
 		Method:  http.MethodPut,
-		Path:    fullPath,
+		Path:    string(absPath),
 		Headers: headers,
 		Body:    input.ObjectReader,
 	}
@@ -325,21 +340,23 @@ func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, full
 	return nil
 }
 
-func createDirectory(c ObjectsClient, ctx context.Context, fullPath string) error {
+func createDirectory(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) error {
 	dirClient := &DirectoryClient{
 		client: c.client,
 	}
 
-	parts := strings.Split(fullPath, "/")
-	parts = parts[:len(parts)-1]
+	// An abspath starts w/ a leading "/" which gets added to the slice as an
+	// empty string. Start all array math at 1.
+	parts := strings.Split(string(absPath), "/")
+	if len(parts) < 2 {
+		return errors.New("no path components to create directory")
+	}
 
-	var folderPath string
-	for i, part := range parts[1:] {
-		if i == 0 {
-			folderPath = part
-			continue
-		}
-		folderPath = path.Clean(path.Join(folderPath, part))
+	folderPath := parts[1]
+	// Don't attempt to create a manta account as a directory
+	for i := 2; i < len(parts); i++ {
+		part := parts[i]
+		folderPath = path.Clean(path.Join("/", folderPath, part))
 		err := dirClient.Put(ctx, &PutDirectoryInput{
 			DirectoryName: folderPath,
 		})
@@ -351,8 +368,8 @@ func createDirectory(c ObjectsClient, ctx context.Context, fullPath string) erro
 	return nil
 }
 
-func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, fullPath string) (bool, error) {
-	exists, err := c.IsDir(ctx, fullPath)
+func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) (bool, error) {
+	exists, err := c.IsDir(ctx, string(absPath))
 	if err != nil {
 		errType := &client.MantaError{}
 		if errwrap.ContainsType(err, errType) {
