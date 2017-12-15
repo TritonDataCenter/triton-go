@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
 )
@@ -253,11 +255,30 @@ type PutObjectInput struct {
 	MaxContentLength uint64
 	ObjectReader     io.Reader
 	Headers          map[string]string
+	ForceInsert      bool //Force the creation of the directory tree
 }
 
 func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 	fullPath := path.Clean(path.Join("/", s.client.AccountName, input.ObjectPath))
 
+	if input.ForceInsert {
+		exists, err := checkDirectoryTreeExists(*s, ctx, input.ObjectPath)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			err := createDirectory(*s, ctx, input.ObjectPath)
+			if err != nil {
+				return err
+			}
+			return putObject(*s, ctx, input, fullPath)
+		}
+	}
+
+	return putObject(*s, ctx, input, fullPath)
+}
+
+func putObject(c ObjectsClient, ctx context.Context, input *PutObjectInput, fullPath string) error {
 	if input.MaxContentLength != 0 && input.ContentLength != 0 {
 		return errors.New("ContentLength and MaxContentLength may not both be set to non-zero values.")
 	}
@@ -294,7 +315,7 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 		Headers: headers,
 		Body:    input.ObjectReader,
 	}
-	respBody, _, err := s.client.ExecuteRequestNoEncode(ctx, reqInput)
+	respBody, _, err := c.client.ExecuteRequestNoEncode(ctx, reqInput)
 	if respBody != nil {
 		defer respBody.Close()
 	}
@@ -303,4 +324,50 @@ func (s *ObjectsClient) Put(ctx context.Context, input *PutObjectInput) error {
 	}
 
 	return nil
+}
+
+func createDirectory(c ObjectsClient, ctx context.Context, fullPath string) error {
+	log.Printf("Forcing the Creation of the Directory Tree: %q", fullPath)
+	dirClient := &DirectoryClient{
+		client: c.client,
+	}
+
+	parts := strings.Split(fullPath, "/")
+	parts = parts[:len(parts)-1]
+
+	var folderPath string
+	for i, part := range parts[1:] {
+		if i == 0 {
+			folderPath = part
+			continue
+		}
+		folderPath = path.Clean(path.Join(folderPath, part))
+		err := dirClient.Put(ctx, &PutDirectoryInput{
+			DirectoryName: folderPath,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, fullPath string) (bool, error) {
+	exists, err := c.IsDir(ctx, fullPath)
+	if err != nil {
+		errType := &client.MantaError{}
+		if errwrap.ContainsType(err, errType) {
+			mantaErr := errwrap.GetType(err, errType).(*client.MantaError)
+			if mantaErr.StatusCode == http.StatusNotFound {
+				return false, nil
+			}
+		}
+		return false, err
+	}
+	if exists {
+		return true, nil
+	}
+
+	return false, nil
 }
