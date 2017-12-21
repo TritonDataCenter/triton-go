@@ -97,18 +97,20 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		Path:   path,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
-	if response != nil {
+	if response == nil {
+		return nil, &client.TritonError{
+			StatusCode: 404,
+			Code:       "ResourceNotFound",
+		}
+	}
+	if response.Body != nil {
 		defer response.Body.Close()
 	}
-	if response == nil || response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
-	}
-	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}",
-			c.client.DecodeError(response.StatusCode, response.Body))
 	}
 
 	var result *_Instance
