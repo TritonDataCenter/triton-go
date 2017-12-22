@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.4.2 (December 22)
+
 - Fixing a panic when the user loses network connectivity when making a GET request to instance [#81]
 
 ## 0.4.1 (December 15)
