@@ -20,12 +20,13 @@ type PrivateKeySigner struct {
 	keyFingerprint          string
 	algorithm               string
 	accountName             string
+	userName                string
 	hashFunc                crypto.Hash
 
 	privateKey *rsa.PrivateKey
 }
 
-func NewPrivateKeySigner(keyFingerprint string, privateKeyMaterial []byte, accountName string) (*PrivateKeySigner, error) {
+func NewPrivateKeySigner(keyFingerprint string, privateKeyMaterial []byte, accountName, userName string) (*PrivateKeySigner, error) {
 	keyFingerprintMD5 := strings.Replace(keyFingerprint, ":", "", -1)
 
 	block, _ := pem.Decode(privateKeyMaterial)
@@ -58,6 +59,10 @@ func NewPrivateKeySigner(keyFingerprint string, privateKeyMaterial []byte, accou
 		privateKey: rsakey,
 	}
 
+	if userName != "" {
+		signer.userName = userName
+	}
+
 	_, algorithm, err := signer.SignRaw("HelloWorld")
 	if err != nil {
 		return nil, fmt.Errorf("Cannot sign using ssh agent: %s", err)
@@ -80,7 +85,12 @@ func (s *PrivateKeySigner) Sign(dateHeader string) (string, error) {
 	}
 	signedBase64 := base64.StdEncoding.EncodeToString(signed)
 
-	keyID := fmt.Sprintf("/%s/keys/%s", s.accountName, s.formattedKeyFingerprint)
+	var keyID string
+	if s.userName != "" {
+		keyID = fmt.Sprintf("/%s/users/%s/keys/%s", s.accountName, s.userName, s.formattedKeyFingerprint)
+	} else {
+		keyID = fmt.Sprintf("/%s/keys/%s", s.accountName, s.formattedKeyFingerprint)
+	}
 	return fmt.Sprintf(authorizationHeaderFormat, keyID, "rsa-sha1", headerName, signedBase64), nil
 }
 

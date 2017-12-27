@@ -36,6 +36,7 @@ type Client struct {
 	TritonURL   url.URL
 	MantaURL    url.URL
 	AccountName string
+	Username    string
 }
 
 // New is used to construct a Client in order to make API
@@ -98,7 +99,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 // user's environ(7). If so we default to the SSH agent key signer.
 func (c *Client) DefaultAuth() error {
 	if keyID, keyOk := os.LookupEnv("SDC_KEY_ID"); keyOk {
-		defaultSigner, err := authentication.NewSSHAgentSigner(keyID, c.AccountName)
+		defaultSigner, err := authentication.NewSSHAgentSigner(keyID, c.AccountName, c.Username)
 		if err != nil {
 			return errwrap.Wrapf("problem initializing NewSSHAgentSigner: {{err}}", err)
 		}
