@@ -8,9 +8,8 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
-
 	"path"
+	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh"

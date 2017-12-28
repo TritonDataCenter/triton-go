@@ -9,9 +9,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"strings"
-
 	"path"
+	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh"
