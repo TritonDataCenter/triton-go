@@ -38,7 +38,7 @@ func AccTest(t *testing.T, c TestCase) {
 	sdcAccount := os.Getenv("SDC_ACCOUNT")
 	sdcKeyId := os.Getenv("SDC_KEY_ID")
 	sdcKeyMaterial := os.Getenv("SDC_KEY_MATERIAL")
-	sdcUser := os.Getenv("SDC_USER")
+	userName := os.Getenv("SDC_USER")
 	mantaURL := os.Getenv("MANTA_URL")
 
 	var prerollErrors []error
@@ -65,13 +65,24 @@ func AccTest(t *testing.T, c TestCase) {
 	var err error
 	if sdcKeyMaterial != "" {
 		log.Println("[INFO] Creating Triton Client with Private Key Signer...")
-		signer, err = authentication.NewPrivateKeySigner(sdcKeyId, []byte(sdcKeyMaterial), sdcAccount, sdcUser)
+		input := authentication.PrivateKeySignerInput{
+			KeyFingerPrint:     sdcKeyId,
+			PrivateKeyMaterial: []byte(sdcKeyMaterial),
+			AccountName:        sdcAccount,
+			UserName:           userName,
+		}
+		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
 			t.Fatalf("Error creating private key signer: %s", err)
 		}
 	} else {
 		log.Println("[INFO] Creating Triton Client with SSH Key Signer...")
-		signer, err = authentication.NewSSHAgentSigner(sdcKeyId, sdcAccount, sdcUser)
+		input := authentication.SSHAgentSignerInput{
+			KeyFingerPrint: sdcKeyId,
+			AccountName:    sdcAccount,
+			UserName:       userName,
+		}
+		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
 			t.Fatalf("Error creating SSH Agent signer: %s", err)
 		}
@@ -89,7 +100,7 @@ func AccTest(t *testing.T, c TestCase) {
 		TritonURL:   sdcURL,
 		MantaURL:    mantaURL,
 		AccountName: sdcAccount,
-		Username:    sdcUser,
+		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 

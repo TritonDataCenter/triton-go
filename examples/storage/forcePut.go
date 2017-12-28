@@ -25,7 +25,12 @@ func main() {
 	var err error
 
 	if keyMaterial == "" {
-		signer, err = authentication.NewSSHAgentSigner(keyID, mantaUser, userName)
+		input := authentication.SSHAgentSignerInput{
+			KeyFingerPrint: keyID,
+			AccountName:    mantaUser,
+			UserName:       userName,
+		}
+		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
 		}
@@ -53,7 +58,13 @@ func main() {
 			keyBytes = []byte(keyMaterial)
 		}
 
-		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), mantaUser, userName)
+		input := authentication.PrivateKeySignerInput{
+			KeyFingerPrint:     keyID,
+			PrivateKeyMaterial: keyBytes,
+			AccountName:        mantaUser,
+			UserName:           userName,
+		}
+		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
 		}

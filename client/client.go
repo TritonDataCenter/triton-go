@@ -99,7 +99,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 // user's environ(7). If so we default to the SSH agent key signer.
 func (c *Client) DefaultAuth() error {
 	if keyID, keyOk := os.LookupEnv("SDC_KEY_ID"); keyOk {
-		defaultSigner, err := authentication.NewSSHAgentSigner(keyID, c.AccountName, c.Username)
+		input := authentication.SSHAgentSignerInput{
+			KeyFingerPrint: keyID,
+			AccountName:    c.AccountName,
+			UserName:       c.Username,
+		}
+		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {
 			return errwrap.Wrapf("problem initializing NewSSHAgentSigner: {{err}}", err)
 		}

@@ -19,9 +19,13 @@ stored in the `SDC_ACCOUNT` environment variable). There is also support for
 passing in a username, this will allow you to use an account other than the main
 Triton account. For example:
 
-```
-const fingerprint := "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11"
-sshKeySigner, err := authentication.NewSSHAgentSigner(fingerprint, "AccountName", "UserName")
+```go
+input := authentication.SSHAgentSignerInput{
+    KeyFingerPrint: "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11",
+    AccountName:    "AccountName",
+    UserName:       "UserName",
+}
+sshKeySigner, err := authentication.NewSSHAgentSigner(input)
 if err != nil {
     log.Fatalf("NewSSHAgentSigner: %s", err)
 }
@@ -38,18 +42,18 @@ their own seperate client. In order to initialize a package client, simply pass
 the global `triton.ClientConfig` struct into the client's constructor function.
 
 ```go
-    config := &triton.ClientConfig{
-        TritonURL:   os.Getenv("SDC_URL"),
-        MantaURL:    os.Getenv("MANTA_URL"),
-        AccountName: accountName,
-        Username:    os.Getenv("SDC_USER"),
-        Signers:     []authentication.Signer{sshKeySigner},
-    }
+config := &triton.ClientConfig{
+    TritonURL:   os.Getenv("SDC_URL"),
+    MantaURL:    os.Getenv("MANTA_URL"),
+    AccountName: accountName,
+    Username:    os.Getenv("SDC_USER"),
+    Signers:     []authentication.Signer{sshKeySigner},
+}
 
-    c, err := compute.NewClient(config)
-    if err != nil {
-        log.Fatalf("compute.NewClient: %s", err)
-    }
+c, err := compute.NewClient(config)
+if err != nil {
+    log.Fatalf("compute.NewClient: %s", err)
+}
 ```
 
 Constructing `compute.Client` returns an interface which exposes `compute` API
@@ -60,10 +64,10 @@ The same `triton.ClientConfig` will initialize the Manta `storage` client as
 well...
 
 ```go
-    c, err := storage.NewClient(config)
-    if err != nil {
-        log.Fatalf("storage.NewClient: %s", err)
-    }
+c, err := storage.NewClient(config)
+if err != nil {
+    log.Fatalf("storage.NewClient: %s", err)
+}
 ```
 
 ## Error Handling
@@ -157,7 +161,12 @@ func main() {
     var err error
 
     if keyMaterial == "" {
-        signer, err = authentication.NewSSHAgentSigner(keyID, accountName, userName)
+        input := authentication.SSHAgentSignerInput{
+            KeyFingerPrint: keyID,
+            AccountName:    accountName,
+            UserName:       userName,
+        }
+        signer, err = authentication.NewSSHAgentSigner(input)
         if err != nil {
             log.Fatalf("Error Creating SSH Agent Signer: {{err}}", err)
         }
@@ -185,7 +194,13 @@ func main() {
             keyBytes = []byte(keyMaterial)
         }
 
-        signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName, userName)
+        input := authentication.PrivateKeySignerInput{
+            KeyFingerPrint:     keyID,
+            PrivateKeyMaterial: keyBytes,
+            AccountName:        accountName,
+            UserName:           userName,
+        }
+        signer, err = authentication.NewPrivateKeySigner(input)
         if err != nil {
             log.Fatalf("Error Creating SSH Private Key Signer: {{err}}", err)
         }

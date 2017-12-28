@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 
+	"path"
+
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -31,7 +33,13 @@ type SSHAgentSigner struct {
 	key   ssh.PublicKey
 }
 
-func NewSSHAgentSigner(keyFingerprint, accountName, userName string) (*SSHAgentSigner, error) {
+type SSHAgentSignerInput struct {
+	KeyFingerPrint string
+	AccountName    string
+	UserName       string
+}
+
+func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 	sshAgentAddress, agentOk := os.LookupEnv("SSH_AUTH_SOCK")
 	if !agentOk {
 		return nil, ErrUnsetEnvVar
@@ -45,8 +53,8 @@ func NewSSHAgentSigner(keyFingerprint, accountName, userName string) (*SSHAgentS
 	ag := agent.NewClient(conn)
 
 	signer := &SSHAgentSigner{
-		keyFingerprint: keyFingerprint,
-		accountName:    accountName,
+		keyFingerprint: input.KeyFingerPrint,
+		accountName:    input.AccountName,
 		agent:          ag,
 	}
 
@@ -56,11 +64,11 @@ func NewSSHAgentSigner(keyFingerprint, accountName, userName string) (*SSHAgentS
 	}
 	signer.key = matchingKey
 	signer.formattedKeyFingerprint = formatPublicKeyFingerprint(signer.key, true)
-	if userName != "" {
-		signer.userName = userName
-		signer.keyIdentifier = fmt.Sprintf("/%s/users/%s/keys/%s", signer.accountName, userName, signer.formattedKeyFingerprint)
+	if input.UserName != "" {
+		signer.userName = input.UserName
+		signer.keyIdentifier = path.Join(signer.accountName, "users", input.UserName, "keys", signer.formattedKeyFingerprint)
 	} else {
-		signer.keyIdentifier = fmt.Sprintf("/%s/keys/%s", signer.accountName, signer.formattedKeyFingerprint)
+		signer.keyIdentifier = path.Join(signer.accountName, "keys", signer.formattedKeyFingerprint)
 	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")
