@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"strings"
 
+	"path"
+
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh"
 )
@@ -20,15 +22,23 @@ type PrivateKeySigner struct {
 	keyFingerprint          string
 	algorithm               string
 	accountName             string
+	userName                string
 	hashFunc                crypto.Hash
 
 	privateKey *rsa.PrivateKey
 }
 
-func NewPrivateKeySigner(keyFingerprint string, privateKeyMaterial []byte, accountName string) (*PrivateKeySigner, error) {
-	keyFingerprintMD5 := strings.Replace(keyFingerprint, ":", "", -1)
+type PrivateKeySignerInput struct {
+	KeyFingerPrint     string
+	PrivateKeyMaterial []byte
+	AccountName        string
+	UserName           string
+}
 
-	block, _ := pem.Decode(privateKeyMaterial)
+func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error) {
+	keyFingerprintMD5 := strings.Replace(input.KeyFingerPrint, ":", "", -1)
+
+	block, _ := pem.Decode(input.PrivateKeyMaterial)
 	if block == nil {
 		return nil, errors.New("Error PEM-decoding private key material: nil block received")
 	}
@@ -51,11 +61,15 @@ func NewPrivateKeySigner(keyFingerprint string, privateKeyMaterial []byte, accou
 
 	signer := &PrivateKeySigner{
 		formattedKeyFingerprint: displayKeyFingerprint,
-		keyFingerprint:          keyFingerprint,
-		accountName:             accountName,
+		keyFingerprint:          input.KeyFingerPrint,
+		accountName:             input.AccountName,
 
 		hashFunc:   crypto.SHA1,
 		privateKey: rsakey,
+	}
+
+	if input.UserName != "" {
+		signer.userName = input.UserName
 	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")
@@ -80,7 +94,13 @@ func (s *PrivateKeySigner) Sign(dateHeader string) (string, error) {
 	}
 	signedBase64 := base64.StdEncoding.EncodeToString(signed)
 
-	keyID := fmt.Sprintf("/%s/keys/%s", s.accountName, s.formattedKeyFingerprint)
+	var keyID string
+	if s.userName != "" {
+
+		keyID = path.Join(s.accountName, "users", s.userName, "keys", s.formattedKeyFingerprint)
+	} else {
+		keyID = path.Join(s.accountName, "keys", s.formattedKeyFingerprint)
+	}
 	return fmt.Sprintf(authorizationHeaderFormat, keyID, "rsa-sha1", headerName, signedBase64), nil
 }
 

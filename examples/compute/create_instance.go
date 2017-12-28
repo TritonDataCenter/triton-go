@@ -23,15 +23,21 @@ const (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+	keyID := os.Getenv("TRITON_KEY_ID")
+	accountName := os.Getenv("TRITON_ACCOUNT")
+	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
 	var err error
 
 	if keyMaterial == "" {
-		signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
+		input := authentication.SSHAgentSignerInput{
+			KeyFingerPrint: keyID,
+			AccountName:    accountName,
+			UserName:       userName,
+		}
+		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
 		}
@@ -59,15 +65,22 @@ func main() {
 			keyBytes = []byte(keyMaterial)
 		}
 
-		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName)
+		input := authentication.PrivateKeySignerInput{
+			KeyFingerPrint:     keyID,
+			PrivateKeyMaterial: keyBytes,
+			AccountName:        accountName,
+			UserName:           userName,
+		}
+		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
 		}
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   os.Getenv("SDC_URL"),
+		TritonURL:   os.Getenv("TRITON_URL"),
 		AccountName: accountName,
+		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
@@ -146,5 +159,13 @@ func main() {
 		fmt.Println("State:", instance.State)
 	case <-time.After(5 * time.Minute):
 		fmt.Println("Timed out")
+	}
+
+	fmt.Println("Cleaning up machine....")
+	err = c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
+		ID: created.ID,
+	})
+	if err != nil {
+		log.Fatalf("Delete(): %v", err)
 	}
 }

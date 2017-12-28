@@ -21,7 +21,7 @@ import (
 const nilContext = "nil context"
 
 var (
-	ErrDefaultAuth = errors.New("default SSH agent authentication requires SDC_KEY_ID and SSH_AUTH_SOCK")
+	ErrDefaultAuth = errors.New("default SSH agent authentication requires SDC_KEY_ID / TRITON_KEY_ID and SSH_AUTH_SOCK")
 	ErrAccountName = errors.New("missing account name for Triton/Manta")
 	ErrMissingURL  = errors.New("missing Triton and/or Manta URL")
 
@@ -36,6 +36,7 @@ type Client struct {
 	TritonURL   url.URL
 	MantaURL    url.URL
 	AccountName string
+	Username    string
 }
 
 // New is used to construct a Client in order to make API
@@ -92,21 +93,37 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	return newClient, nil
 }
 
+var envPrefixes = []string{"TRITON", "SDC"}
+
+func GetTritonEnv(name string) string {
+	for _, prefix := range envPrefixes {
+		if val, found := os.LookupEnv(prefix + "_" + name); found {
+			return val
+		}
+	}
+	return ""
+}
+
 // initDefaultAuth provides a default key signer for a client. This should only
 // be used internally if the client has no other key signer for authenticating
 // with Triton. We first look for both `SDC_KEY_ID` and `SSH_AUTH_SOCK` in the
 // user's environ(7). If so we default to the SSH agent key signer.
 func (c *Client) DefaultAuth() error {
-	if keyID, keyOk := os.LookupEnv("SDC_KEY_ID"); keyOk {
-		defaultSigner, err := authentication.NewSSHAgentSigner(keyID, c.AccountName)
+	tritonKeyId := GetTritonEnv("KEY_ID")
+	if tritonKeyId != "" {
+		input := authentication.SSHAgentSignerInput{
+			KeyFingerPrint: tritonKeyId,
+			AccountName:    c.AccountName,
+			UserName:       c.Username,
+		}
+		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {
 			return errwrap.Wrapf("problem initializing NewSSHAgentSigner: {{err}}", err)
 		}
 		c.Authorizers = append(c.Authorizers, defaultSigner)
-	} else {
-		return ErrDefaultAuth
 	}
-	return nil
+
+	return ErrDefaultAuth
 }
 
 // InsecureSkipTLSVerify turns off TLS verification for the client connection. This
