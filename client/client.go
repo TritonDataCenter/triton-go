@@ -82,7 +82,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	}
 
 	// Default to constructing an SSHAgentSigner if there are no other signers
-	// passed into NewClient and there's an SDC_KEY_ID and SSH_AUTH_SOCK
+	// passed into NewClient and there's an TRITON_KEY_ID and SSH_AUTH_SOCK
 	// available in the user's environ(7).
 	if len(newClient.Authorizers) == 0 {
 		if err := newClient.DefaultAuth(); err != nil {
