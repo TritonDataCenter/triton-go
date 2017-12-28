@@ -15,7 +15,7 @@ using a key stored with the local SSH Agent (using an [`SSHAgentSigner`][6].
 To construct a Signer, use the `New*` range of methods in the `authentication`
 package. In the case of `authentication.NewSSHAgentSigner`, the parameters are
 the fingerprint of the key with which to sign, and the account name (normally
-stored in the `TRITON_ACCOUNT` environment variable). There is also support for 
+stored in the `TRITON_ACCOUNT` environment variable). There is also support for
 passing in a username, this will allow you to use an account other than the main
 Triton account. For example:
 
