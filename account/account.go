@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type Account struct {
@@ -42,13 +42,13 @@ func (c AccountClient) Get(ctx context.Context, input *GetInput) (*Account, erro
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetAccount request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get account details")
 	}
 
 	var result *Account
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetAccount response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get account details")
 	}
 
 	return result, nil
@@ -82,13 +82,13 @@ func (c AccountClient) Update(ctx context.Context, input *UpdateInput) (*Account
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdateAccount request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to update account")
 	}
 
 	var result *Account
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdateAccount response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode update account response")
 	}
 
 	return result, nil
