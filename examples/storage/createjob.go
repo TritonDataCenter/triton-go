@@ -17,10 +17,10 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	accountName := os.Getenv("SDC_ACCOUNT")
-	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
-	userName := os.Getenv("SDC_USER")
+	keyID := os.Getenv("TRITON_KEY_ID")
+	accountName := os.Getenv("TRITON_ACCOUNT")
+	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
 	var err error
@@ -72,7 +72,7 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("SDC_URL"),
+		MantaURL:    os.Getenv("TRITON_URL"),
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},

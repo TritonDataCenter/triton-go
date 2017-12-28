@@ -16,11 +16,11 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("SDC_KEY_ID")
-	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+	keyID := os.Getenv("TRITON_KEY_ID")
+	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
 	mantaUser := os.Getenv("MANTA_USER")
 	mantaFolder := os.Getenv("MANTA_FOLDER")
-	userName := os.Getenv("SDC_USER")
+	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
 	var err error

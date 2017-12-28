@@ -25,7 +25,7 @@ func main() {
 		keyID       = os.Getenv("MANTA_KEY_ID")
 		accountName = os.Getenv("MANTA_USER")
 		keyMaterial = os.Getenv("MANTA_KEY_MATERIAL")
-		userName    = os.Getenv("SDC_USER")
+		userName    = os.Getenv("TRITON_USER")
 	)
 
 	if keyMaterial == "" {
