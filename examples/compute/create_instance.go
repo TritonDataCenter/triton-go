@@ -26,12 +26,13 @@ func main() {
 	keyID := os.Getenv("SDC_KEY_ID")
 	accountName := os.Getenv("SDC_ACCOUNT")
 	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+	userName := os.Getenv("SDC_USER")
 
 	var signer authentication.Signer
 	var err error
 
 	if keyMaterial == "" {
-		signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
+		signer, err = authentication.NewSSHAgentSigner(keyID, accountName, userName)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
 		}
@@ -59,7 +60,7 @@ func main() {
 			keyBytes = []byte(keyMaterial)
 		}
 
-		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName)
+		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName, userName)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
 		}
@@ -68,6 +69,7 @@ func main() {
 	config := &triton.ClientConfig{
 		TritonURL:   os.Getenv("SDC_URL"),
 		AccountName: accountName,
+		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 

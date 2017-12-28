@@ -20,12 +20,13 @@ func main() {
 	keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
 	mantaUser := os.Getenv("MANTA_USER")
 	mantaFolder := os.Getenv("MANTA_FOLDER")
+	userName := os.Getenv("SDC_USER")
 
 	var signer authentication.Signer
 	var err error
 
 	if keyMaterial == "" {
-		signer, err = authentication.NewSSHAgentSigner(keyID, mantaUser)
+		signer, err = authentication.NewSSHAgentSigner(keyID, mantaUser, userName)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
 		}
@@ -53,7 +54,7 @@ func main() {
 			keyBytes = []byte(keyMaterial)
 		}
 
-		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), mantaUser)
+		signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), mantaUser, userName)
 		if err != nil {
 			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
 		}
@@ -62,6 +63,7 @@ func main() {
 	config := &triton.ClientConfig{
 		MantaURL:    os.Getenv("MANTA_URL"),
 		AccountName: mantaUser,
+		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
