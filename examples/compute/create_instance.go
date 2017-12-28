@@ -149,4 +149,12 @@ func main() {
 	case <-time.After(5 * time.Minute):
 		fmt.Println("Timed out")
 	}
+
+	fmt.Println("Cleaning up machine....")
+	err = c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
+		ID: created.ID,
+	})
+	if err != nil {
+		log.Fatalf("Delete(): %v", err)
+	}
 }
