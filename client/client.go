@@ -95,12 +95,18 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 
 var envPrefixes = []string{"TRITON", "SDC"}
 
+// GetTritonEnv looks up environment variables using the preferred "TRITON"
+// prefix, but falls back to the SDC prefix.  For example, looking up "USER"
+// will search for "TRITON_USER" followed by "SDC_USER".  If the environment
+// variable is not set, an empty string is returned.  GetTritonEnv() is used to
+// aid in the transition and deprecation of the SDC_* environment variables.
 func GetTritonEnv(name string) string {
 	for _, prefix := range envPrefixes {
 		if val, found := os.LookupEnv(prefix + "_" + name); found {
 			return val
 		}
 	}
+
 	return ""
 }
 
