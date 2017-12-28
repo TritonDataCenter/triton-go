@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.5.2 (December 28)
+
+- Standardise the API SSH Signers input casing and naming
+
 ## 0.5.1 (December 28)
 
 - Include leading '/' when working with SSH Agent signers
