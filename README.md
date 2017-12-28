@@ -15,11 +15,13 @@ using a key stored with the local SSH Agent (using an [`SSHAgentSigner`][6].
 To construct a Signer, use the `New*` range of methods in the `authentication`
 package. In the case of `authentication.NewSSHAgentSigner`, the parameters are
 the fingerprint of the key with which to sign, and the account name (normally
-stored in the `SDC_ACCOUNT` environment variable). For example:
+stored in the `SDC_ACCOUNT` environment variable). There is also support for 
+passing in a username, this will allow you to use an account other than the main
+Triton account. For example:
 
 ```
 const fingerprint := "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11"
-sshKeySigner, err := authentication.NewSSHAgentSigner(fingerprint, "AccountName")
+sshKeySigner, err := authentication.NewSSHAgentSigner(fingerprint, "AccountName", "UserName")
 if err != nil {
     log.Fatalf("NewSSHAgentSigner: %s", err)
 }
@@ -40,6 +42,7 @@ the global `triton.ClientConfig` struct into the client's constructor function.
         TritonURL:   os.Getenv("SDC_URL"),
         MantaURL:    os.Getenv("MANTA_URL"),
         AccountName: accountName,
+        Username:    os.Getenv("SDC_USER"),
         Signers:     []authentication.Signer{sshKeySigner},
     }
 
@@ -87,7 +90,8 @@ set:
 
 Additionally, you may set `SDC_KEY_MATERIAL` to the contents of an unencrypted
 private key. If this is set, the PrivateKeySigner (see above) will be used - if
-not the SSHAgentSigner will be used.
+not the SSHAgentSigner will be used. You can also set `SDC_USER` to run the tests
+against an account other than the main Triton account
 
 ### Example Run
 
@@ -147,12 +151,13 @@ func main() {
     keyID := os.Getenv("SDC_KEY_ID")
     accountName := os.Getenv("SDC_ACCOUNT")
     keyMaterial := os.Getenv("SDC_KEY_MATERIAL")
+    userName := os.Getenv("SDC_USER")
 
     var signer authentication.Signer
     var err error
 
     if keyMaterial == "" {
-        signer, err = authentication.NewSSHAgentSigner(keyID, accountName)
+        signer, err = authentication.NewSSHAgentSigner(keyID, accountName, userName)
         if err != nil {
             log.Fatalf("Error Creating SSH Agent Signer: {{err}}", err)
         }
@@ -180,7 +185,7 @@ func main() {
             keyBytes = []byte(keyMaterial)
         }
 
-        signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName)
+        signer, err = authentication.NewPrivateKeySigner(keyID, []byte(keyMaterial), accountName, userName)
         if err != nil {
             log.Fatalf("Error Creating SSH Private Key Signer: {{err}}", err)
         }
@@ -189,6 +194,7 @@ func main() {
     config := &triton.ClientConfig{
         TritonURL:   os.Getenv("SDC_URL"),
         AccountName: accountName,
+        Username:    userName,
         Signers:     []authentication.Signer{signer},
     }
 
