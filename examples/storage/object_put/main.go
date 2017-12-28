@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
+	"encoding/pem"
+
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-go/storage"
 )
 
 func main() {
@@ -24,9 +25,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -57,10 +58,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
 			AccountName:        accountName,
-			UserName:           userName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -69,25 +70,29 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   os.Getenv("TRITON_URL"),
+		MantaURL:    os.Getenv("TRITON_URL"),
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
-	c, err := compute.NewClient(config)
+	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("NewClient: %s", err)
 	}
 
-	listInput := &compute.ListInstancesInput{}
-	instances, err := c.Instances().List(context.Background(), listInput)
+	reader, err := os.Open("/tmp/foo.txt")
 	if err != nil {
-		log.Fatalf("compute.Instances.List: %v", err)
+		log.Fatalf("os.Open: %s", err)
 	}
-	numInstances := 0
-	for _, instance := range instances {
-		numInstances++
-		fmt.Println(fmt.Sprintf("-- Instance: %v", instance.Name))
+	defer reader.Close()
+
+	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
+		ObjectPath:   "/stor/foo.txt",
+		ObjectReader: reader,
+	})
+	if err != nil {
+		log.Fatalf("storage.Objects.Put: %s", err)
 	}
+	fmt.Println("Successfully uploaded /tmp/foo.txt!")
 }

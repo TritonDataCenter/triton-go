@@ -1,14 +1,14 @@
 package main
 
 import (
-	"encoding/pem"
+	"context"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"net/http"
-	"time"
+	"encoding/pem"
 
+	"github.com/davecgh/go-spew/spew"
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/storage"
@@ -25,9 +25,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -58,10 +58,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
 			AccountName:        accountName,
-			UserName:           userName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -81,15 +81,12 @@ func main() {
 		log.Fatalf("NewClient: %s", err)
 	}
 
-	input := &storage.SignURLInput{
-		ObjectPath:     "/stor/books/treasure_island.txt",
-		Method:         http.MethodGet,
-		ValidityPeriod: 5 * time.Minute,
-	}
-	signed, err := client.SignURL(input)
+	ctx := context.Background()
+	input := &storage.ListDirectoryInput{}
+	output, err := client.Dir().List(ctx, input)
 	if err != nil {
-		log.Fatalf("SignURL: %s", err)
+		log.Fatalf("storage.Dir.List: %s", err)
 	}
 
-	log.Printf("Signed URL: %s", signed.SignedURL("http"))
+	spew.Dump(output)
 }

@@ -12,13 +12,8 @@ import (
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/network"
 )
-
-func printAccount(acct *account.Account) {
-	fmt.Println("Account ID:", acct.ID)
-	fmt.Println("Account Email:", acct.Email)
-	fmt.Println("Account Login:", acct.Login)
-}
 
 func main() {
 	keyID := os.Getenv("TRITON_KEY_ID")
@@ -31,9 +26,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -64,10 +59,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
 			AccountName:        accountName,
-			UserName:           userName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -82,28 +77,46 @@ func main() {
 		Signers:     []authentication.Signer{signer},
 	}
 
-	a, err := account.NewClient(config)
+	nc, err := network.NewClient(config)
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("network.NewClient: %s", err)
 	}
 
-	acct, err := a.Get(context.Background(), &account.GetInput{})
+	ac, err := account.NewClient(config)
 	if err != nil {
-		log.Fatalf("account.Get: %v", err)
+		log.Fatalf("account.NewClient: %s", err)
 	}
 
-	fmt.Println("New ----")
-	printAccount(acct)
-
-	input := &account.UpdateInput{
-		CompanyName: fmt.Sprintf("%s-old", acct.CompanyName),
-	}
-
-	updatedAcct, err := a.Update(context.Background(), input)
+	cfg, err := ac.Config().Get(context.Background(), &account.GetConfigInput{})
 	if err != nil {
-		log.Fatalf("account.Update: %v", err)
+		log.Fatalf("account.Config.Get: %v", err)
+	}
+	currentNet := cfg.DefaultNetwork
+	fmt.Println("Current Network:", currentNet)
+
+	var defaultNet string
+	networks, err := nc.List(context.Background(), &network.ListInput{})
+	if err != nil {
+		log.Fatalf("network.List: %s", err)
+	}
+	for _, iterNet := range networks {
+		if iterNet.Id != currentNet {
+			defaultNet = iterNet.Id
+		}
+	}
+	fmt.Println("Chosen Network:", defaultNet)
+
+	input := &account.UpdateConfigInput{
+		DefaultNetwork: defaultNet,
+	}
+	_, err = ac.Config().Update(context.Background(), input)
+	if err != nil {
+		log.Fatalf("account.Config.Update: %v", err)
 	}
 
-	fmt.Println("New ----")
-	printAccount(updatedAcct)
+	cfg, err = ac.Config().Get(context.Background(), &account.GetConfigInput{})
+	if err != nil {
+		log.Fatalf("account.Config.Get: %v", err)
+	}
+	fmt.Println("Default Network:", cfg.DefaultNetwork)
 }

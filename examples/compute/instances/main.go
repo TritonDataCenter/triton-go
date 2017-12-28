@@ -1,24 +1,22 @@
 package main
 
 import (
+	"context"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"context"
-
-	"fmt"
-
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/storage"
+	"github.com/joyent/triton-go/compute"
 )
 
 func main() {
 	keyID := os.Getenv("TRITON_KEY_ID")
+	accountName := os.Getenv("TRITON_ACCOUNT")
 	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
-	mantaUser := os.Getenv("MANTA_USER")
 	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
@@ -26,9 +24,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    mantaUser,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -59,10 +57,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
-			AccountName:        mantaUser,
-			UserName:           userName,
+			AccountName:        accountName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -71,31 +69,25 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("MANTA_URL"),
-		AccountName: mantaUser,
+		TritonURL:   os.Getenv("TRITON_URL"),
+		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
-	client, err := storage.NewClient(config)
+	c, err := compute.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("compute.NewClient: %s", err)
 	}
 
-	reader, err := os.Open("/tmp/foo.txt")
+	listInput := &compute.ListInstancesInput{}
+	instances, err := c.Instances().List(context.Background(), listInput)
 	if err != nil {
-		log.Fatalf("os.Open: %s", err)
+		log.Fatalf("compute.Instances.List: %v", err)
 	}
-	defer reader.Close()
-
-	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
-		ObjectPath:   "/stor/folder1/folder2/folder3/folder4/foo.txt",
-		ObjectReader: reader,
-		ForceInsert:  true,
-	})
-
-	if err != nil {
-		log.Fatalf("Error creating nested folder structure: %s", err.Error())
+	numInstances := 0
+	for _, instance := range instances {
+		numInstances++
+		fmt.Println(fmt.Sprintf("-- Instance: %v", instance.Name))
 	}
-	fmt.Println("Successfully uploaded /tmp/foo.txt to /stor/folder1/folder2/folder3/folder4/foo.txt")
 }
