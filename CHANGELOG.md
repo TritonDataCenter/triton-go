@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.5.1 (December 28)
+
+- Include leading '/' when working with SSH Agent signers
+
 ## 0.5.0 (December 28)
 
 - Add support for RBAC in triton-go [#82]
