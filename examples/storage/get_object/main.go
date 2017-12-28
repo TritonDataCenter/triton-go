@@ -30,9 +30,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -63,10 +63,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
 			AccountName:        accountName,
-			UserName:           userName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {

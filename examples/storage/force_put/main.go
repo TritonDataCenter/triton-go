@@ -1,23 +1,24 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"encoding/pem"
+	"io/ioutil"
 	"log"
 	"os"
 
-	"encoding/pem"
-	"io/ioutil"
+	"context"
+
+	"fmt"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/storage"
 )
 
 func main() {
 	keyID := os.Getenv("TRITON_KEY_ID")
-	accountName := os.Getenv("TRITON_ACCOUNT")
 	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	mantaUser := os.Getenv("MANTA_USER")
 	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
@@ -25,9 +26,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: mantaUser,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -58,10 +59,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
-			AccountName:        accountName,
-			UserName:           userName,
+			AccountName:        mantaUser,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -70,36 +71,31 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   os.Getenv("TRITON_URL"),
-		AccountName: accountName,
+		MantaURL:    os.Getenv("MANTA_URL"),
+		AccountName: mantaUser,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
-	a, err := account.NewClient(config)
+	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("failed to init a new account client: %s", err)
+		log.Fatalf("NewClient: %s", err)
 	}
 
-	keys, err := a.Keys().List(context.Background(), &account.ListKeysInput{})
+	reader, err := os.Open("/tmp/foo.txt")
 	if err != nil {
-		log.Fatalf("failed to list keys: %v", err)
+		log.Fatalf("os.Open: %s", err)
 	}
+	defer reader.Close()
 
-	for _, key := range keys {
-		fmt.Println("Key Name:", key.Name)
+	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
+		ObjectPath:   "/stor/folder1/folder2/folder3/folder4/foo.txt",
+		ObjectReader: reader,
+		ForceInsert:  true,
+	})
+
+	if err != nil {
+		log.Fatalf("Error creating nested folder structure: %s", err.Error())
 	}
-
-	if key := keys[0]; key != nil {
-		input := &account.GetKeyInput{
-			KeyName: key.Name,
-		}
-
-		key, err := a.Keys().Get(context.Background(), input)
-		if err != nil {
-			log.Fatalf("failed to get key: %v", err)
-		}
-
-		fmt.Println("First Key:", key.Key)
-	}
+	fmt.Println("Successfully uploaded /tmp/foo.txt to /stor/folder1/folder2/folder3/folder4/foo.txt")
 }

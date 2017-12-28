@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"encoding/pem"
+	"io/ioutil"
 
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/storage"
 )
 
 func main() {
@@ -25,9 +25,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: accountName,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -58,10 +58,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
 			AccountName:        accountName,
-			UserName:           userName,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -70,29 +70,36 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		MantaURL:    os.Getenv("TRITON_URL"),
+		TritonURL:   os.Getenv("TRITON_URL"),
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
-	client, err := storage.NewClient(config)
+	a, err := account.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("failed to init a new account client: %s", err)
 	}
 
-	reader, err := os.Open("/tmp/foo.txt")
+	keys, err := a.Keys().List(context.Background(), &account.ListKeysInput{})
 	if err != nil {
-		log.Fatalf("os.Open: %s", err)
+		log.Fatalf("failed to list keys: %v", err)
 	}
-	defer reader.Close()
 
-	err = client.Objects().Put(context.Background(), &storage.PutObjectInput{
-		ObjectPath:   "/stor/foo.txt",
-		ObjectReader: reader,
-	})
-	if err != nil {
-		log.Fatalf("storage.Objects.Put: %s", err)
+	for _, key := range keys {
+		fmt.Println("Key Name:", key.Name)
 	}
-	fmt.Println("Successfully uploaded /tmp/foo.txt!")
+
+	if key := keys[0]; key != nil {
+		input := &account.GetKeyInput{
+			KeyName: key.Name,
+		}
+
+		key, err := a.Keys().Get(context.Background(), input)
+		if err != nil {
+			log.Fatalf("failed to get key: %v", err)
+		}
+
+		fmt.Println("First Key:", key.Key)
+	}
 }

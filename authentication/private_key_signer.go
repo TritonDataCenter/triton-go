@@ -9,9 +9,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"strings"
-
 	"path"
+	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh"
@@ -29,14 +28,14 @@ type PrivateKeySigner struct {
 }
 
 type PrivateKeySignerInput struct {
-	KeyFingerPrint     string
+	KeyID              string
 	PrivateKeyMaterial []byte
 	AccountName        string
-	UserName           string
+	Username           string
 }
 
 func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error) {
-	keyFingerprintMD5 := strings.Replace(input.KeyFingerPrint, ":", "", -1)
+	keyFingerprintMD5 := strings.Replace(input.KeyID, ":", "", -1)
 
 	block, _ := pem.Decode(input.PrivateKeyMaterial)
 	if block == nil {
@@ -61,15 +60,15 @@ func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error)
 
 	signer := &PrivateKeySigner{
 		formattedKeyFingerprint: displayKeyFingerprint,
-		keyFingerprint:          input.KeyFingerPrint,
+		keyFingerprint:          input.KeyID,
 		accountName:             input.AccountName,
 
 		hashFunc:   crypto.SHA1,
 		privateKey: rsakey,
 	}
 
-	if input.UserName != "" {
-		signer.userName = input.UserName
+	if input.Username != "" {
+		signer.userName = input.Username
 	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")

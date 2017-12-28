@@ -35,25 +35,25 @@ func AccTest(t *testing.T, c TestCase) {
 		return
 	}
 
-	sdcURL := client.GetTritonEnv("URL")
-	sdcAccount := client.GetTritonEnv("ACCOUNT")
-	sdcKeyId := client.GetTritonEnv("KEY_ID")
-	sdcKeyMaterial := client.GetTritonEnv("KEY_MATERIAL")
+	tritonURL := client.GetTritonEnv("URL")
+	tritonAccount := client.GetTritonEnv("ACCOUNT")
+	tritonKeyID := client.GetTritonEnv("KEY_ID")
+	tritonKeyMaterial := client.GetTritonEnv("KEY_MATERIAL")
 	userName := client.GetTritonEnv("USER")
 	mantaURL := client.GetTritonEnv("MANTA_URL")
 
 	var prerollErrors []error
-	if sdcURL == "" {
+	if tritonURL == "" {
 		prerollErrors = append(prerollErrors,
-			errors.New("The SDC_URL / TRITON_URL environment variable must be set to run acceptance tests"))
+			errors.New("The TRITON_URL environment variable must be set to run acceptance tests"))
 	}
-	if sdcAccount == "" {
+	if tritonAccount == "" {
 		prerollErrors = append(prerollErrors,
-			errors.New("The SDC_ACCOUNT / TRITON_ACCOUNT environment variable must be set to run acceptance tests"))
+			errors.New("The TRITON_ACCOUNT environment variable must be set to run acceptance tests"))
 	}
-	if sdcKeyId == "" {
+	if tritonKeyID == "" {
 		prerollErrors = append(prerollErrors,
-			errors.New("The SDC_KEY_ID / TRITON_KEY_ID environment variable must be set to run acceptance tests"))
+			errors.New("The TRITON_KEY_ID environment variable must be set to run acceptance tests"))
 	}
 	if len(prerollErrors) > 0 {
 		for _, err := range prerollErrors {
@@ -64,13 +64,13 @@ func AccTest(t *testing.T, c TestCase) {
 
 	var signer authentication.Signer
 	var err error
-	if sdcKeyMaterial != "" {
+	if tritonKeyMaterial != "" {
 		log.Println("[INFO] Creating Triton Client with Private Key Signer...")
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     sdcKeyId,
-			PrivateKeyMaterial: []byte(sdcKeyMaterial),
-			AccountName:        sdcAccount,
-			UserName:           userName,
+			KeyID:              tritonKeyID,
+			PrivateKeyMaterial: []byte(tritonKeyMaterial),
+			AccountName:        tritonAccount,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -79,9 +79,9 @@ func AccTest(t *testing.T, c TestCase) {
 	} else {
 		log.Println("[INFO] Creating Triton Client with SSH Key Signer...")
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: sdcKeyId,
-			AccountName:    sdcAccount,
-			UserName:       userName,
+			KeyID:       tritonKeyID,
+			AccountName: tritonAccount,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -92,15 +92,15 @@ func AccTest(t *testing.T, c TestCase) {
 	// Old world... we spun up a universal client. This is pushed deeper into
 	// the process within `testutils.StepClient`.
 	//
-	// client, err := NewClient(sdcURL, sdcAccount, signer)
+	// client, err := NewClient(tritonURL, tritonAccount, signer)
 	// if err != nil {
 	//         t.Fatalf("Error creating Triton Client: %s", err)
 	// }
 
 	config := &triton.ClientConfig{
-		TritonURL:   sdcURL,
+		TritonURL:   tritonURL,
 		MantaURL:    mantaURL,
-		AccountName: sdcAccount,
+		AccountName: tritonAccount,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}

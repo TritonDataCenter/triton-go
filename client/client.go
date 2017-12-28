@@ -82,7 +82,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	}
 
 	// Default to constructing an SSHAgentSigner if there are no other signers
-	// passed into NewClient and there's an SDC_KEY_ID and SSH_AUTH_SOCK
+	// passed into NewClient and there's an TRITON_KEY_ID and SSH_AUTH_SOCK
 	// available in the user's environ(7).
 	if len(newClient.Authorizers) == 0 {
 		if err := newClient.DefaultAuth(); err != nil {
@@ -95,12 +95,18 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 
 var envPrefixes = []string{"TRITON", "SDC"}
 
+// GetTritonEnv looks up environment variables using the preferred "TRITON"
+// prefix, but falls back to the SDC prefix.  For example, looking up "USER"
+// will search for "TRITON_USER" followed by "SDC_USER".  If the environment
+// variable is not set, an empty string is returned.  GetTritonEnv() is used to
+// aid in the transition and deprecation of the SDC_* environment variables.
 func GetTritonEnv(name string) string {
 	for _, prefix := range envPrefixes {
 		if val, found := os.LookupEnv(prefix + "_" + name); found {
 			return val
 		}
 	}
+
 	return ""
 }
 
@@ -112,9 +118,9 @@ func (c *Client) DefaultAuth() error {
 	tritonKeyId := GetTritonEnv("KEY_ID")
 	if tritonKeyId != "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: tritonKeyId,
-			AccountName:    c.AccountName,
-			UserName:       c.Username,
+			KeyID:       tritonKeyId,
+			AccountName: c.AccountName,
+			Username:    c.Username,
 		}
 		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {

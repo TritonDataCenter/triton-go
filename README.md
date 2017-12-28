@@ -15,15 +15,15 @@ using a key stored with the local SSH Agent (using an [`SSHAgentSigner`][6].
 To construct a Signer, use the `New*` range of methods in the `authentication`
 package. In the case of `authentication.NewSSHAgentSigner`, the parameters are
 the fingerprint of the key with which to sign, and the account name (normally
-stored in the `TRITON_ACCOUNT` environment variable). There is also support for 
+stored in the `TRITON_ACCOUNT` environment variable). There is also support for
 passing in a username, this will allow you to use an account other than the main
 Triton account. For example:
 
 ```go
 input := authentication.SSHAgentSignerInput{
-    KeyFingerPrint: "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11",
-    AccountName:    "AccountName",
-    UserName:       "UserName",
+    KeyID:       "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11",
+    AccountName: "AccountName",
+    UserName:    "UserName",
 }
 sshKeySigner, err := authentication.NewSSHAgentSigner(input)
 if err != nil {
@@ -162,9 +162,9 @@ func main() {
 
     if keyMaterial == "" {
         input := authentication.SSHAgentSignerInput{
-            KeyFingerPrint: keyID,
-            AccountName:    accountName,
-            UserName:       userName,
+            KeyID:       keyID,
+            AccountName: accountName,
+            UserName:    userName,
         }
         signer, err = authentication.NewSSHAgentSigner(input)
         if err != nil {
@@ -195,7 +195,7 @@ func main() {
         }
 
         input := authentication.PrivateKeySignerInput{
-            KeyFingerPrint:     keyID,
+            KeyID:              keyID,
             PrivateKeyMaterial: keyBytes,
             AccountName:        accountName,
             UserName:           userName,

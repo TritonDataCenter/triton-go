@@ -1,24 +1,25 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"encoding/pem"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"encoding/pem"
+	"context"
+
+	"fmt"
 
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/network"
+	"github.com/joyent/triton-go/storage"
 )
 
 func main() {
 	keyID := os.Getenv("TRITON_KEY_ID")
-	accountName := os.Getenv("TRITON_ACCOUNT")
 	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	mantaUser := os.Getenv("MANTA_USER")
+	mantaFolder := os.Getenv("MANTA_FOLDER")
 	userName := os.Getenv("TRITON_USER")
 
 	var signer authentication.Signer
@@ -26,9 +27,9 @@ func main() {
 
 	if keyMaterial == "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: keyID,
-			AccountName:    accountName,
-			UserName:       userName,
+			KeyID:       keyID,
+			AccountName: mantaUser,
+			Username:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
@@ -59,10 +60,10 @@ func main() {
 		}
 
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     keyID,
+			KeyID:              keyID,
 			PrivateKeyMaterial: keyBytes,
-			AccountName:        accountName,
-			UserName:           userName,
+			AccountName:        mantaUser,
+			Username:           userName,
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
@@ -71,52 +72,24 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   os.Getenv("TRITON_URL"),
-		AccountName: accountName,
+		MantaURL:    os.Getenv("MANTA_URL"),
+		AccountName: mantaUser,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
 	}
 
-	nc, err := network.NewClient(config)
+	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("network.NewClient: %s", err)
+		log.Fatalf("NewClient: %s", err)
 	}
 
-	ac, err := account.NewClient(config)
-	if err != nil {
-		log.Fatalf("account.NewClient: %s", err)
-	}
+	err = client.Dir().Delete(context.Background(), &storage.DeleteDirectoryInput{
+		DirectoryName: mantaFolder,
+		ForceDelete:   true,
+	})
 
-	cfg, err := ac.Config().Get(context.Background(), &account.GetConfigInput{})
 	if err != nil {
-		log.Fatalf("account.Config.Get: %v", err)
+		log.Fatalf("Error deleting nested folder structure: %s", err.Error())
 	}
-	currentNet := cfg.DefaultNetwork
-	fmt.Println("Current Network:", currentNet)
-
-	var defaultNet string
-	networks, err := nc.List(context.Background(), &network.ListInput{})
-	if err != nil {
-		log.Fatalf("network.List: %s", err)
-	}
-	for _, iterNet := range networks {
-		if iterNet.Id != currentNet {
-			defaultNet = iterNet.Id
-		}
-	}
-	fmt.Println("Chosen Network:", defaultNet)
-
-	input := &account.UpdateConfigInput{
-		DefaultNetwork: defaultNet,
-	}
-	_, err = ac.Config().Update(context.Background(), input)
-	if err != nil {
-		log.Fatalf("account.Config.Update: %v", err)
-	}
-
-	cfg, err = ac.Config().Get(context.Background(), &account.GetConfigInput{})
-	if err != nil {
-		log.Fatalf("account.Config.Get: %v", err)
-	}
-	fmt.Println("Default Network:", cfg.DefaultNetwork)
+	fmt.Println("Successfully deleted all nested objects")
 }
