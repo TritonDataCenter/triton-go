@@ -66,9 +66,9 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 	signer.formattedKeyFingerprint = formatPublicKeyFingerprint(signer.key, true)
 	if input.UserName != "" {
 		signer.userName = input.UserName
-		signer.keyIdentifier = path.Join(signer.accountName, "users", input.UserName, "keys", signer.formattedKeyFingerprint)
+		signer.keyIdentifier = path.Join("/", signer.accountName, "users", input.UserName, "keys", signer.formattedKeyFingerprint)
 	} else {
-		signer.keyIdentifier = path.Join(signer.accountName, "keys", signer.formattedKeyFingerprint)
+		signer.keyIdentifier = path.Join("/", signer.accountName, "keys", signer.formattedKeyFingerprint)
 	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")

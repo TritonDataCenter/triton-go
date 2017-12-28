@@ -97,9 +97,9 @@ func (s *PrivateKeySigner) Sign(dateHeader string) (string, error) {
 	var keyID string
 	if s.userName != "" {
 
-		keyID = path.Join(s.accountName, "users", s.userName, "keys", s.formattedKeyFingerprint)
+		keyID = path.Join("/", s.accountName, "users", s.userName, "keys", s.formattedKeyFingerprint)
 	} else {
-		keyID = path.Join(s.accountName, "keys", s.formattedKeyFingerprint)
+		keyID = path.Join("/", s.accountName, "keys", s.formattedKeyFingerprint)
 	}
 	return fmt.Sprintf(authorizationHeaderFormat, keyID, "rsa-sha1", headerName, signedBase64), nil
 }
