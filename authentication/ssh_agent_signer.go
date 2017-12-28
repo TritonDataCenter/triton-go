@@ -35,7 +35,7 @@ type SSHAgentSigner struct {
 type SSHAgentSignerInput struct {
 	KeyID       string
 	AccountName string
-	UserName    string
+	Username    string
 }
 
 func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
@@ -63,9 +63,9 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 	}
 	signer.key = matchingKey
 	signer.formattedKeyFingerprint = formatPublicKeyFingerprint(signer.key, true)
-	if input.UserName != "" {
-		signer.userName = input.UserName
-		signer.keyIdentifier = path.Join("/", signer.accountName, "users", input.UserName, "keys", signer.formattedKeyFingerprint)
+	if input.Username != "" {
+		signer.userName = input.Username
+		signer.keyIdentifier = path.Join("/", signer.accountName, "users", input.Username, "keys", signer.formattedKeyFingerprint)
 	} else {
 		signer.keyIdentifier = path.Join("/", signer.accountName, "keys", signer.formattedKeyFingerprint)
 	}

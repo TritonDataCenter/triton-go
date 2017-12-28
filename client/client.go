@@ -120,7 +120,7 @@ func (c *Client) DefaultAuth() error {
 		input := authentication.SSHAgentSignerInput{
 			KeyID:       tritonKeyId,
 			AccountName: c.AccountName,
-			UserName:    c.Username,
+			Username:    c.Username,
 		}
 		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {

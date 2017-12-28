@@ -31,7 +31,7 @@ type PrivateKeySignerInput struct {
 	KeyID              string
 	PrivateKeyMaterial []byte
 	AccountName        string
-	UserName           string
+	Username           string
 }
 
 func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error) {
@@ -67,8 +67,8 @@ func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error)
 		privateKey: rsakey,
 	}
 
-	if input.UserName != "" {
-		signer.userName = input.UserName
+	if input.Username != "" {
+		signer.userName = input.Username
 	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")
