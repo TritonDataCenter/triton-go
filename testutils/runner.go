@@ -67,7 +67,7 @@ func AccTest(t *testing.T, c TestCase) {
 	if sdcKeyMaterial != "" {
 		log.Println("[INFO] Creating Triton Client with Private Key Signer...")
 		input := authentication.PrivateKeySignerInput{
-			KeyFingerPrint:     sdcKeyId,
+			KeyID:              sdcKeyId,
 			PrivateKeyMaterial: []byte(sdcKeyMaterial),
 			AccountName:        sdcAccount,
 			UserName:           userName,
@@ -79,9 +79,9 @@ func AccTest(t *testing.T, c TestCase) {
 	} else {
 		log.Println("[INFO] Creating Triton Client with SSH Key Signer...")
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: sdcKeyId,
-			AccountName:    sdcAccount,
-			UserName:       userName,
+			KeyID:       sdcKeyId,
+			AccountName: sdcAccount,
+			UserName:    userName,
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {

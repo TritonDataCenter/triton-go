@@ -21,9 +21,9 @@ Triton account. For example:
 
 ```go
 input := authentication.SSHAgentSignerInput{
-    KeyFingerPrint: "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11",
-    AccountName:    "AccountName",
-    UserName:       "UserName",
+    KeyID:       "a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11",
+    AccountName: "AccountName",
+    UserName:    "UserName",
 }
 sshKeySigner, err := authentication.NewSSHAgentSigner(input)
 if err != nil {
@@ -162,9 +162,9 @@ func main() {
 
     if keyMaterial == "" {
         input := authentication.SSHAgentSignerInput{
-            KeyFingerPrint: keyID,
-            AccountName:    accountName,
-            UserName:       userName,
+            KeyID:       keyID,
+            AccountName: accountName,
+            UserName:    userName,
         }
         signer, err = authentication.NewSSHAgentSigner(input)
         if err != nil {
@@ -195,7 +195,7 @@ func main() {
         }
 
         input := authentication.PrivateKeySignerInput{
-            KeyFingerPrint:     keyID,
+            KeyID:              keyID,
             PrivateKeyMaterial: keyBytes,
             AccountName:        accountName,
             UserName:           userName,

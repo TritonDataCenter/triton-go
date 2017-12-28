@@ -34,9 +34,9 @@ type SSHAgentSigner struct {
 }
 
 type SSHAgentSignerInput struct {
-	KeyFingerPrint string
-	AccountName    string
-	UserName       string
+	KeyID       string
+	AccountName string
+	UserName    string
 }
 
 func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
@@ -53,7 +53,7 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 	ag := agent.NewClient(conn)
 
 	signer := &SSHAgentSigner{
-		keyFingerprint: input.KeyFingerPrint,
+		keyFingerprint: input.KeyID,
 		accountName:    input.AccountName,
 		agent:          ag,
 	}

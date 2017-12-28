@@ -112,9 +112,9 @@ func (c *Client) DefaultAuth() error {
 	tritonKeyId := GetTritonEnv("KEY_ID")
 	if tritonKeyId != "" {
 		input := authentication.SSHAgentSignerInput{
-			KeyFingerPrint: tritonKeyId,
-			AccountName:    c.AccountName,
-			UserName:       c.Username,
+			KeyID:       tritonKeyId,
+			AccountName: c.AccountName,
+			UserName:    c.Username,
 		}
 		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {
