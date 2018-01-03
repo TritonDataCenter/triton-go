@@ -37,3 +37,9 @@ func (c *IdentityClient) Roles() *RolesClient {
 func (c *IdentityClient) Users() *UsersClient {
 	return &UsersClient{c.Client}
 }
+
+// Policies returns a Policies client used for accessing functions pertaining to
+// Policy functionality in the Triton API.
+func (c *IdentityClient) Policies() *PoliciesClient {
+	return &PoliciesClient{c.Client}
+}
