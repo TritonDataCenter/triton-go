@@ -1,12 +1,36 @@
-package account
+package account_test
 
 import (
 	"context"
 	"testing"
 
+	"fmt"
+
+	"strings"
+
+	"io/ioutil"
+	"net/http"
+
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/testutils"
+	"github.com/pkg/errors"
 )
+
+const accountUrl = "testing"
+
+var (
+	getAccountErrorType    = errors.New("unable to get account details")
+	updateAccountErrorType = errors.New("unable to update account details")
+)
+
+func MockAccountClient() *account.AccountClient {
+	return &account.AccountClient{
+		Client: testutils.NewMockClient(testutils.MockClientInput{
+			AccountName: accountUrl,
+		}),
+	}
+}
 
 func TestAccAccount_Get(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
@@ -15,16 +39,16 @@ func TestAccAccount_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "account",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return account.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "account",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &GetInput{}
+					input := &account.GetInput{}
 					return c.Get(ctx, input)
 				},
 			},
@@ -35,4 +59,194 @@ func TestAccAccount_Get(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestGetAccount(t *testing.T) {
+	accountClient := MockAccountClient()
+
+	do := func(ctx context.Context, ac *account.AccountClient) (*account.Account, error) {
+		defer testutils.DeactivateClient()
+
+		user, err := ac.Get(ctx, &account.GetInput{})
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountSuccess)
+
+		resp, err := do(context.Background(), accountClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountEmpty)
+
+		_, err := do(context.Background(), accountClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountBadeDecode)
+
+		_, err := do(context.Background(), accountClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", "testAccount"), getAccountError)
+
+		resp, err := do(context.Background(), accountClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to get account details") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestUpdateAccount(t *testing.T) {
+	accountClient := MockAccountClient()
+
+	do := func(ctx context.Context, ac *account.AccountClient) (*account.Account, error) {
+		defer testutils.DeactivateClient()
+
+		user, err := ac.Update(ctx, &account.UpdateInput{
+			Phone: "1 (234) 567 890",
+		})
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("PUT", fmt.Sprintf("/%s", accountUrl), updateAccountSuccess)
+
+		_, err := do(context.Background(), accountClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("PUT", fmt.Sprintf("/%s", accountUrl), updateAccountError)
+
+		_, err := do(context.Background(), accountClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to update account") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func getAccountSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "b89d9dd3-62ce-4f6f-eb0d-f78e57d515d9",
+  "login": "barbar",
+  "email": "barbar@example.com",
+  "companyName": "Example Inc",
+  "firstName": "BarBar",
+  "lastName": "Jinks",
+  "phone": "123-456-7890",
+  "updated": "2015-12-21T11:48:54.884Z",
+  "created": "2015-12-21T11:48:54.884Z"
+}
+`)
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getAccountError(req *http.Request) (*http.Response, error) {
+	return nil, getAccountErrorType
+}
+
+func getAccountBadeDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "b89d9dd3-62ce-4f6f-eb0d-f78e57d515d9",
+  "login": "barbar",
+  "email": "barbar@example.com",
+  "companyName": "Example Inc",
+  "firstName": "BarBar",
+  "lastName": "Jinks",
+  "phone": "123-456-7890",
+  "updated": "2015-12-21T11:48:54.884Z",
+  "created": "2015-12-21T11:48:54.884Z",
+}`)
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getAccountEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func updateAccountSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+    "id": "123-3456-2335",
+    "login": "testuser",
+    "email": "barbar@example.com",
+    "updated": "2015-12-23T06:41:11.032Z",
+    "created": "2015-12-23T06:41:11.032Z"
+  }
+`)
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func updateAccountError(req *http.Request) (*http.Response, error) {
+	return nil, updateAccountErrorType
 }

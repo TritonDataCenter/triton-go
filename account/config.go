@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type ConfigClient struct {
@@ -34,13 +34,13 @@ func (c *ConfigClient) Get(ctx context.Context, input *GetConfigInput) (*Config,
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetConfig request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get account config")
 	}
 
 	var result *Config
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetConfig response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get account config response")
 	}
 
 	return result, nil
@@ -55,7 +55,7 @@ type UpdateConfigInput struct {
 func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	path := fmt.Sprintf("/%s/config", c.client.AccountName)
 	reqInputs := client.RequestInput{
-		Method: http.MethodPut,
+		Method: http.MethodPost,
 		Path:   path,
 		Body:   input,
 	}
@@ -64,13 +64,13 @@ func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*C
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdateConfig request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to update account config")
 	}
 
 	var result *Config
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdateConfig response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode update account config response")
 	}
 
 	return result, nil

@@ -73,7 +73,7 @@ type UpdateInput struct {
 func (c AccountClient) Update(ctx context.Context, input *UpdateInput) (*Account, error) {
 	path := fmt.Sprintf("/%s", c.Client.AccountName)
 	reqInputs := client.RequestInput{
-		Method: http.MethodPost,
+		Method: http.MethodPut,
 		Path:   path,
 		Body:   input,
 	}
