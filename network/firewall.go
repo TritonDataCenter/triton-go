@@ -3,9 +3,8 @@ package network
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-
+	"path"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -37,10 +36,10 @@ type FirewallRule struct {
 type ListRulesInput struct{}
 
 func (c *FirewallClient) ListRules(ctx context.Context, _ *ListRulesInput) ([]*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -64,10 +63,10 @@ type GetRuleInput struct {
 }
 
 func (c *FirewallClient) GetRule(ctx context.Context, input *GetRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -93,10 +92,10 @@ type CreateRuleInput struct {
 }
 
 func (c *FirewallClient) CreateRule(ctx context.Context, input *CreateRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -124,10 +123,10 @@ type UpdateRuleInput struct {
 }
 
 func (c *FirewallClient) UpdateRule(ctx context.Context, input *UpdateRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -152,10 +151,10 @@ type EnableRuleInput struct {
 }
 
 func (c *FirewallClient) EnableRule(ctx context.Context, input *EnableRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s/enable", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID, "enable")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -180,10 +179,10 @@ type DisableRuleInput struct {
 }
 
 func (c *FirewallClient) DisableRule(ctx context.Context, input *DisableRuleInput) (*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s/disable", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID, "disable")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -208,10 +207,10 @@ type DeleteRuleInput struct {
 }
 
 func (c *FirewallClient) DeleteRule(ctx context.Context, input *DeleteRuleInput) error {
-	path := fmt.Sprintf("/%s/fwrules/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -229,10 +228,10 @@ type ListMachineRulesInput struct {
 }
 
 func (c *FirewallClient) ListMachineRules(ctx context.Context, input *ListMachineRulesInput) ([]*FirewallRule, error) {
-	path := fmt.Sprintf("/%s/machines/%s/fwrules", c.client.AccountName, input.MachineID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "fwrules")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -278,10 +277,10 @@ type Machine struct {
 }
 
 func (c *FirewallClient) ListRuleMachines(ctx context.Context, input *ListRuleMachinesInput) ([]*Machine, error) {
-	path := fmt.Sprintf("/%s/fwrules/%s/machines", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "fwrules", input.ID, "machines")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {

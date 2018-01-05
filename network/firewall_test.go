@@ -3,12 +3,11 @@ package network_test
 import (
 	"context"
 	"errors"
-	"fmt"
+	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
 	"testing"
-
-	"io/ioutil"
 
 	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
@@ -44,7 +43,7 @@ func TestListRuleMachines(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/fwrules/%s/machines", accountUrl, "38de17c4-39e8-48c7-a168-0f58083de860"), listRuleMachinesSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "fwrules", "38de17c4-39e8-48c7-a168-0f58083de860", "machines"), listRuleMachinesSuccess)
 
 		resp, err := do(context.Background(), networkClient)
 		if err != nil {
@@ -57,7 +56,7 @@ func TestListRuleMachines(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/fwrules/%s/machines", accountUrl, "38de17c4-39e8-48c7-a168-0f58083de860"), listRuleMachinesEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "fwrules", "38de17c4-39e8-48c7-a168-0f58083de860", "machines"), listRuleMachinesEmpty)
 
 		_, err := do(context.Background(), networkClient)
 		if err == nil {
@@ -70,7 +69,7 @@ func TestListRuleMachines(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/fwrules/%s/machines", accountUrl, "38de17c4-39e8-48c7-a168-0f58083de860"), listRuleMachinesBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "fwrules", "38de17c4-39e8-48c7-a168-0f58083de860", "machines"), listRuleMachinesBadDecode)
 
 		_, err := do(context.Background(), networkClient)
 		if err == nil {
@@ -83,7 +82,7 @@ func TestListRuleMachines(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/fwrules/%s/machines", accountUrl, "38de17c4-39e8-48c7-a168-0f58083de860"), listRuleMachinesError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "fwrules", "38de17c4-39e8-48c7-a168-0f58083de860", "machines"), listRuleMachinesError)
 
 		resp, err := do(context.Background(), networkClient)
 		if err == nil {

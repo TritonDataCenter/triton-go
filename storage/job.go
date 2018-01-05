@@ -6,11 +6,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
-
-	"path"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"

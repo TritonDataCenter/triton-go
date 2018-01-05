@@ -3,8 +3,8 @@ package network
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
@@ -28,10 +28,10 @@ type Network struct {
 type ListInput struct{}
 
 func (c *NetworkClient) List(ctx context.Context, _ *ListInput) ([]*Network, error) {
-	path := fmt.Sprintf("/%s/networks", c.Client.AccountName)
+	fullPath := path.Join("/", c.Client.AccountName, "networks")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -55,10 +55,10 @@ type GetInput struct {
 }
 
 func (c *NetworkClient) Get(ctx context.Context, input *GetInput) (*Network, error) {
-	path := fmt.Sprintf("/%s/networks/%s", c.Client.AccountName, input.ID)
+	fullPath := path.Join("/", c.Client.AccountName, "networks", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
