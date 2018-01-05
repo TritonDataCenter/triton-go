@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type KeysClient struct {
@@ -41,13 +41,13 @@ func (c *KeysClient) List(ctx context.Context, _ *ListKeysInput) ([]*Key, error)
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListKeys request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list keys")
 	}
 
 	var result []*Key
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListKeys response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list keys response")
 	}
 
 	return result, nil
@@ -68,13 +68,13 @@ func (c *KeysClient) Get(ctx context.Context, input *GetKeyInput) (*Key, error) 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetKey request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get key")
 	}
 
 	var result *Key
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetKey response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get key response")
 	}
 
 	return result, nil
@@ -95,7 +95,7 @@ func (c *KeysClient) Delete(ctx context.Context, input *DeleteKeyInput) error {
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteKey request: {{err}}", err)
+		return errors.Wrap(err, "unable to delete key")
 	}
 
 	return nil
@@ -124,13 +124,13 @@ func (c *KeysClient) Create(ctx context.Context, input *CreateKeyInput) (*Key, e
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateKey request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create key")
 	}
 
 	var result *Key
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateKey response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode create key response")
 	}
 
 	return result, nil
