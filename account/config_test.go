@@ -2,12 +2,11 @@ package account_test
 
 import (
 	"context"
-	"testing"
-
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
+	"testing"
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/account"
@@ -62,7 +61,7 @@ func TestGetConfiguration(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/config", accountUrl), getConfigSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "config"), getConfigSuccess)
 
 		resp, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -75,7 +74,7 @@ func TestGetConfiguration(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/config", accountUrl), getConfigEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "config"), getConfigEmpty)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -88,7 +87,7 @@ func TestGetConfiguration(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/config", accountUrl), getConfigBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "config"), getConfigBadeDecode)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -101,7 +100,7 @@ func TestGetConfiguration(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/config", "testAccount"), getConfigError)
+		testutils.RegisterResponder("GET", path.Join("/", "testAccount", "config"), getConfigError)
 
 		resp, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -133,7 +132,7 @@ func TestUpdateConfig(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/config", accountUrl), updateConfigSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigSuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -142,7 +141,7 @@ func TestUpdateConfig(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/config", accountUrl), updateConfigError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {

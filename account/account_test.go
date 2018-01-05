@@ -2,14 +2,11 @@ package account_test
 
 import (
 	"context"
-	"testing"
-
-	"fmt"
-
-	"strings"
-
 	"io/ioutil"
 	"net/http"
+	"path"
+	"strings"
+	"testing"
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/account"
@@ -75,7 +72,7 @@ func TestGetAccount(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl), getAccountSuccess)
 
 		resp, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -88,7 +85,7 @@ func TestGetAccount(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl), getAccountEmpty)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -101,7 +98,7 @@ func TestGetAccount(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", accountUrl), getAccountBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl), getAccountBadeDecode)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -114,7 +111,7 @@ func TestGetAccount(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s", "testAccount"), getAccountError)
+		testutils.RegisterResponder("GET", path.Join("/", "testAccount"), getAccountError)
 
 		resp, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -146,7 +143,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", fmt.Sprintf("/%s", accountUrl), updateAccountSuccess)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl), updateAccountSuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -155,7 +152,7 @@ func TestUpdateAccount(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", fmt.Sprintf("/%s", accountUrl), updateAccountError)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl), updateAccountError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {

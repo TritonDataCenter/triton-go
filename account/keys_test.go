@@ -2,13 +2,11 @@ package account_test
 
 import (
 	"context"
-	"testing"
-
-	"fmt"
-	"strings"
-
 	"io/ioutil"
 	"net/http"
+	"path"
+	"strings"
+	"testing"
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
@@ -212,7 +210,7 @@ func TestGetKey(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys/%s", accountUrl, "my-test-key"), getKeySuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys", "my-test-key"), getKeySuccess)
 
 		resp, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -225,7 +223,7 @@ func TestGetKey(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys/%s", accountUrl, "my-test-key"), getKeyEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys", "my-test-key"), getKeyEmpty)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -238,7 +236,7 @@ func TestGetKey(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys/%s", accountUrl, "my-test-key"), getKeyBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys", "my-test-key"), getKeyBadeDecode)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -251,7 +249,7 @@ func TestGetKey(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys", accountUrl), getKeyError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys"), getKeyError)
 
 		resp, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -279,7 +277,7 @@ func TestDeleteKey(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/keys/%s", accountUrl, "my-test-key"), deleteKeySuccess)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "keys", "my-test-key"), deleteKeySuccess)
 
 		err := do(context.Background(), accountClient)
 		if err != nil {
@@ -288,7 +286,7 @@ func TestDeleteKey(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/keys", accountUrl), deleteKeyError)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "keys", "my-test-key"), deleteKeyError)
 
 		err := do(context.Background(), accountClient)
 		if err == nil {
@@ -319,7 +317,7 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/keys", accountUrl), createKeySuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "keys"), createKeySuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -328,7 +326,7 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/keys", accountUrl), createKeyError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "keys"), createKeyError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -355,7 +353,7 @@ func TestListKeys(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys", accountUrl), listKeysSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys"), listKeysSuccess)
 
 		resp, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -368,7 +366,7 @@ func TestListKeys(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys", accountUrl), listKeysEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys"), listKeysEmpty)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -381,7 +379,7 @@ func TestListKeys(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys", accountUrl), listKeysBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys"), listKeysBadeDecode)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
@@ -394,7 +392,7 @@ func TestListKeys(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/keys", accountUrl), listKeysError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "keys"), listKeysError)
 
 		resp, err := do(context.Background(), accountClient)
 		if err == nil {
