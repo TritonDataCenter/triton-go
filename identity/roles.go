@@ -3,8 +3,8 @@ package identity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
@@ -25,10 +25,11 @@ type Role struct {
 type ListRolesInput struct{}
 
 func (c *RolesClient) List(ctx context.Context, _ *ListRolesInput) ([]*Role, error) {
-	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "roles")
+
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -52,10 +53,10 @@ type GetRoleInput struct {
 }
 
 func (c *RolesClient) Get(ctx context.Context, input *GetRoleInput) (*Role, error) {
-	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
+	fullPath := path.Join("/", c.client.AccountName, "roles", input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -92,10 +93,10 @@ type CreateRoleInput struct {
 }
 
 func (c *RolesClient) Create(ctx context.Context, input *CreateRoleInput) (*Role, error) {
-	path := fmt.Sprintf("/%s/roles", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "roles")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -136,10 +137,10 @@ type UpdateRoleInput struct {
 }
 
 func (c *RolesClient) Update(ctx context.Context, input *UpdateRoleInput) (*Role, error) {
-	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
+	fullPath := path.Join("/", c.client.AccountName, "roles", input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -164,10 +165,10 @@ type DeleteRoleInput struct {
 }
 
 func (c *RolesClient) Delete(ctx context.Context, input *DeleteRoleInput) error {
-	path := fmt.Sprintf("/%s/roles/%s", c.client.AccountName, input.RoleID)
+	fullPath := path.Join("/", c.client.AccountName, "roles", input.RoleID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {

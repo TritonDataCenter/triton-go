@@ -3,8 +3,8 @@ package identity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -37,10 +37,10 @@ type User struct {
 type ListUsersInput struct{}
 
 func (c *UsersClient) List(ctx context.Context, _ *ListUsersInput) ([]*User, error) {
-	path := fmt.Sprintf("/%s/users", c.Client.AccountName)
+	fullPath := path.Join("/", c.Client.AccountName, "users")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -64,10 +64,10 @@ type GetUserInput struct {
 }
 
 func (c *UsersClient) Get(ctx context.Context, input *GetUserInput) (*User, error) {
-	path := fmt.Sprintf("/%s/users/%s", c.Client.AccountName, input.UserID)
+	fullPath := path.Join("/", c.Client.AccountName, "users", input.UserID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -91,10 +91,10 @@ type DeleteUserInput struct {
 }
 
 func (c *UsersClient) Delete(ctx context.Context, input *DeleteUserInput) error {
-	path := fmt.Sprintf("/%s/users/%s", c.Client.AccountName, input.UserID)
+	fullPath := path.Join("/", c.Client.AccountName, "users", input.UserID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -123,10 +123,10 @@ type CreateUserInput struct {
 }
 
 func (c *UsersClient) Create(ctx context.Context, input *CreateUserInput) (*User, error) {
-	path := fmt.Sprintf("/%s/users", c.Client.AccountName)
+	fullPath := path.Join("/", c.Client.AccountName, "users")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
@@ -162,10 +162,10 @@ type UpdateUserInput struct {
 }
 
 func (c *UsersClient) Update(ctx context.Context, input *UpdateUserInput) (*User, error) {
-	path := fmt.Sprintf("/%s/users/%s", c.Client.AccountName, input.UserID)
+	fullPath := path.Join("/", c.Client.AccountName, "users", input.UserID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
