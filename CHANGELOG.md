@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Migration from hashicorp/errwrap to pkg/errors
+
 ## 0.5.2 (December 28)
 
 - Standardise the API SSH Signers input casing and naming
