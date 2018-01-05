@@ -3,9 +3,8 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-
+	"path"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -28,10 +27,10 @@ type ListSnapshotsInput struct {
 }
 
 func (c *SnapshotsClient) List(ctx context.Context, input *ListSnapshotsInput) ([]*Snapshot, error) {
-	path := fmt.Sprintf("/%s/machines/%s/snapshots", c.client.AccountName, input.MachineID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "snapshots")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -56,10 +55,10 @@ type GetSnapshotInput struct {
 }
 
 func (c *SnapshotsClient) Get(ctx context.Context, input *GetSnapshotInput) (*Snapshot, error) {
-	path := fmt.Sprintf("/%s/machines/%s/snapshots/%s", c.client.AccountName, input.MachineID, input.Name)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "snapshots", input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -84,10 +83,10 @@ type DeleteSnapshotInput struct {
 }
 
 func (c *SnapshotsClient) Delete(ctx context.Context, input *DeleteSnapshotInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/snapshots/%s", c.client.AccountName, input.MachineID, input.Name)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "snapshots", input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -106,10 +105,10 @@ type StartMachineFromSnapshotInput struct {
 }
 
 func (c *SnapshotsClient) StartMachine(ctx context.Context, input *StartMachineFromSnapshotInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/snapshots/%s", c.client.AccountName, input.MachineID, input.Name)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "snapshots", input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -128,14 +127,14 @@ type CreateSnapshotInput struct {
 }
 
 func (c *SnapshotsClient) Create(ctx context.Context, input *CreateSnapshotInput) (*Snapshot, error) {
-	path := fmt.Sprintf("/%s/machines/%s/snapshots", c.client.AccountName, input.MachineID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.MachineID, "snapshots")
 
 	data := make(map[string]interface{})
 	data["name"] = input.Name
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   data,
 	}
 

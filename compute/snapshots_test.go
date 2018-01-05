@@ -3,12 +3,11 @@ package compute_test
 import (
 	"context"
 	"errors"
-	"fmt"
+	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
 	"testing"
-
-	"io/ioutil"
 
 	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
@@ -48,7 +47,7 @@ func TestListSnapshots(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), listSnapshotsSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), listSnapshotsSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -61,7 +60,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), listSnapshotEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), listSnapshotEmpty)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -74,7 +73,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), listSnapshotBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), listSnapshotBadDecode)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -87,7 +86,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), listSnapshotError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), listSnapshotError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -120,7 +119,7 @@ func TestGetSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), getSnapshotSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), getSnapshotSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -133,7 +132,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), getSnapshotEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), getSnapshotEmpty)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -146,7 +145,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), getSnapshotBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), getSnapshotBadDecode)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -159,7 +158,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), getSnapshotError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), getSnapshotError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -188,7 +187,7 @@ func TestDeleteSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), deleteSnapshotSuccess)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), deleteSnapshotSuccess)
 
 		err := do(context.Background(), computeClient)
 		if err != nil {
@@ -197,7 +196,7 @@ func TestDeleteSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), deleteSnapshotError)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), deleteSnapshotError)
 
 		err := do(context.Background(), computeClient)
 		if err == nil {
@@ -223,7 +222,7 @@ func TestStartMachineFromSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), startMachineFromSnapshotSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), startMachineFromSnapshotSuccess)
 
 		err := do(context.Background(), computeClient)
 		if err != nil {
@@ -232,7 +231,7 @@ func TestStartMachineFromSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s/snapshots/%s", accountUrl, "123-3456-2335", "sample-snapshot"), startMachineFromSnapshotError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots", "sample-snapshot"), startMachineFromSnapshotError)
 
 		err := do(context.Background(), computeClient)
 		if err == nil {
@@ -262,7 +261,7 @@ func TestCreateSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), createSnapshotSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), createSnapshotSuccess)
 
 		_, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -271,7 +270,7 @@ func TestCreateSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s/snapshots", accountUrl, "123-3456-2335"), createSnapshotError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", "123-3456-2335", "snapshots"), createSnapshotError)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {

@@ -3,8 +3,8 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
@@ -40,10 +40,10 @@ type ListPackagesInput struct {
 }
 
 func (c *PackagesClient) List(ctx context.Context, input *ListPackagesInput) ([]*Package, error) {
-	path := fmt.Sprintf("/%s/packages", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "packages")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -68,10 +68,10 @@ type GetPackageInput struct {
 }
 
 func (c *PackagesClient) Get(ctx context.Context, input *GetPackageInput) (*Package, error) {
-	path := fmt.Sprintf("/%s/packages/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "packages", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
