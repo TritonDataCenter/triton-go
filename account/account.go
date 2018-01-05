@@ -78,11 +78,11 @@ func (c AccountClient) Update(ctx context.Context, input *UpdateInput) (*Account
 		Body:   input,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to update account")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	var result *Account
