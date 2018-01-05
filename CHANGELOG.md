@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Migration from hashicorp/errwrap to pkg/errors
+- Using path.Join() for URL structures rather than fmt.Sprintf()
 
 ## 0.5.2 (December 28)
 
