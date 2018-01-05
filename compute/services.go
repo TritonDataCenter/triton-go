@@ -3,8 +3,8 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 	"sort"
 
 	"github.com/hashicorp/errwrap"
@@ -23,10 +23,10 @@ type Service struct {
 type ListServicesInput struct{}
 
 func (c *ServicesClient) List(ctx context.Context, _ *ListServicesInput) ([]*Service, error) {
-	path := fmt.Sprintf("/%s/services", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "services")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {

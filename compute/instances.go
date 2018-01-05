@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -91,10 +92,10 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		return nil, errwrap.Wrapf("unable to get machine: {{err}}", err)
 	}
 
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
@@ -144,7 +145,7 @@ type ListInstancesInput struct {
 }
 
 func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) ([]*Instance, error) {
-	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "machines")
 
 	query := &url.Values{}
 	if input.Brand != "" {
@@ -180,7 +181,7 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Query:  query,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -286,7 +287,7 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 }
 
 func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput) (*Instance, error) {
-	path := fmt.Sprintf("/%s/machines", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "machines")
 	body, err := input.toAPI()
 	if err != nil {
 		return nil, errwrap.Wrapf("Error preparing Create request: {{err}}", err)
@@ -294,7 +295,7 @@ func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   body,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -319,10 +320,10 @@ type DeleteInstanceInput struct {
 }
 
 func (c *InstancesClient) Delete(ctx context.Context, input *DeleteInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
@@ -347,10 +348,10 @@ type DeleteTagsInput struct {
 }
 
 func (c *InstancesClient) DeleteTags(ctx context.Context, input *DeleteTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags")
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
@@ -376,10 +377,10 @@ type DeleteTagInput struct {
 }
 
 func (c *InstancesClient) DeleteTag(ctx context.Context, input *DeleteTagInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags", input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
@@ -405,7 +406,7 @@ type RenameInstanceInput struct {
 }
 
 func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "rename")
@@ -413,7 +414,7 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -445,10 +446,10 @@ func (input ReplaceTagsInput) toAPI() map[string]interface{} {
 }
 
 func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input.toAPI(),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -468,10 +469,10 @@ type AddTagsInput struct {
 }
 
 func (c *InstancesClient) AddTags(ctx context.Context, input *AddTagsInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input.Tags,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -491,10 +492,10 @@ type GetTagInput struct {
 }
 
 func (c *InstancesClient) GetTag(ctx context.Context, input *GetTagInput) (string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags/%s", c.client.AccountName, input.ID, input.Key)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags", input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -518,10 +519,10 @@ type ListTagsInput struct {
 }
 
 func (c *InstancesClient) ListTags(ctx context.Context, input *ListTagsInput) (map[string]interface{}, error) {
-	path := fmt.Sprintf("/%s/machines/%s/tags", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "tags")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -552,10 +553,10 @@ func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInp
 		return "", fmt.Errorf("Missing metadata Key from input: %s", input.Key)
 	}
 
-	path := fmt.Sprintf("/%s/machines/%s/metadata/%s", c.client.AccountName, input.ID, input.Key)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata", input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
@@ -587,7 +588,7 @@ type ListMetadataInput struct {
 }
 
 func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataInput) (map[string]string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata")
 
 	query := &url.Values{}
 	if input.Credentials {
@@ -596,7 +597,7 @@ func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataI
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Query:  query,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -622,10 +623,10 @@ type UpdateMetadataInput struct {
 }
 
 func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetadataInput) (map[string]string, error) {
-	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input.Metadata,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
@@ -656,10 +657,10 @@ func (c *InstancesClient) DeleteMetadata(ctx context.Context, input *DeleteMetad
 		return fmt.Errorf("Missing metadata Key from input: %s", input.Key)
 	}
 
-	path := fmt.Sprintf("/%s/machines/%s/metadata/%s", c.client.AccountName, input.ID, input.Key)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata", input.Key)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -678,10 +679,10 @@ type DeleteAllMetadataInput struct {
 
 // DeleteAllMetadata deletes all metadata keys from this instance
 func (c *InstancesClient) DeleteAllMetadata(ctx context.Context, input *DeleteAllMetadataInput) error {
-	path := fmt.Sprintf("/%s/machines/%s/metadata", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata")
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -700,7 +701,7 @@ type ResizeInstanceInput struct {
 }
 
 func (c *InstancesClient) Resize(ctx context.Context, input *ResizeInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "resize")
@@ -708,7 +709,7 @@ func (c *InstancesClient) Resize(ctx context.Context, input *ResizeInstanceInput
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -727,14 +728,14 @@ type EnableFirewallInput struct {
 }
 
 func (c *InstancesClient) EnableFirewall(ctx context.Context, input *EnableFirewallInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "enable_firewall")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -753,14 +754,14 @@ type DisableFirewallInput struct {
 }
 
 func (c *InstancesClient) DisableFirewall(ctx context.Context, input *DisableFirewallInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.ID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 
 	params := &url.Values{}
 	params.Set("action", "disable_firewall")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -779,10 +780,10 @@ type ListNICsInput struct {
 }
 
 func (c *InstancesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([]*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.InstanceID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID, "nics")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -808,10 +809,10 @@ type GetNICInput struct {
 
 func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC, error) {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.InstanceID, mac)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID, "nics", mac)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
@@ -848,10 +849,10 @@ type AddNICInput struct {
 // until its state is set to "running".  Only one NIC per network may exist.
 // Warning: this operation causes the instance to restart.
 func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC, error) {
-	path := fmt.Sprintf("/%s/machines/%s/nics", c.client.AccountName, input.InstanceID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID, "nics")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
@@ -890,10 +891,10 @@ type RemoveNICInput struct {
 // machine to restart.
 func (c *InstancesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) error {
 	mac := strings.Replace(input.MAC, ":", "", -1)
-	path := fmt.Sprintf("/%s/machines/%s/nics/%s", c.client.AccountName, input.InstanceID, mac)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID, "nics", mac)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
@@ -918,14 +919,14 @@ type StopInstanceInput struct {
 }
 
 func (c *InstancesClient) Stop(ctx context.Context, input *StopInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
 
 	params := &url.Values{}
 	params.Set("action", "stop")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -944,14 +945,14 @@ type StartInstanceInput struct {
 }
 
 func (c *InstancesClient) Start(ctx context.Context, input *StartInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
 
 	params := &url.Values{}
 	params.Set("action", "start")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
@@ -970,14 +971,14 @@ type RebootInstanceInput struct {
 }
 
 func (c *InstancesClient) Reboot(ctx context.Context, input *RebootInstanceInput) error {
-	path := fmt.Sprintf("/%s/machines/%s", c.client.AccountName, input.InstanceID)
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
 
 	params := &url.Values{}
 	params.Set("action", "reboot")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Query:  params,
 	}
 	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)

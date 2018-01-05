@@ -3,9 +3,9 @@ package identity_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
 	"testing"
 
@@ -45,7 +45,7 @@ func TestListUsers(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users", accountUrl), listUsersSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users"), listUsersSuccess)
 
 		resp, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -58,7 +58,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users", accountUrl), listUsersEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users"), listUsersEmpty)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -71,7 +71,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users", accountUrl), listUsersBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users"), listUsersBadeDecode)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -84,7 +84,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users", accountUrl), listUserError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users"), listUserError)
 
 		resp, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -116,7 +116,7 @@ func TestGetUser(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), getUserSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users", "123-3456-2335"), getUserSuccess)
 
 		resp, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -129,7 +129,7 @@ func TestGetUser(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), getUserEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users", "123-3456-2335"), getUserEmpty)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -142,7 +142,7 @@ func TestGetUser(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), getUserBadeDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users", "123-3456-2335"), getUserBadeDecode)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -155,7 +155,7 @@ func TestGetUser(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/users", accountUrl), getUserError)
+		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "users"), getUserError)
 
 		resp, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -183,7 +183,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), deleteUserSuccess)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "users", "123-3456-2335"), deleteUserSuccess)
 
 		err := do(context.Background(), identityClient)
 		if err != nil {
@@ -192,7 +192,7 @@ func TestDeleteUser(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/users", accountUrl), deleteUserError)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "users"), deleteUserError)
 
 		err := do(context.Background(), identityClient)
 		if err == nil {
@@ -224,7 +224,7 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users", accountUrl), createUserSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "users"), createUserSuccess)
 
 		_, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -233,7 +233,7 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users", accountUrl), createUserError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "users"), createUserError)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -263,7 +263,7 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), updateUserSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "users", "123-3456-2335"), updateUserSuccess)
 
 		_, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -272,7 +272,7 @@ func TestUpdateUser(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/users/%s", accountUrl, "123-3456-2335"), updateUserError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "users", "123-3456-2335"), updateUserError)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {

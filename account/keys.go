@@ -3,8 +3,8 @@ package account
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 
 	"github.com/joyent/triton-go/client"
 	"github.com/pkg/errors"
@@ -31,10 +31,10 @@ type ListKeysInput struct{}
 // ListKeys lists all public keys we have on record for the specified
 // account.
 func (c *KeysClient) List(ctx context.Context, _ *ListKeysInput) ([]*Key, error) {
-	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "keys")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -58,10 +58,10 @@ type GetKeyInput struct {
 }
 
 func (c *KeysClient) Get(ctx context.Context, input *GetKeyInput) (*Key, error) {
-	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
+	fullPath := path.Join("/", c.client.AccountName, "keys", input.KeyName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -85,10 +85,10 @@ type DeleteKeyInput struct {
 }
 
 func (c *KeysClient) Delete(ctx context.Context, input *DeleteKeyInput) error {
-	path := fmt.Sprintf("/%s/keys/%s", c.client.AccountName, input.KeyName)
+	fullPath := path.Join("/", c.client.AccountName, "keys", input.KeyName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -113,10 +113,10 @@ type CreateKeyInput struct {
 
 // CreateKey uploads a new OpenSSH key to Triton for use in HTTP signing and SSH.
 func (c *KeysClient) Create(ctx context.Context, input *CreateKeyInput) (*Key, error) {
-	path := fmt.Sprintf("/%s/keys", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "keys")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)

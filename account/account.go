@@ -3,8 +3,8 @@ package account
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/joyent/triton-go/client"
@@ -32,10 +32,10 @@ type Account struct {
 type GetInput struct{}
 
 func (c AccountClient) Get(ctx context.Context, input *GetInput) (*Account, error) {
-	path := fmt.Sprintf("/%s", c.Client.AccountName)
+	fullPath := path.Join("/", c.Client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -71,10 +71,10 @@ type UpdateInput struct {
 // UpdateAccount updates your account details with the given parameters.
 // TODO(jen20) Work out a safe way to test this
 func (c AccountClient) Update(ctx context.Context, input *UpdateInput) (*Account, error) {
-	path := fmt.Sprintf("/%s", c.Client.AccountName)
+	fullPath := path.Join("/", c.Client.AccountName)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.Client.ExecuteRequest(ctx, reqInputs)

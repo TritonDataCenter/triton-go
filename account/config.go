@@ -3,8 +3,8 @@ package account
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path"
 
 	"github.com/joyent/triton-go/client"
 	"github.com/pkg/errors"
@@ -24,10 +24,10 @@ type GetConfigInput struct{}
 
 // GetConfig outputs configuration for your account.
 func (c *ConfigClient) Get(ctx context.Context, input *GetConfigInput) (*Config, error) {
-	path := fmt.Sprintf("/%s/config", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "config")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -53,10 +53,10 @@ type UpdateConfigInput struct {
 
 // UpdateConfig updates configuration values for your account.
 func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
-	path := fmt.Sprintf("/%s/config", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "config")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)

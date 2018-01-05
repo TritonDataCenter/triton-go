@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"path"
+
 	"github.com/hashicorp/errwrap"
 )
 
@@ -57,7 +59,7 @@ func (s *StorageClient) SignURL(input *SignURLInput) (*SignURLOutput, error) {
 		Method:     input.Method,
 		Algorithm:  strings.ToUpper(s.Client.Authorizers[0].DefaultAlgorithm()),
 		Expires:    strconv.FormatInt(time.Now().Add(input.ValidityPeriod).Unix(), 10),
-		KeyID:      fmt.Sprintf("/%s/keys/%s", s.Client.AccountName, s.Client.Authorizers[0].KeyFingerprint()),
+		KeyID:      path.Join("/", s.Client.AccountName, "keys", s.Client.Authorizers[0].KeyFingerprint()),
 	}
 
 	toSign := bytes.Buffer{}

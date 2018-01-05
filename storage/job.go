@@ -3,10 +3,10 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -99,11 +99,11 @@ type CreateJobOutput struct {
 // CreateJob submits a new job to be executed. This call is not
 // idempotent, so calling it twice will create two jobs.
 func (s *JobClient) Create(ctx context.Context, input *CreateJobInput) (*CreateJobOutput, error) {
-	path := fmt.Sprintf("/%s/jobs", s.client.AccountName)
+	fullPath := path.Join("/", s.client.AccountName, "jobs")
 
 	reqInput := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respBody, respHeaders, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -133,7 +133,7 @@ type AddJobInputsInput struct {
 
 // AddJobInputs submits inputs to an already created job.
 func (s *JobClient) AddInputs(ctx context.Context, input *AddJobInputsInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "in")
 	headers := &http.Header{}
 	headers.Set("Content-Type", "text/plain")
 
@@ -141,7 +141,7 @@ func (s *JobClient) AddInputs(ctx context.Context, input *AddJobInputsInput) err
 
 	reqInput := client.RequestNoEncodeInput{
 		Method:  http.MethodPost,
-		Path:    path,
+		Path:    fullPath,
 		Headers: headers,
 		Body:    reader,
 	}
@@ -163,11 +163,11 @@ type EndJobInputInput struct {
 
 // EndJobInput submits inputs to an already created job.
 func (s *JobClient) EndInput(ctx context.Context, input *EndJobInputInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in/end", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "in", "end")
 
 	reqInput := client.RequestNoEncodeInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, _, err := s.client.ExecuteRequestNoEncode(ctx, reqInput)
 	if respBody != nil {
@@ -194,11 +194,11 @@ type CancelJobInput struct {
 // 	- input is still open
 // 	- you have a long-running job
 func (s *JobClient) Cancel(ctx context.Context, input *CancelJobInput) error {
-	path := fmt.Sprintf("/%s/jobs/%s/live/cancel", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "cancel")
 
 	reqInput := client.RequestNoEncodeInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, _, err := s.client.ExecuteRequestNoEncode(ctx, reqInput)
 	if respBody != nil {
@@ -226,7 +226,7 @@ type ListJobsOutput struct {
 
 // ListJobs returns the list of jobs you currently have.
 func (s *JobClient) List(ctx context.Context, input *ListJobsInput) (*ListJobsOutput, error) {
-	path := fmt.Sprintf("/%s/jobs", s.client.AccountName)
+	fullPath := path.Join("/", s.client.AccountName, "jobs")
 	query := &url.Values{}
 	if input.RunningOnly {
 		query.Set("state", "running")
@@ -240,7 +240,7 @@ func (s *JobClient) List(ctx context.Context, input *ListJobsInput) (*ListJobsOu
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 		Query:  query,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
@@ -288,11 +288,11 @@ type GetJobOutput struct {
 
 // GetJob returns the list of jobs you currently have.
 func (s *JobClient) Get(ctx context.Context, input *GetJobInput) (*GetJobOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/status", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "status")
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, _, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
@@ -329,11 +329,11 @@ type GetJobOutputOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *JobClient) GetOutput(ctx context.Context, input *GetJobOutputInput) (*GetJobOutputOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/out", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "out")
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
@@ -371,11 +371,11 @@ type GetJobInputOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *JobClient) GetInput(ctx context.Context, input *GetJobInputInput) (*GetJobInputOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/in", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "in")
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {
@@ -413,11 +413,11 @@ type GetJobFailuresOutput struct {
 // this like `tail -f`. If error is nil (i.e. the operation is successful), it is
 // your responsibility to close the io.ReadCloser named Items in the output.
 func (s *JobClient) GetFailures(ctx context.Context, input *GetJobFailuresInput) (*GetJobFailuresOutput, error) {
-	path := fmt.Sprintf("/%s/jobs/%s/live/fail", s.client.AccountName, input.JobID)
+	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "fail")
 
 	reqInput := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if respBody != nil {

@@ -1,13 +1,13 @@
 package compute
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"sort"
-
-	"context"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
@@ -25,10 +25,11 @@ type DataCenter struct {
 type ListDataCentersInput struct{}
 
 func (c *DataCentersClient) List(ctx context.Context, _ *ListDataCentersInput) ([]*DataCenter, error) {
-	path := fmt.Sprintf("/%s/datacenters", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "datacenters")
+
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if respReader != nil {
@@ -70,10 +71,10 @@ type GetDataCenterInput struct {
 }
 
 func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
-	path := fmt.Sprintf("/%s/datacenters/%s", c.client.AccountName, input.Name)
+	fullPath := path.Join("/", c.client.AccountName, "datacenters", input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	resp, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
