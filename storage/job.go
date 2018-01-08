@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type JobClient struct {
@@ -111,7 +111,7 @@ func (s *JobClient) Create(ctx context.Context, input *CreateJobInput) (*CreateJ
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateJob request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create job")
 	}
 
 	jobURI := respHeaders.Get("Location")
@@ -150,7 +150,7 @@ func (s *JobClient) AddInputs(ctx context.Context, input *AddJobInputsInput) err
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing AddJobInputs request: {{err}}", err)
+		return errors.Wrap(err, "unable to add job inputs")
 	}
 
 	return nil
@@ -174,7 +174,7 @@ func (s *JobClient) EndInput(ctx context.Context, input *EndJobInputInput) error
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing EndJobInput request: {{err}}", err)
+		return errors.Wrap(err, "unable to end job inputs")
 	}
 
 	return nil
@@ -205,7 +205,7 @@ func (s *JobClient) Cancel(ctx context.Context, input *CancelJobInput) error {
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing CancelJob request: {{err}}", err)
+		return errors.Wrap(err, "unable to cancel job")
 	}
 
 	return nil
@@ -248,7 +248,7 @@ func (s *JobClient) List(ctx context.Context, input *ListJobsInput) (*ListJobsOu
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListJobs request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list jobs")
 	}
 
 	var results []*JobSummary
@@ -259,7 +259,7 @@ func (s *JobClient) List(ctx context.Context, input *ListJobsInput) (*ListJobsOu
 			if err == io.EOF {
 				break
 			}
-			return nil, errwrap.Wrapf("Error decoding ListJobs response: {{err}}", err)
+			return nil, errors.Wrap(err, "unable to decode list jobs response")
 		}
 		results = append(results, current)
 	}
@@ -299,13 +299,13 @@ func (s *JobClient) Get(ctx context.Context, input *GetJobInput) (*GetJobOutput,
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetJob request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get job")
 	}
 
 	job := &Job{}
 	decoder := json.NewDecoder(respBody)
 	if err = decoder.Decode(&job); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetJob response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get job response")
 	}
 
 	return &GetJobOutput{
@@ -340,7 +340,7 @@ func (s *JobClient) GetOutput(ctx context.Context, input *GetJobOutputInput) (*G
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetJobOutput request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get job output")
 	}
 
 	output := &GetJobOutputOutput{
@@ -382,7 +382,7 @@ func (s *JobClient) GetInput(ctx context.Context, input *GetJobInputInput) (*Get
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetJobInput request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get job input")
 	}
 
 	output := &GetJobInputOutput{
@@ -424,7 +424,7 @@ func (s *JobClient) GetFailures(ctx context.Context, input *GetJobFailuresInput)
 		defer respBody.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetJobFailures request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get job failures")
 	}
 
 	output := &GetJobFailuresOutput{
