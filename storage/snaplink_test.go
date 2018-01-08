@@ -59,7 +59,7 @@ func TestPutSnaplink(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "unable to put snaplink") {
-			t.Errorf("expected error to equal testError: found %s", err)
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -69,7 +69,7 @@ func putSnapLinkSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: 204,
+		StatusCode: http.StatusNoContent,
 		Header:     header,
 	}, nil
 }
