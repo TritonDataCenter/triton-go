@@ -58,7 +58,7 @@ func (s *DirectoryClient) List(ctx context.Context, input *ListDirectoryInput) (
 	}
 	respBody, respHeader, err := s.client.ExecuteRequestStorage(ctx, reqInput)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to list directories")
+		return nil, errors.Wrap(err, "unable to list directory")
 	}
 	defer respBody.Close()
 
@@ -113,7 +113,7 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 		defer respBody.Close()
 	}
 	if err != nil {
-		return errors.Wrap(err, "unable to put directoru")§
+		return errors.Wrap(err, "unable to put directory")
 	}
 
 	return nil
