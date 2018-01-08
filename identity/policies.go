@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type PoliciesClient struct {
@@ -34,13 +34,13 @@ func (c *PoliciesClient) List(ctx context.Context, _ *ListPoliciesInput) ([]*Pol
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListPolicies request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list policies")
 	}
 
 	var result []*Policy
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListPolicies response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list policies response")
 	}
 
 	return result, nil
@@ -61,13 +61,13 @@ func (c *PoliciesClient) Get(ctx context.Context, input *GetPolicyInput) (*Polic
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetPolicy request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get policy")
 	}
 
 	var result *Policy
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetPolicy response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get policy response")
 	}
 
 	return result, nil
@@ -88,7 +88,7 @@ func (c *PoliciesClient) Delete(ctx context.Context, input *DeletePolicyInput) e
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeletePolicy request: {{err}}", err)
+		return errors.Wrap(err, "unable to delete policy")
 	}
 
 	return nil
@@ -115,13 +115,13 @@ func (c *PoliciesClient) Update(ctx context.Context, input *UpdatePolicyInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdatePolicy request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to update policy")
 	}
 
 	var result *Policy
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdatePolicy response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode update policy response")
 	}
 
 	return result, nil
@@ -145,13 +145,13 @@ func (c *PoliciesClient) Create(ctx context.Context, input *CreatePolicyInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreatePolicy request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create policy")
 	}
 
 	var result *Policy
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreatePolicy response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode create policy response")
 	}
 
 	return result, nil

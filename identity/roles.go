@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type RolesClient struct {
@@ -36,13 +36,13 @@ func (c *RolesClient) List(ctx context.Context, _ *ListRolesInput) ([]*Role, err
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListRoles request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list roles")
 	}
 
 	var result []*Role
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListRoles response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list roles response")
 	}
 
 	return result, nil
@@ -63,13 +63,13 @@ func (c *RolesClient) Get(ctx context.Context, input *GetRoleInput) (*Role, erro
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetRole request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get role")
 	}
 
 	var result *Role
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetRole response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get roles response")
 	}
 
 	return result, nil
@@ -104,13 +104,14 @@ func (c *RolesClient) Create(ctx context.Context, input *CreateRoleInput) (*Role
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateRole request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create role")
+
 	}
 
 	var result *Role
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateRole response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode create role response")
 	}
 
 	return result, nil
@@ -148,13 +149,13 @@ func (c *RolesClient) Update(ctx context.Context, input *UpdateRoleInput) (*Role
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing UpdateRole request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to update role")
 	}
 
 	var result *Role
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding UpdateRole response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode update role response")
 	}
 
 	return result, nil
@@ -175,7 +176,7 @@ func (c *RolesClient) Delete(ctx context.Context, input *DeleteRoleInput) error 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing DeleteRole request: {{err}}", err)
+		return errors.Wrap(err, "unable to delete role")
 	}
 
 	return nil
