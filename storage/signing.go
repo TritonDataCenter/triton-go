@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
 
-	"path"
-
-	"github.com/hashicorp/errwrap"
+	"github.com/pkg/errors"
 )
 
 // SignURLInput represents parameters to a SignURL operation.
@@ -75,7 +74,7 @@ func (s *StorageClient) SignURL(input *SignURLInput) (*SignURLOutput, error) {
 
 	signature, _, err := s.Client.Authorizers[0].SignRaw(toSign.String())
 	if err != nil {
-		return nil, errwrap.Wrapf("Error signing string: {{err}}", err)
+		return nil, errors.Wrapf(err, "error signing string")
 	}
 
 	output.Signature = signature
