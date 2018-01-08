@@ -7,8 +7,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type ServicesClient struct {
@@ -33,13 +33,13 @@ func (c *ServicesClient) List(ctx context.Context, _ *ListServicesInput) ([]*Ser
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list services")
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list services response")
 	}
 
 	keys := make([]string, len(intermediate))

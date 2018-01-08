@@ -1,12 +1,19 @@
-package compute
+package compute_test
 
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
+	"path"
+	"strings"
+
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
+	"github.com/pkg/errors"
 )
 
 func TestAccServicesList(t *testing.T) {
@@ -18,16 +25,16 @@ func TestAccServicesList(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: stateKey,
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &ListServicesInput{}
+					input := &compute.ListServicesInput{}
 					return c.Services().List(ctx, input)
 				},
 			},
@@ -42,7 +49,7 @@ func TestAccServicesList(t *testing.T) {
 					toFind := []string{"docker"}
 					for _, serviceName := range toFind {
 						found := false
-						for _, service := range services.([]*Service) {
+						for _, service := range services.([]*compute.Service) {
 							if service.Name == serviceName {
 								found = true
 								if service.Endpoint == "" {
@@ -60,4 +67,124 @@ func TestAccServicesList(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestListServices(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Service, error) {
+		defer testutils.DeactivateClient()
+
+		services, err := cc.Services().List(ctx, &compute.ListServicesInput{})
+		if err != nil {
+			return nil, err
+		}
+		return services, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "services"), listServicesSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "services"), listServicesEmpty)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "services"), listServicesBadDecode)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "services"), listServicesError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to list services") {
+			t.Errorf("expected error to equal testError: found %v", err)
+		}
+	})
+}
+
+func listServicesSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`
+	{
+  "cloudapi": "https://us-west-1.api.example.com",
+  "docker": "tcp://us-west-1.docker.example.com",
+  "manta": "https://us-west.manta.example.com"
+}
+`)
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listServicesEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func listServicesBadDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`[{
+  "cloudapi": "https://us-west-1.api.example.com",
+  "docker": "tcp://us-west-1.docker.example.com",
+  "manta": "https://us-west.manta.example.com",
+}]`)
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listServicesError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to list services")
 }
