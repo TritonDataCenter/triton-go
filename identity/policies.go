@@ -3,8 +3,9 @@ package identity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+
+	"path"
 
 	"github.com/joyent/triton-go/client"
 	"github.com/pkg/errors"
@@ -24,17 +25,17 @@ type Policy struct {
 type ListPoliciesInput struct{}
 
 func (c *PoliciesClient) List(ctx context.Context, _ *ListPoliciesInput) ([]*Policy, error) {
-	path := fmt.Sprintf("/%s/policies", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "policies")
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to list policies")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	var result []*Policy
@@ -51,17 +52,17 @@ type GetPolicyInput struct {
 }
 
 func (c *PoliciesClient) Get(ctx context.Context, input *GetPolicyInput) (*Policy, error) {
-	path := fmt.Sprintf("/%s/policies/%s", c.client.AccountName, input.PolicyID)
+	fullPath := path.Join("/", c.client.AccountName, "policies", input.PolicyID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get policy")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	var result *Policy
@@ -78,17 +79,17 @@ type DeletePolicyInput struct {
 }
 
 func (c *PoliciesClient) Delete(ctx context.Context, input *DeletePolicyInput) error {
-	path := fmt.Sprintf("/%s/policies/%s", c.client.AccountName, input.PolicyID)
+	fullPath := path.Join("/", c.client.AccountName, "policies", input.PolicyID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   path,
+		Path:   fullPath,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return errors.Wrap(err, "unable to delete policy")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	return nil
@@ -104,18 +105,18 @@ type UpdatePolicyInput struct {
 }
 
 func (c *PoliciesClient) Update(ctx context.Context, input *UpdatePolicyInput) (*Policy, error) {
-	path := fmt.Sprintf("/%s/policies/%s", c.client.AccountName, input.PolicyID)
+	fullPath := path.Join("/", c.client.AccountName, "policies", input.PolicyID)
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to update policy")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	var result *Policy
@@ -134,18 +135,18 @@ type CreatePolicyInput struct {
 }
 
 func (c *PoliciesClient) Create(ctx context.Context, input *CreatePolicyInput) (*Policy, error) {
-	path := fmt.Sprintf("/%s/policies", c.client.AccountName)
+	fullPath := path.Join("/", c.client.AccountName, "policies")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   path,
+		Path:   fullPath,
 		Body:   input,
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
-	if respReader != nil {
-		defer respReader.Close()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create policy")
+	}
+	if respReader != nil {
+		defer respReader.Close()
 	}
 
 	var result *Policy

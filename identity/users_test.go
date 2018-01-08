@@ -16,11 +16,11 @@ import (
 const accountUrl = "testing"
 
 var (
-	listUserErrorType   = errors.New("Error executing List request:")
-	getUserErrorType    = errors.New("Error executing Get request:")
-	deleteUserErrorType = errors.New("Error executing Delete request:")
-	createUserErrorType = errors.New("Error executing Create request:")
-	updateUserErrorType = errors.New("Error executing Update request:")
+	listUserErrorType   = errors.New("unable to list users")
+	getUserErrorType    = errors.New("unable to get user")
+	deleteUserErrorType = errors.New("unable to delete user")
+	createUserErrorType = errors.New("unable to create user")
+	updateUserErrorType = errors.New("unable to update user")
 )
 
 func MockIdentityClient() *identity.IdentityClient {
@@ -94,7 +94,7 @@ func TestListUsers(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing List request:") {
+		if !strings.Contains(err.Error(), "unable to list users") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -165,7 +165,7 @@ func TestGetUser(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Get request:") {
+		if !strings.Contains(err.Error(), "unable to get user") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -199,7 +199,7 @@ func TestDeleteUser(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Delete request:") {
+		if !strings.Contains(err.Error(), "unable to delete user") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -240,7 +240,7 @@ func TestCreateUser(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Create request:") {
+		if !strings.Contains(err.Error(), "unable to create user") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -279,7 +279,7 @@ func TestUpdateUser(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Update request:") {
+		if !strings.Contains(err.Error(), "unable to update user") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})

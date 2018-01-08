@@ -14,11 +14,13 @@ import (
 )
 
 var (
-	listPoliciesErrorType = errors.New("Error executing ListPolicies request:")
-	getPolicyErrorType    = errors.New("Error executing GetPolicy request:")
-	deletePolicyErrorType = errors.New("Error executing DeletePolicy request:")
-	updatePolicyErrorType = errors.New("Error executing UpdatePolicy request:")
-	createPolicyErrorType = errors.New("Error executing CreatePolicy request:")
+	fakePolicyId           = "95ca7b25-5c8f-4c1b-92da-4276f23805ds"
+	aDifferentFakePolicyId = "95ca7b25-5c8f-4c1b-92da-4276f23807f3"
+	listPoliciesErrorType  = errors.New("unable to list policies")
+	getPolicyErrorType     = errors.New("unable to get policy")
+	deletePolicyErrorType  = errors.New("unable to delete policy")
+	updatePolicyErrorType  = errors.New("unable to update policy")
+	createPolicyErrorType  = errors.New("unable to create policy")
 )
 
 func TestListPolicies(t *testing.T) {
@@ -31,6 +33,7 @@ func TestListPolicies(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
+
 		return policies, nil
 	}
 
@@ -84,7 +87,7 @@ func TestListPolicies(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing ListPolicies request:") {
+		if !strings.Contains(err.Error(), "unable to list policies") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -97,16 +100,17 @@ func TestGetPolicy(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		user, err := ic.Policies().Get(ctx, &identity.GetPolicyInput{
-			PolicyID: "95ca7b25-5c8f-4c1b-92da-4276f23807f3",
+			PolicyID: fakePolicyId,
 		})
 		if err != nil {
 			return nil, err
 		}
+
 		return user, nil
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, "95ca7b25-5c8f-4c1b-92da-4276f23807f3"), getPolicySuccess)
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, fakePolicyId), getPolicySuccess)
 
 		resp, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -119,7 +123,7 @@ func TestGetPolicy(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, "95ca7b25-5c8f-4c1b-92da-4276f23807f3"), getPolicyEmpty)
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, fakePolicyId), getPolicyEmpty)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -132,7 +136,7 @@ func TestGetPolicy(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, "95ca7b25-5c8f-4c1b-92da-4276f23807f3"), getPolicyBadeDecode)
+		testutils.RegisterResponder("GET", fmt.Sprintf("/%s/policies/%s", accountUrl, fakePolicyId), getPolicyBadeDecode)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -155,7 +159,7 @@ func TestGetPolicy(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing GetPolicy request:") {
+		if !strings.Contains(err.Error(), "unable to get policy") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -168,12 +172,12 @@ func TestDeletePolicy(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		return ic.Policies().Delete(ctx, &identity.DeletePolicyInput{
-			PolicyID: "8700e959-4cb3-4337-8afa-fb0a53b5366e",
+			PolicyID: fakePolicyId,
 		})
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/policies/%s", accountUrl, "8700e959-4cb3-4337-8afa-fb0a53b5366e"), deletePolicySuccess)
+		testutils.RegisterResponder("DELETE", fmt.Sprintf("/%s/policies/%s", accountUrl, fakePolicyId), deletePolicySuccess)
 
 		err := do(context.Background(), identityClient)
 		if err != nil {
@@ -189,7 +193,7 @@ func TestDeletePolicy(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing DeletePolicy request:") {
+		if !strings.Contains(err.Error(), "unable to delete policy") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -202,18 +206,19 @@ func TestUpdatePolicy(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		policy, err := ic.Policies().Update(ctx, &identity.UpdatePolicyInput{
-			PolicyID:    "95ca7b25-5c8f-4c1b-92da-4276f23807f3",
+			PolicyID:    fakePolicyId,
 			Description: "Updated Description",
 			Name:        "Updated Name",
 		})
 		if err != nil {
 			return nil, err
 		}
+
 		return policy, nil
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/policies/%s", accountUrl, "95ca7b25-5c8f-4c1b-92da-4276f23807f3"), updatePolicySuccess)
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/policies/%s", accountUrl, fakePolicyId), updatePolicySuccess)
 
 		_, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -222,20 +227,20 @@ func TestUpdatePolicy(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/policies/%s", accountUrl, "95ca7b25-5c8f-4c1b-92da-4276f23807f3"), updatePolicyError)
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/policies/%s", accountUrl, aDifferentFakePolicyId), updatePolicyError)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing UpdatePolicy request:") {
+		if !strings.Contains(err.Error(), "unable to update policy") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
 }
 
-func TestCreatePolocy(t *testing.T) {
+func TestCreatePolicy(t *testing.T) {
 	identityClient := MockIdentityClient()
 
 	do := func(ctx context.Context, ic *identity.IdentityClient) (*identity.Policy, error) {
@@ -250,6 +255,7 @@ func TestCreatePolocy(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
+
 		return policy, nil
 	}
 
@@ -270,7 +276,7 @@ func TestCreatePolocy(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing CreatePolicy request:") {
+		if !strings.Contains(err.Error(), "unable to create policy") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -279,6 +285,7 @@ func TestCreatePolocy(t *testing.T) {
 func listPoliciesEmpty(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -306,6 +313,7 @@ func listPoliciesSuccess(req *http.Request) (*http.Response, error) {
     ]
   }
 ]`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -326,6 +334,7 @@ func listPoliciesBadeDecode(req *http.Request) (*http.Response, error) {
     ]
   }
 ]}`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -349,6 +358,7 @@ func getPolicySuccess(req *http.Request) (*http.Response, error) {
     ]
   }
 `)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -371,6 +381,7 @@ func getPolicyBadeDecode(req *http.Request) (*http.Response, error) {
       "can listmachine and getmachine"
     ],
   }`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -381,6 +392,7 @@ func getPolicyBadeDecode(req *http.Request) (*http.Response, error) {
 func getPolicyEmpty(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -433,7 +445,7 @@ func createPolicySuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`{
   "name": "Test Policy",
-  "id": "8700e959-4cb3-4337-8afa-fb0a53b5366e",
+  "id": "95ca7b25-5c8f-4c1b-92da-4276f23807f3",
   "rules": [
     "CAN rebootmachine"
   ],
