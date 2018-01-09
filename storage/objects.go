@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/joyent/triton-go/client"
+	tt "github.com/joyent/triton-go/errors"
 	"github.com/pkg/errors"
 )
 
@@ -369,7 +370,7 @@ func createDirectory(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath
 func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) (bool, error) {
 	exists, err := c.IsDir(ctx, string(absPath))
 	if err != nil {
-		if client.IsResourceNotFoundError(err) {
+		if tt.IsResourceNotFoundError(err) {
 			return false, nil
 		}
 		return false, err

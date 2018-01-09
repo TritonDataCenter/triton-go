@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	tt "github.com/joyent/triton-go/errors"
 )
 
 const pingEndpoint = "/--ping"
@@ -36,7 +37,7 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 		defer response.Body.Close()
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return nil, &client.TritonError{
+		return nil, &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}

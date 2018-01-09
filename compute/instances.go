@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	tt "github.com/joyent/triton-go/errors"
 )
 
 type InstancesClient struct {
@@ -105,7 +106,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		defer response.Body.Close()
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return nil, &client.TritonError{
+		return nil, &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -563,7 +564,7 @@ func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInp
 		defer response.Body.Close()
 	}
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return "", &client.TritonError{
+		return "", &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -820,7 +821,7 @@ func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC,
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound:
-		return nil, &client.TritonError{
+		return nil, &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}
@@ -861,7 +862,7 @@ func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC,
 	}
 	switch response.StatusCode {
 	case http.StatusFound:
-		return nil, &client.TritonError{
+		return nil, &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceFound",
 			Message:    response.Header.Get("Location"),
@@ -902,7 +903,7 @@ func (c *InstancesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) 
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound:
-		return &client.TritonError{
+		return &tt.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
 		}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	tt "github.com/joyent/triton-go/errors"
 )
 
 type ImagesClient struct {
@@ -39,7 +40,7 @@ type Image struct {
 	Tags         map[string]string      `json:"tags"`
 	EULA         string                 `json:"eula"`
 	ACL          []string               `json:"acl"`
-	Error        client.TritonError     `json:"error"`
+	Error        tt.APIError            `json:"error"`
 }
 
 type ListImagesInput struct {

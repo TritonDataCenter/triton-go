@@ -10,7 +10,7 @@ import (
 	"github.com/abdullin/seq"
 	"github.com/hashicorp/errwrap"
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/client"
+	tt "github.com/joyent/triton-go/errors"
 )
 
 type StepClient struct {
@@ -190,22 +190,22 @@ type StepAssertTritonError struct {
 func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 	err, ok := state.GetOk(s.ErrorKey)
 	if !ok {
-		state.AppendError(fmt.Errorf("Expected TritonError %q to be in state", s.Code))
+		state.AppendError(fmt.Errorf("Expected APIError %q to be in state", s.Code))
 		return Halt
 	}
 
-	tritonErrorInterface := errwrap.GetType(err.(error), &client.TritonError{})
+	tritonErrorInterface := errwrap.GetType(err.(error), &tt.APIError{})
 	if tritonErrorInterface == nil {
-		state.AppendError(errors.New("Expected a TritonError in wrapped error chain"))
+		state.AppendError(errors.New("Expected a APIError in wrapped error chain"))
 		return Halt
 	}
 
-	tritonErr := tritonErrorInterface.(*client.TritonError)
+	tritonErr := tritonErrorInterface.(*tt.APIError)
 	if tritonErr.Code == s.Code {
 		return Continue
 	}
 
-	state.AppendError(fmt.Errorf("Expected TritonError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, tritonErr.Code))
+	state.AppendError(fmt.Errorf("Expected APIError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, tritonErr.Code))
 	return Halt
 }
 

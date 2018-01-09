@@ -16,6 +16,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/authentication"
+	tt "github.com/joyent/triton-go/errors"
 )
 
 const nilContext = "nil context"
@@ -170,7 +171,7 @@ func doNotFollowRedirects(*http.Request, []*http.Request) error {
 // }
 
 func (c *Client) DecodeError(statusCode int, body io.Reader) error {
-	err := &TritonError{
+	err := &tt.APIError{
 		StatusCode: statusCode,
 	}
 
@@ -359,7 +360,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		return resp.Body, resp.Header, nil
 	}
 
-	mantaError := &MantaError{
+	mantaError := &tt.ClientError{
 		StatusCode: resp.StatusCode,
 	}
 
@@ -432,7 +433,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 		return resp.Body, resp.Header, nil
 	}
 
-	mantaError := &MantaError{
+	mantaError := &tt.ClientError{
 		StatusCode: resp.StatusCode,
 	}
 
