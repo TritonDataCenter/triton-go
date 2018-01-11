@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type Network struct {
@@ -38,13 +38,13 @@ func (c *NetworkClient) List(ctx context.Context, _ *ListInput) ([]*Network, err
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing ListNetworks request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list networks")
 	}
 
 	var result []*Network
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding ListNetworks response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list networks response")
 	}
 
 	return result, nil
@@ -65,13 +65,13 @@ func (c *NetworkClient) Get(ctx context.Context, input *GetInput) (*Network, err
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing GetNetwork request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get network")
 	}
 
 	var result *Network
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding GetNetwork response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get network response")
 	}
 
 	return result, nil
