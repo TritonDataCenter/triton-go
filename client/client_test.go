@@ -88,7 +88,7 @@ func TestNew(t *testing.T) {
 		if err == nil {
 			t.Error("expected error to not be nil")
 		}
-		if !strings.Contains(err.Error(), "problem initializing NewSSHAgentSigner") {
+		if !strings.Contains(err.Error(), "unable to initialize NewSSHAgentSigner") {
 			t.Errorf("expected error to be from NewSSHAgentSigner: received '%v'", err)
 		}
 	})

@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -14,8 +13,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/authentication"
+	"github.com/pkg/errors"
 )
 
 const nilContext = "nil context"
@@ -55,12 +54,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 
 	cloudURL, err := url.Parse(tritonURL)
 	if err != nil {
-		return nil, errwrap.Wrapf(BadTritonURL+": {{err}}", err)
+		return nil, errors.Wrapf(err, BadTritonURL)
 	}
 
 	storageURL, err := url.Parse(mantaURL)
 	if err != nil {
-		return nil, errwrap.Wrapf(BadMantaURL+": {{err}}", err)
+		return nil, errors.Wrapf(err, BadMantaURL)
 	}
 
 	authorizers := make([]authentication.Signer, 0)
@@ -124,7 +123,7 @@ func (c *Client) DefaultAuth() error {
 		}
 		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			return errwrap.Wrapf("problem initializing NewSSHAgentSigner: {{err}}", err)
+			return errors.Wrapf(err, "unable to initialize NewSSHAgentSigner")
 		}
 		c.Authorizers = append(c.Authorizers, defaultSigner)
 	}
@@ -176,7 +175,7 @@ func (c *Client) DecodeError(statusCode int, body io.Reader) error {
 
 	errorDecoder := json.NewDecoder(body)
 	if err := errorDecoder.Decode(err); err != nil {
-		return errwrap.Wrapf("Error decoding error response: {{err}}", err)
+		return errors.Wrapf(err, "unable to decode error response")
 	}
 
 	return err
@@ -215,7 +214,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -225,7 +224,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 	// outside that constructor).
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
@@ -238,7 +237,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to execute HTTP request")
 	}
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
@@ -271,7 +270,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -281,7 +280,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	// outside that constructor).
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
@@ -294,7 +293,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, errors.Wrapf(err, "unable to execute HTTP request")
 	}
 
 	return resp, nil
@@ -321,7 +320,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	if body != nil && (headers == nil || headers.Get("Content-Type") == "") {
@@ -340,7 +339,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
@@ -352,7 +351,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to execute HTTP request")
 	}
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
@@ -366,7 +365,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 	if req.Method != http.MethodHead {
 		errorDecoder := json.NewDecoder(resp.Body)
 		if err := errorDecoder.Decode(mantaError); err != nil {
-			return nil, nil, errwrap.Wrapf("Error decoding error response: {{err}}", err)
+			return nil, nil, errors.Wrapf(err, "unable to decode error response")
 		}
 	}
 
@@ -397,7 +396,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	req, err := http.NewRequest(method, endpoint.String(), body)
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error constructing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	if headers != nil {
@@ -413,7 +412,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error signing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
@@ -425,7 +424,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, nil, errwrap.Wrapf("Error executing HTTP request: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to execute HTTP request")
 	}
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
@@ -438,7 +437,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	errorDecoder := json.NewDecoder(resp.Body)
 	if err := errorDecoder.Decode(mantaError); err != nil {
-		return nil, nil, errwrap.Wrapf("Error decoding error response: {{err}}", err)
+		return nil, nil, errors.Wrapf(err, "unable to decode error response")
 	}
 	return nil, nil, mantaError
 }
