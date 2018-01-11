@@ -3,11 +3,10 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 const pingEndpoint = "/--ping"
@@ -29,8 +28,11 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 		Path:   pingEndpoint,
 	}
 	response, err := c.Client.ExecuteRequestRaw(ctx, reqInputs)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to ping")
+	}
 	if response == nil {
-		return nil, fmt.Errorf("Ping request has empty response")
+		return nil, errors.Wrap(err, "unable to ping")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
@@ -41,15 +43,13 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 			Code:       "ResourceNotFound",
 		}
 	}
-	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}",
-			c.Client.DecodeError(response.StatusCode, response.Body))
-	}
 
 	var result *PingOutput
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to decode ping response")
+		}
 	}
 
 	return result, nil

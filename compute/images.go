@@ -8,8 +8,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type ImagesClient struct {
@@ -88,13 +88,13 @@ func (c *ImagesClient) List(ctx context.Context, input *ListImagesInput) ([]*Ima
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list images")
 	}
 
 	var result []*Image
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list images response")
 	}
 
 	return result, nil
@@ -115,13 +115,13 @@ func (c *ImagesClient) Get(ctx context.Context, input *GetImageInput) (*Image, e
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get image")
 	}
 
 	var result *Image
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get image response")
 	}
 
 	return result, nil
@@ -142,7 +142,7 @@ func (c *ImagesClient) Delete(ctx context.Context, input *DeleteImageInput) erro
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
+		return errors.Wrap(err, "unable to delete image")
 	}
 
 	return nil
@@ -163,10 +163,9 @@ func (c *ImagesClient) Export(ctx context.Context, input *ExportImageInput) (*Ma
 	fullPath := path.Join("/", c.client.AccountName, "images", input.ImageID)
 	query := &url.Values{}
 	query.Set("action", "export")
-	query.Set("manta_path", input.MantaPath)
 
 	reqInputs := client.RequestInput{
-		Method: http.MethodGet,
+		Method: http.MethodPost,
 		Path:   fullPath,
 		Query:  query,
 	}
@@ -175,13 +174,13 @@ func (c *ImagesClient) Export(ctx context.Context, input *ExportImageInput) (*Ma
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to export image")
 	}
 
 	var result *MantaLocation
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode export image response")
 	}
 
 	return result, nil
@@ -210,13 +209,13 @@ func (c *ImagesClient) CreateFromMachine(ctx context.Context, input *CreateImage
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing CreateFromMachine request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create machine from image")
 	}
 
 	var result *Image
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding CreateFromMachine response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode create machine from image response")
 	}
 
 	return result, nil
@@ -224,7 +223,7 @@ func (c *ImagesClient) CreateFromMachine(ctx context.Context, input *CreateImage
 
 type UpdateImageInput struct {
 	ImageID     string            `json:"-"`
-	Name        string            `json:"name"`
+	Name        string            `json:"name,omitempty"`
 	Version     string            `json:"version,omitempty"`
 	Description string            `json:"description,omitempty"`
 	HomePage    string            `json:"homepage,omitempty"`
@@ -249,13 +248,13 @@ func (c *ImagesClient) Update(ctx context.Context, input *UpdateImageInput) (*Im
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Update request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to update image")
 	}
 
 	var result *Image
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Update response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode update image response")
 	}
 
 	return result, nil

@@ -1,24 +1,40 @@
-package compute
+package compute_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"reflect"
 	"testing"
 	"time"
 
+	"strings"
+
+	"path"
+
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
 )
 
-func getAnyInstanceID(t *testing.T, client *ComputeClient) (string, error) {
+var (
+	fakeMachineID         = "75cfe125-a5ce-49e8-82ac-09aa31ffdf26"
+	fakeMachinePackageID  = "7041ccc7-3f9e-cf1e-8c85-a9ee41b7f968"
+	fakeMachineTag        = "my-test-tag"
+	fakeMachineMetaDataID = "foo"
+	fakeMacID             = "90b8d02fb8f9"
+	fakeNetworkID         = "7007b198-f6aa-48f0-9843-78a3149de3d7"
+)
+
+func getAnyInstanceID(t *testing.T, client *compute.ComputeClient) (string, error) {
 	ctx := context.Background()
-	input := &ListInstancesInput{}
+	input := &compute.ListInstancesInput{}
 	instances, err := client.Instances().List(ctx, input)
 	if err != nil {
 		return "", err
@@ -57,7 +73,7 @@ func TestAccInstances_Create(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					computeClient, err := NewClient(config)
+					computeClient, err := compute.NewClient(config)
 					if err != nil {
 						return nil, err
 					}
@@ -78,10 +94,10 @@ func TestAccInstances_Create(t *testing.T) {
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
 					clients := client.([]interface{})
-					c := clients[0].(*ComputeClient)
+					c := clients[0].(*compute.ComputeClient)
 					n := clients[1].(*network.NetworkClient)
 
-					images, err := c.Images().List(context.Background(), &ListImagesInput{
+					images, err := c.Images().List(context.Background(), &compute.ListImagesInput{
 						Name:    "ubuntu-16.04",
 						Version: "20170403",
 					})
@@ -99,7 +115,7 @@ func TestAccInstances_Create(t *testing.T) {
 						}
 					}
 
-					input := &CreateInstanceInput{
+					input := &compute.CreateInstanceInput{
 						Name:     testInstanceName,
 						Package:  "g4-highcpu-128M",
 						Image:    img.ID,
@@ -110,7 +126,7 @@ func TestAccInstances_Create(t *testing.T) {
 						Tags: map[string]string{
 							"tag1": "value1",
 						},
-						CNS: InstanceCNS{
+						CNS: compute.InstanceCNS{
 							Services: []string{"testapp", "testweb"},
 						},
 					}
@@ -119,11 +135,11 @@ func TestAccInstances_Create(t *testing.T) {
 						return nil, err
 					}
 
-					state := make(chan *Instance, 1)
-					go func(createdID string, c *ComputeClient) {
+					state := make(chan *compute.Instance, 1)
+					go func(createdID string, c *compute.ComputeClient) {
 						for {
 							time.Sleep(1 * time.Second)
-							instance, err := c.Instances().Get(context.Background(), &GetInstanceInput{
+							instance, err := c.Instances().Get(context.Background(), &compute.GetInstanceInput{
 								ID: createdID,
 							})
 							if err != nil {
@@ -143,7 +159,7 @@ func TestAccInstances_Create(t *testing.T) {
 					}
 				},
 				CleanupFunc: func(client interface{}, stateBag interface{}) {
-					instance, instOk := stateBag.(*Instance)
+					instance, instOk := stateBag.(*compute.Instance)
 					if !instOk {
 						log.Println("Expected instance to be Instance")
 						return
@@ -156,13 +172,13 @@ func TestAccInstances_Create(t *testing.T) {
 					}
 
 					clients := client.([]interface{})
-					c, clientOk := clients[0].(*ComputeClient)
+					c, clientOk := clients[0].(*compute.ComputeClient)
 					if !clientOk {
 						log.Println("Expected client to be ComputeClient")
 						return
 					}
 
-					err := c.Instances().Delete(context.Background(), &DeleteInstanceInput{
+					err := c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
 						ID: instance.ID,
 					})
 					if err != nil {
@@ -178,7 +194,7 @@ func TestAccInstances_Create(t *testing.T) {
 					if !found {
 						return fmt.Errorf("State key %q not found", "instances")
 					}
-					instance, ok := instanceRaw.(*Instance)
+					instance, ok := instanceRaw.(*compute.Instance)
 					if !ok {
 						return errors.New("Expected state to include instance")
 					}
@@ -237,14 +253,14 @@ func TestAccInstances_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -252,7 +268,7 @@ func TestAccInstances_Get(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &GetInstanceInput{
+					input := &compute.GetInstanceInput{
 						ID: instanceID,
 					}
 					return c.Instances().Get(ctx, input)
@@ -276,14 +292,14 @@ func TestAccInstances_ListTags(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -291,7 +307,7 @@ func TestAccInstances_ListTags(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &ListTagsInput{
+					input := &compute.ListTagsInput{
 						ID: instanceID,
 					}
 					return c.Instances().ListTags(ctx, input)
@@ -323,14 +339,14 @@ func TestAccInstances_UpdateMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -338,7 +354,7 @@ func TestAccInstances_UpdateMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &UpdateMetadataInput{
+					input := &compute.UpdateMetadataInput{
 						ID: instanceID,
 						Metadata: map[string]string{
 							"tester": os.Getenv("USER"),
@@ -377,14 +393,14 @@ func TestAccInstances_ListMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -392,7 +408,7 @@ func TestAccInstances_ListMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &ListMetadataInput{
+					input := &compute.ListMetadataInput{
 						ID: instanceID,
 					}
 					return c.Instances().ListMetadata(ctx, input)
@@ -428,14 +444,14 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "instances",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "instances",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 
 					instanceID, err := getAnyInstanceID(t, c)
 					if err != nil {
@@ -443,7 +459,7 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 					}
 
 					ctx := context.Background()
-					input := &UpdateMetadataInput{
+					input := &compute.UpdateMetadataInput{
 						ID: instanceID,
 						Metadata: map[string]string{
 							"testkey": os.Getenv("USER"),
@@ -455,7 +471,7 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 					}
 
 					ctx2 := context.Background()
-					input2 := &GetMetadataInput{
+					input2 := &compute.GetMetadataInput{
 						ID:  instanceID,
 						Key: "testkey",
 					}
@@ -475,4 +491,1817 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestValidateInstanceInput(t *testing.T) {
+	t.Run("successful", func(t *testing.T) {
+		input := &compute.GetInstanceInput{
+			ID: fakeImageId,
+		}
+		err := input.Validate()
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		input := &compute.GetInstanceInput{}
+		err := input.Validate()
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "machine ID can not be empty") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestGetInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Instance, error) {
+		defer testutils.DeactivateClient()
+
+		instance, err := cc.Instances().Get(ctx, &compute.GetInstanceInput{
+			ID: fakeMachineID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return instance, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID), getMachineSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID), getMachineEmpty)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID), getMachineBadDecode)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", "not-a-real-instance-id"), getMachineError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to get machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestListInstances(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Instance, error) {
+		defer testutils.DeactivateClient()
+
+		instances, err := cc.Instances().List(ctx, &compute.ListInstancesInput{
+			Offset: 100,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return instances, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines?offset=100"), listMachinesSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines?offset=100"), listMachinesEmpty)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines?offset=100"), listMachinesBadDecode)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines?offset=100"), listMachinesError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to list machines") {
+			t.Errorf("expected error to equal testError: found %v", err)
+		}
+	})
+}
+
+func TestDeleteInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Delete(ctx, &compute.DeleteInstanceInput{
+			ID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID), deleteMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID), deleteMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to delete machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestRenameInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Rename(ctx, &compute.RenameInstanceInput{
+			ID:   fakeMachineID,
+			Name: "new-machine-name",
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=rename&name=new-machine-name", accountURL, fakeMachineID), renameMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=rename&name=new-machine-name", accountURL, fakeMachineID), renameMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to rename machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestRebootInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Reboot(ctx, &compute.RebootInstanceInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=reboot", accountURL, fakeMachineID), rebootMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=reboot", accountURL, fakeMachineID), rebootMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to reboot machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestStartInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Start(ctx, &compute.StartInstanceInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=start", accountURL, fakeMachineID), startMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=start", accountURL, fakeMachineID), startMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to start machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestStopInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Stop(ctx, &compute.StopInstanceInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=stop", accountURL, fakeMachineID), stopMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=stop", accountURL, fakeMachineID), stopMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to stop machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestResizeInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().Resize(ctx, &compute.ResizeInstanceInput{
+			ID:      fakeMachineID,
+			Package: fakeMachinePackageID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=resize&package=%s", accountURL, fakeMachineID, fakeMachinePackageID), resizeMachineSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=resize&package=%s", accountURL, fakeMachineID, fakeMachinePackageID), resizeMachineError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to resize machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestEnableInstanceFirewall(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().EnableFirewall(ctx, &compute.EnableFirewallInput{
+			ID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_firewall", accountURL, fakeMachineID), enableMachineFirewallSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_firewall", accountURL, fakeMachineID), enableMachineFirewallError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to enable machine firewall") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDisableInstanceFirewall(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DisableFirewall(ctx, &compute.DisableFirewallInput{
+			ID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_firewall", accountURL, fakeMachineID), disableMachineFirewallSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_firewall", accountURL, fakeMachineID), disableMachineFirewallError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to disable machine firewall") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDeleteInstanceTags(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DeleteTags(ctx, &compute.DeleteTagsInput{
+			ID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), deleteMachineTagsSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), deleteMachineTagsError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to delete machine tags") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDeleteInstanceTag(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DeleteTag(ctx, &compute.DeleteTagInput{
+			ID:  fakeMachineID,
+			Key: fakeMachineTag,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "tags", fakeMachineTag), deleteMachineTagSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "tags", fakeMachineTag), deleteMachineTagError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to delete machine tag") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestGetInstanceTag(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (string, error) {
+		defer testutils.DeactivateClient()
+
+		tag, err := cc.Instances().GetTag(ctx, &compute.GetTagInput{
+			ID:  fakeMachineID,
+			Key: fakeMachineTag,
+		})
+		if err != nil {
+			return "", err
+		}
+
+		return tag, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "tags", fakeMachineTag), getMachineTagSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == "" {
+			t.Fatalf("Expected an output but got empty string")
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "tags", fakeMachineTag), getMachineTagError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if resp != "" {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to get machine tag") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestListInstanceTag(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]interface{}, error) {
+		defer testutils.DeactivateClient()
+
+		tag, err := cc.Instances().ListTags(ctx, &compute.ListTagsInput{
+			ID: fakeMachineID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return tag, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), listMachineTagSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got empty string")
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), listMachineTagError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to list machine tag") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestReplaceInstanceTags(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().ReplaceTags(ctx, &compute.ReplaceTagsInput{
+			ID: fakeMachineID,
+			Tags: map[string]string{
+				"foo":   "bar",
+				"group": "test",
+			},
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("PUT", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), replaceMachineTagsSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("PUT", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), replaceMachineTagsError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to replace machine tags") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestAddInstanceTags(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().AddTags(ctx, &compute.AddTagsInput{
+			ID: fakeMachineID,
+			Tags: map[string]string{
+				"foo":   "bar",
+				"group": "test",
+			},
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), addMachineTagsSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "tags"), addMachineTagsError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to add tags to machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestGetInstanceMetaData(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (string, error) {
+		defer testutils.DeactivateClient()
+
+		tag, err := cc.Instances().GetMetadata(ctx, &compute.GetMetadataInput{
+			ID:  fakeMachineID,
+			Key: fakeMachineMetaDataID,
+		})
+		if err != nil {
+			return "", err
+		}
+
+		return tag, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "metadata", fakeMachineMetaDataID), getMachineMetaDataSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == "" {
+			t.Fatalf("Expected an output but got empty string")
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "metadata", fakeMachineMetaDataID), getMachineMetaDataError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if resp != "" {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to get machine metadata") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestListInstanceMetaData(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
+		defer testutils.DeactivateClient()
+
+		metadata, err := cc.Instances().ListMetadata(ctx, &compute.ListMetadataInput{
+			ID: fakeMachineID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return metadata, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), listMachineMetaDataSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got empty string")
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), listMachineMetaDataError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to list machine metadata") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDeleteInstanceMetaData(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DeleteMetadata(ctx, &compute.DeleteMetadataInput{
+			ID:  fakeMachineID,
+			Key: fakeMachineMetaDataID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "metadata", fakeMachineMetaDataID), deleteMachineMetaDataSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "metadata", fakeMachineMetaDataID), deleteMachineMetaDataError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to delete machine metadata") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDeleteAllInstanceMetaData(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DeleteAllMetadata(ctx, &compute.DeleteAllMetadataInput{
+			ID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), deleteAllMachineMetaDataSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), deleteAllMachineMetaDataError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to delete all machine metadata") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestUpdateInstanceMetaData(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
+		defer testutils.DeactivateClient()
+
+		metadata, err := cc.Instances().UpdateMetadata(ctx, &compute.UpdateMetadataInput{
+			ID: fakeMachineID,
+			Metadata: map[string]string{
+				"foo":   "bar",
+				"group": "test",
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return metadata, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), updateMachineMetaDataSuccess)
+
+		_, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "metadata"), updateMachineMetaDataError)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to update machine metadata") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestListInstanceNICs(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.NIC, error) {
+		defer testutils.DeactivateClient()
+
+		nics, err := cc.Instances().ListNICs(ctx, &compute.ListNICsInput{
+			InstanceID: fakeMachineID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nics, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), listMachineNICsSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), listMachineNICsEmpty)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), listMachineNICsBadDecode)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), listMachineNICsError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to list machine NICs") {
+			t.Errorf("expected error to equal testError: found %v", err)
+		}
+	})
+}
+
+func TestGetInstanceNIC(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.NIC, error) {
+		defer testutils.DeactivateClient()
+
+		nic, err := cc.Instances().GetNIC(ctx, &compute.GetNICInput{
+			InstanceID: fakeMachineID,
+			MAC:        fakeMacID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nic, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics", fakeMacID), getMachineNICSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("eof", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics", fakeMacID), getMachineNICEmpty)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
+
+	t.Run("bad_decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", fakeMachineID, "nics", fakeMacID), getMachineNICBadDecode)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", "not-a-real-instance-id", "nics", fakeMacID), getMachineNICError)
+
+		resp, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if resp != nil {
+			t.Error("expected resp to be nil")
+		}
+
+		if !strings.Contains(err.Error(), "unable to get machine NIC") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestRemoveInstanceNIC(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().RemoveNIC(ctx, &compute.RemoveNICInput{
+			InstanceID: fakeMachineID,
+			MAC:        fakeMacID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "nics", fakeMacID), deleteMachineNICSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", fakeMachineID, "nics", fakeMacID), deleteMachineNICError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to remove NIC from machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestAddNICToInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.NIC, error) {
+		defer testutils.DeactivateClient()
+
+		nic, err := cc.Instances().AddNIC(ctx, &compute.AddNICInput{
+			InstanceID: fakeMachineID,
+			Network:    fakeNetworkID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nic, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), createMachineNICSuccess)
+
+		_, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", fakeMachineID, "nics"), createMachineNICError)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to add NIC to machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+
+}
+
+func TestCreateInstance(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Instance, error) {
+		defer testutils.DeactivateClient()
+
+		instance, err := cc.Instances().Create(ctx, &compute.CreateInstanceInput{
+			Image:   "2b683a82-a066-11e3-97ab-2faa44701c5a",
+			Package: "7b17343c-94af-6266-e0e8-893a3b9993d0",
+		})
+		if err != nil {
+			return nil, err
+		}
+		return instance, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines"), createMachineSuccess)
+
+		_, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines"), createMachineError)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to create machine") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func getMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+  "name": "test",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "running",
+  "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+  "ips": [
+    "10.88.88.26",
+    "192.168.128.5"
+  ],
+  "memory": 128,
+  "disk": 12288,
+  "metadata": {
+    "root_authorized_keys": "..."
+  },
+  "tags": {},
+  "created": "2016-01-04T12:55:50.539Z",
+  "updated": "2016-01-21T08:56:59.000Z",
+  "networks": [
+    "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+    "45607081-4cd2-45c8-baf7-79da760fffaa"
+  ],
+  "primaryIp": "10.88.88.26",
+  "firewall_enabled": false,
+  "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+  "package": "sdc_128"
+}
+`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineBadDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+  "name": "test",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "running",
+  "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+  "ips": [
+    "10.88.88.26",
+    "192.168.128.5"
+  ],
+  "memory": 128,
+  "disk": 12288,
+  "metadata": {
+    "root_authorized_keys": "...",
+  },
+  "tags": {},
+  "created": "2016-01-04T12:55:50.539Z",
+  "updated": "2016-01-21T08:56:59.000Z",
+  "networks": [
+    "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+    "45607081-4cd2-45c8-baf7-79da760fffaa"
+  ],
+  "primaryIp": "10.88.88.26",
+  "firewall_enabled": false,
+  "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+  "package": "sdc_128",
+}`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func getMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to get instance")
+}
+
+func listMachinesSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`[
+	{
+    "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+    "name": "test",
+    "type": "smartmachine",
+    "brand": "joyent",
+    "state": "running",
+    "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+    "ips": [
+      "10.88.88.26",
+      "192.168.128.5"
+    ],
+    "memory": 128,
+    "disk": 12288,
+    "metadata": {
+      "root_authorized_keys": "..."
+    },
+    "tags": {},
+    "created": "2016-01-04T12:55:50.539Z",
+    "updated": "2016-01-21T08:56:59.000Z",
+    "networks": [
+      "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+      "45607081-4cd2-45c8-baf7-79da760fffaa"
+    ],
+    "primaryIp": "10.88.88.26",
+    "firewall_enabled": false,
+    "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+    "package": "sdc_128"
+  }
+]`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachinesEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func listMachinesBadDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`[{
+    "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+    "name": "test",
+    "type": "smartmachine",
+    "brand": "joyent",
+    "state": "running",
+    "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+    "ips": [
+      "10.88.88.26",
+      "192.168.128.5"
+    ],
+    "memory": 128,
+    "disk": 12288,
+    "metadata": {
+      "root_authorized_keys": "..."
+    },
+    "tags": {},
+    "created": "2016-01-04T12:55:50.539Z",
+    "updated": "2016-01-21T08:56:59.000Z",
+    "networks": [
+      "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+      "45607081-4cd2-45c8-baf7-79da760fffaa"
+    ],
+    "primaryIp": "10.88.88.26",
+    "firewall_enabled": false,
+    "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+    "package": "sdc_128",
+  }]`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachinesError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to list machines")
+}
+
+func deleteMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to delete machine")
+}
+
+func renameMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func renameMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to rename machine")
+}
+
+func rebootMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func rebootMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to reboot machine")
+}
+
+func startMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func startMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to start machine")
+}
+
+func stopMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func stopMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to stop machine")
+}
+
+func resizeMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func resizeMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to resize machine")
+}
+
+func enableMachineFirewallSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func enableMachineFirewallError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to enable machine firewall")
+}
+
+func disableMachineFirewallSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func disableMachineFirewallError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to disable machine firewall")
+}
+
+func deleteMachineTagsSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteMachineTagsError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to delete machine tags")
+}
+
+func deleteMachineTagSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteMachineTagError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to delete machine tag")
+}
+
+func getMachineTagSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`"bar"
+`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineTagError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to get machine tag")
+}
+
+func listMachineTagSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{"foo":"bar","group":"test"}`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachineTagError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to list machine tag")
+}
+
+func getMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`"bar"
+`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineMetaDataError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to get machine metadata")
+}
+
+func listMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{"foo":"bar","group":"test"}`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachineMetaDataError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to list machine metadata")
+}
+
+func deleteMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteMachineMetaDataError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to delete machine metadata")
+}
+
+func deleteAllMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteAllMachineMetaDataError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to delete machine metadata")
+}
+
+func listMachineNICsSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`[
+	{
+        "mac": "90:b8:d0:2f:b8:f9",
+        "primary": true,
+        "ip": "10.88.88.137",
+        "netmask": "255.255.255.0",
+        "gateway": "10.88.88.2",
+        "state": "running",
+        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
+    }
+]`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachineNICsEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func listMachineNICsBadDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`[{
+        "mac": "90:b8:d0:2f:b8:f9",
+        "primary": true,
+        "ip": "10.88.88.137",
+        "netmask": "255.255.255.0",
+        "gateway": "10.88.88.2",
+        "state": "running",
+        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
+    }]`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func listMachineNICsError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to list machine NICs")
+}
+
+func getMachineNICSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+        "mac": "90:b8:d0:2f:b8:f9",
+        "primary": true,
+        "ip": "10.88.88.137",
+        "netmask": "255.255.255.0",
+        "gateway": "10.88.88.2",
+        "state": "running",
+        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
+    }
+`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineNICBadDecode(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+        "mac": "90:b8:d0:2f:b8:f9",
+        "primary": true,
+        "ip": "10.88.88.137",
+        "netmask": "255.255.255.0",
+        "gateway": "10.88.88.2",
+        "state": "running",
+        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
+    }`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func getMachineNICEmpty(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func getMachineNICError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to get instance NIC")
+}
+
+func deleteMachineNICSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func deleteMachineNICError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to remove NIC from machine")
+}
+
+func createMachineNICSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+    "network": "7007b198-f6aa-48f0-9843-78a3149de3d7"
+}
+`)
+
+	return &http.Response{
+		StatusCode: 201,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func createMachineNICError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to add NIC to machine")
+}
+
+func createMachineSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "e8622950-af78-486c-b682-dd147c938dc6",
+  "name": "e8622950",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "provisioning",
+  "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+  "ips": [],
+  "memory": 128,
+  "disk": 12288,
+  "metadata": {
+    "root_authorized_keys": "..."
+  },
+  "tags": {},
+  "created": "2016-01-21T12:57:52.759Z",
+  "updated": "2016-01-21T12:57:52.979Z",
+  "networks": [],
+  "firewall_enabled": false,
+  "compute_node": null,
+  "package": "sdc_128"
+}
+`)
+
+	return &http.Response{
+		StatusCode: 201,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func createMachineError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to create machine")
+}
+
+func replaceMachineTagsSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+	}, nil
+}
+
+func replaceMachineTagsError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to replace machine tags")
+}
+
+func addMachineTagsSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+	}, nil
+}
+
+func addMachineTagsError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to replace machine tags")
+}
+
+func updateMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "foo": "bar",
+  "group": "test"
+}
+`)
+
+	return &http.Response{
+		StatusCode: 201,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func updateMachineMetaDataError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to update machine metadata")
 }

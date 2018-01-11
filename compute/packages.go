@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type PackagesClient struct {
@@ -51,13 +51,13 @@ func (c *PackagesClient) List(ctx context.Context, input *ListPackagesInput) ([]
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list packages")
 	}
 
 	var result []*Package
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list packages response")
 	}
 
 	return result, nil
@@ -78,13 +78,13 @@ func (c *PackagesClient) Get(ctx context.Context, input *GetPackageInput) (*Pack
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get package")
 	}
 
 	var result *Package
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get package response")
 	}
 
 	return result, nil

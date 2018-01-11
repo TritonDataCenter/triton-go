@@ -7,8 +7,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type SnapshotsClient struct {
@@ -37,13 +37,13 @@ func (c *SnapshotsClient) List(ctx context.Context, input *ListSnapshotsInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list snapshots")
 	}
 
 	var result []*Snapshot
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list snapshots response")
 	}
 
 	return result, nil
@@ -65,13 +65,13 @@ func (c *SnapshotsClient) Get(ctx context.Context, input *GetSnapshotInput) (*Sn
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get snapshot")
 	}
 
 	var result *Snapshot
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode get snapshot response")
 	}
 
 	return result, nil
@@ -93,7 +93,7 @@ func (c *SnapshotsClient) Delete(ctx context.Context, input *DeleteSnapshotInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing Delete request: {{err}}", err)
+		return errors.Wrap(err, "unable to delete snapshot")
 	}
 
 	return nil
@@ -115,7 +115,7 @@ func (c *SnapshotsClient) StartMachine(ctx context.Context, input *StartMachineF
 		defer respReader.Close()
 	}
 	if err != nil {
-		return errwrap.Wrapf("Error executing StartMachine request: {{err}}", err)
+		return errors.Wrap(err, "unable to start machine")
 	}
 
 	return nil
@@ -143,13 +143,13 @@ func (c *SnapshotsClient) Create(ctx context.Context, input *CreateSnapshotInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Create request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to create snapshot")
 	}
 
 	var result *Snapshot
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, errwrap.Wrapf("Error decoding Create response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode create snapshot response")
 	}
 
 	return result, nil

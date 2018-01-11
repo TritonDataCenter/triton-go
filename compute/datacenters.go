@@ -3,14 +3,13 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"path"
 	"sort"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/pkg/errors"
 )
 
 type DataCentersClient struct {
@@ -36,13 +35,13 @@ func (c *DataCentersClient) List(ctx context.Context, _ *ListDataCentersInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to list datacenters")
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to decode list datacenters response")
 	}
 
 	keys := make([]string, len(intermediate))
@@ -78,7 +77,7 @@ func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) 
 	}
 	resp, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to get datacenter")
 	}
 
 	if resp.StatusCode != http.StatusFound {
