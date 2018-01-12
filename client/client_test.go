@@ -26,8 +26,8 @@ func TestNew(t *testing.T) {
 	}{
 		{"default", tritonURL, mantaURL, accountName, signer, nil},
 		{"missing url", "", "", accountName, signer, ErrMissingURL},
-		{"bad tritonURL", BadURL, mantaURL, accountName, signer, BadTritonURL},
-		{"bad mantaURL", tritonURL, BadURL, accountName, signer, BadMantaURL},
+		{"bad tritonURL", BadURL, mantaURL, accountName, signer, InvalidTritonURL},
+		{"bad mantaURL", tritonURL, BadURL, accountName, signer, InvalidMantaURL},
 		{"missing accountName", tritonURL, mantaURL, "", signer, ErrAccountName},
 		{"missing signer", tritonURL, mantaURL, accountName, nil, ErrDefaultAuth},
 	}

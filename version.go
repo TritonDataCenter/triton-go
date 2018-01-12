@@ -6,12 +6,12 @@ import (
 )
 
 // The main version number of the current released Triton-go SDK.
-const Version = "1.0.0"
+const Version = "0.9.0"
 
 // A pre-release marker for the version. If this is "" (empty string)
 // then it means that it is a final release. Otherwise, this is a pre-release
 // such as "dev" (in development), "beta", "rc1", etc.
-var Prerelease = "dev"
+var Prerelease = ""
 
 func UserAgent() string {
 	if Prerelease != "" {
@@ -20,3 +20,5 @@ func UserAgent() string {
 		return fmt.Sprintf("triton-go/%s (%s-%s; %s)", Version, runtime.GOARCH, runtime.GOOS, runtime.Version())
 	}
 }
+
+const CloudAPIMajorVersion = "8"

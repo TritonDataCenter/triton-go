@@ -496,7 +496,7 @@ func TestAccInstances_GetMetadata(t *testing.T) {
 func TestValidateInstanceInput(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
 		input := &compute.GetInstanceInput{
-			ID: fakeImageId,
+			ID: fakeImageID,
 		}
 		err := input.Validate()
 		if err != nil {

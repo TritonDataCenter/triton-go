@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
-
 	"path"
 	"strings"
+	"testing"
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/compute"

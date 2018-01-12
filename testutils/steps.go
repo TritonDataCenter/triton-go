@@ -9,7 +9,7 @@ import (
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/errors"
-	stderrors "github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type StepClient struct {
@@ -83,7 +83,7 @@ type StepAssertFunc struct {
 
 func (s *StepAssertFunc) Run(state TritonStateBag) StepAction {
 	if s.AssertFunc == nil {
-		state.AppendError(stderrors.New("StepAssertFunc may not have a nil AssertFunc"))
+		state.AppendError(pkgerrors.New("StepAssertFunc may not have a nil AssertFunc"))
 		return Halt
 	}
 
@@ -193,7 +193,7 @@ func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 		return Halt
 	}
 
-	switch err := stderrors.Cause(err.(error)).(type) {
+	switch err := pkgerrors.Cause(err.(error)).(type) {
 	case *errors.APIError:
 		if err.Code == s.Code {
 			return Continue
@@ -201,7 +201,7 @@ func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 		state.AppendError(fmt.Errorf("Expected APIError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, err.Code))
 		return Halt
 	default:
-		state.AppendError(stderrors.New("Expected a APIError in wrapped error chain"))
+		state.AppendError(pkgerrors.New("Expected a APIError in wrapped error chain"))
 	}
 
 	return Halt

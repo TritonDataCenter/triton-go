@@ -16,18 +16,18 @@ import (
 	"github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/errors"
-	stderrors "github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 const nilContext = "nil context"
 
 var (
-	ErrDefaultAuth = stderrors.New("default SSH agent authentication requires SDC_KEY_ID / TRITON_KEY_ID and SSH_AUTH_SOCK")
-	ErrAccountName = stderrors.New("missing account name for Triton/Manta")
-	ErrMissingURL  = stderrors.New("missing Triton and/or Manta URL")
+	ErrDefaultAuth = pkgerrors.New("default SSH agent authentication requires SDC_KEY_ID / TRITON_KEY_ID and SSH_AUTH_SOCK")
+	ErrAccountName = pkgerrors.New("missing account name")
+	ErrMissingURL  = pkgerrors.New("missing API URL")
 
-	BadTritonURL = "invalid format of triton URL"
-	BadMantaURL  = "invalid format of manta URL"
+	InvalidTritonURL = "invalid format of Triton URL"
+	InvalidMantaURL  = "invalid format of Manta URL"
 )
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
@@ -56,12 +56,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 
 	cloudURL, err := url.Parse(tritonURL)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, BadTritonURL)
+		return nil, pkgerrors.Wrapf(err, InvalidTritonURL)
 	}
 
 	storageURL, err := url.Parse(mantaURL)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, BadMantaURL)
+		return nil, pkgerrors.Wrapf(err, InvalidMantaURL)
 	}
 
 	authorizers := make([]authentication.Signer, 0)
@@ -125,7 +125,7 @@ func (c *Client) DefaultAuth() error {
 		}
 		defaultSigner, err := authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			return stderrors.Wrapf(err, "unable to initialize NewSSHAgentSigner")
+			return pkgerrors.Wrapf(err, "unable to initialize NewSSHAgentSigner")
 		}
 		c.Authorizers = append(c.Authorizers, defaultSigner)
 	}
@@ -173,7 +173,7 @@ func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 	if requestMethod != http.MethodHead && resp.Body != nil {
 		errorDecoder := json.NewDecoder(resp.Body)
 		if err := errorDecoder.Decode(err); err != nil {
-			return stderrors.Wrapf(err, "unable to decode error response")
+			return pkgerrors.Wrapf(err, "unable to decode error response")
 		}
 	}
 
@@ -217,7 +217,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to construct HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -227,11 +227,11 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 	// outside that constructor).
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to sign HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
 	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if body != nil {
@@ -240,9 +240,11 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to execute HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
+	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// StatusMultipleChoices is StatusCode 300
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, nil
 	}
@@ -273,7 +275,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to construct HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	dateHeader := time.Now().UTC().Format(time.RFC1123)
@@ -283,11 +285,11 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	// outside that constructor).
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to sign HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
 	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if body != nil {
@@ -296,9 +298,11 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, stderrors.Wrapf(err, "unable to execute HTTP request")
+		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
+	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// StatusMultipleChoices is StatusCode 300
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
@@ -327,7 +331,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to construct HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	if body != nil && (headers == nil || headers.Get("Content-Type") == "") {
@@ -346,7 +350,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to sign HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
@@ -358,9 +362,11 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to execute HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
+	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// StatusMultipleChoices is StatusCode 300
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}
@@ -388,7 +394,7 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	req, err := http.NewRequest(method, endpoint.String(), body)
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to construct HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
 	}
 
 	if headers != nil {
@@ -404,11 +410,11 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	authHeader, err := c.Authorizers[0].Sign(dateHeader)
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to sign HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
 	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if query != nil {
@@ -417,9 +423,11 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to execute HTTP request")
+		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
+	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// StatusMultipleChoices is StatusCode 300
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}

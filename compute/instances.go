@@ -13,7 +13,7 @@ import (
 
 	"github.com/joyent/triton-go/client"
 	"github.com/joyent/triton-go/errors"
-	stderrors "github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type InstancesClient struct {
@@ -90,7 +90,7 @@ func (gmi *GetInstanceInput) Validate() error {
 
 func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*Instance, error) {
 	if err := input.Validate(); err != nil {
-		return nil, stderrors.Wrap(err, "unable to get machine")
+		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
 
 	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
@@ -100,7 +100,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
-		return nil, stderrors.Wrap(err, "unable to get machine")
+		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
@@ -112,18 +112,18 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		}
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to get machine")
+		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
 
 	var result *_Instance
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode get machine response")
+		return nil, pkgerrors.Wrap(err, "unable to decode get machine response")
 	}
 
 	native, err := result.toNative()
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode get machine response")
+		return nil, pkgerrors.Wrap(err, "unable to decode get machine response")
 	}
 
 	return native, nil
@@ -186,20 +186,20 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to list machines")
+		return nil, pkgerrors.Wrap(err, "unable to list machines")
 	}
 
 	var results []*_Instance
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&results); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode list machines response")
+		return nil, pkgerrors.Wrap(err, "unable to decode list machines response")
 	}
 
 	machines := make([]*Instance, 0, len(results))
 	for _, machineAPI := range results {
 		native, err := machineAPI.toNative()
 		if err != nil {
-			return nil, stderrors.Wrap(err, "unable to decode list machines response")
+			return nil, pkgerrors.Wrap(err, "unable to decode list machines response")
 		}
 		machines = append(machines, native)
 	}
@@ -290,7 +290,7 @@ func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput
 	fullPath := path.Join("/", c.client.AccountName, "machines")
 	body, err := input.toAPI()
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to prepare for machine creation")
+		return nil, pkgerrors.Wrap(err, "unable to prepare for machine creation")
 	}
 
 	reqInputs := client.RequestInput{
@@ -303,13 +303,13 @@ func (c *InstancesClient) Create(ctx context.Context, input *CreateInstanceInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to create machine")
+		return nil, pkgerrors.Wrap(err, "unable to create machine")
 	}
 
 	var result *Instance
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode create machine response")
+		return nil, pkgerrors.Wrap(err, "unable to decode create machine response")
 	}
 
 	return result, nil
@@ -327,7 +327,7 @@ func (c *InstancesClient) Delete(ctx context.Context, input *DeleteInstanceInput
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
-		return stderrors.Wrap(err, "unable to delete machine")
+		return pkgerrors.Wrap(err, "unable to delete machine")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
@@ -336,7 +336,7 @@ func (c *InstancesClient) Delete(ctx context.Context, input *DeleteInstanceInput
 		return nil
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to decode delete machine response")
+		return pkgerrors.Wrap(err, "unable to decode delete machine response")
 	}
 
 	return nil
@@ -354,7 +354,7 @@ func (c *InstancesClient) DeleteTags(ctx context.Context, input *DeleteTagsInput
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return stderrors.Wrap(err, "unable to delete tags from machine")
+		return pkgerrors.Wrap(err, "unable to delete tags from machine")
 	}
 	if response == nil {
 		return fmt.Errorf("DeleteTags request has empty response")
@@ -382,7 +382,7 @@ func (c *InstancesClient) DeleteTag(ctx context.Context, input *DeleteTagInput) 
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return stderrors.Wrap(err, "unable to delete tag from machine")
+		return pkgerrors.Wrap(err, "unable to delete tag from machine")
 	}
 	if response == nil {
 		return fmt.Errorf("DeleteTag request has empty response")
@@ -419,7 +419,7 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to rename machine")
+		return pkgerrors.Wrap(err, "unable to rename machine")
 	}
 
 	return nil
@@ -454,7 +454,7 @@ func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInp
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to replace machine tags")
+		return pkgerrors.Wrap(err, "unable to replace machine tags")
 	}
 
 	return nil
@@ -477,7 +477,7 @@ func (c *InstancesClient) AddTags(ctx context.Context, input *AddTagsInput) erro
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to add tags to machine")
+		return pkgerrors.Wrap(err, "unable to add tags to machine")
 	}
 
 	return nil
@@ -496,7 +496,7 @@ func (c *InstancesClient) GetTag(ctx context.Context, input *GetTagInput) (strin
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
-		return "", stderrors.Wrap(err, "unable to get tag")
+		return "", pkgerrors.Wrap(err, "unable to get tag")
 	}
 	if respReader != nil {
 		defer respReader.Close()
@@ -505,7 +505,7 @@ func (c *InstancesClient) GetTag(ctx context.Context, input *GetTagInput) (strin
 	var result string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return "", stderrors.Wrap(err, "unable to decode get tag response")
+		return "", pkgerrors.Wrap(err, "unable to decode get tag response")
 	}
 
 	return result, nil
@@ -526,13 +526,13 @@ func (c *InstancesClient) ListTags(ctx context.Context, input *ListTagsInput) (m
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to list machine tags")
+		return nil, pkgerrors.Wrap(err, "unable to list machine tags")
 	}
 
 	var result map[string]interface{}
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable decode list machine tags response")
+		return nil, pkgerrors.Wrap(err, "unable decode list machine tags response")
 	}
 
 	_, tags := tagsExtractMeta(result)
@@ -557,7 +557,7 @@ func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInp
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return "", stderrors.Wrap(err, "unable to get machine metadata")
+		return "", pkgerrors.Wrap(err, "unable to get machine metadata")
 	}
 	if response != nil {
 		defer response.Body.Close()
@@ -571,7 +571,7 @@ func (c *InstancesClient) GetMetadata(ctx context.Context, input *GetMetadataInp
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", stderrors.Wrap(err, "unable to decode get machine metadata response")
+		return "", pkgerrors.Wrap(err, "unable to decode get machine metadata response")
 	}
 
 	return fmt.Sprintf("%s", body), nil
@@ -600,13 +600,13 @@ func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataI
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to list machine metadata")
+		return nil, pkgerrors.Wrap(err, "unable to list machine metadata")
 	}
 
 	var result map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode list machine metadata response")
+		return nil, pkgerrors.Wrap(err, "unable to decode list machine metadata response")
 	}
 
 	return result, nil
@@ -629,13 +629,13 @@ func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetad
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to update machine metadata")
+		return nil, pkgerrors.Wrap(err, "unable to update machine metadata")
 	}
 
 	var result map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode update machine metadata response")
+		return nil, pkgerrors.Wrap(err, "unable to decode update machine metadata response")
 	}
 
 	return result, nil
@@ -659,7 +659,7 @@ func (c *InstancesClient) DeleteMetadata(ctx context.Context, input *DeleteMetad
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
-		return stderrors.Wrap(err, "unable to delete machine metadata")
+		return pkgerrors.Wrap(err, "unable to delete machine metadata")
 	}
 	if respReader != nil {
 		defer respReader.Close()
@@ -681,7 +681,7 @@ func (c *InstancesClient) DeleteAllMetadata(ctx context.Context, input *DeleteAl
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
-		return stderrors.Wrap(err, "unable to delete all machine metadata")
+		return pkgerrors.Wrap(err, "unable to delete all machine metadata")
 	}
 	if respReader != nil {
 		defer respReader.Close()
@@ -712,7 +712,7 @@ func (c *InstancesClient) Resize(ctx context.Context, input *ResizeInstanceInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to resize machine")
+		return pkgerrors.Wrap(err, "unable to resize machine")
 	}
 
 	return nil
@@ -738,7 +738,7 @@ func (c *InstancesClient) EnableFirewall(ctx context.Context, input *EnableFirew
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to enable machine firewall")
+		return pkgerrors.Wrap(err, "unable to enable machine firewall")
 	}
 
 	return nil
@@ -764,7 +764,7 @@ func (c *InstancesClient) DisableFirewall(ctx context.Context, input *DisableFir
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to disable machine firewall")
+		return pkgerrors.Wrap(err, "unable to disable machine firewall")
 	}
 
 	return nil
@@ -785,13 +785,13 @@ func (c *InstancesClient) ListNICs(ctx context.Context, input *ListNICsInput) ([
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to list machine NICs")
+		return nil, pkgerrors.Wrap(err, "unable to list machine NICs")
 	}
 
 	var result []*NIC
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode list machine NICs response")
+		return nil, pkgerrors.Wrap(err, "unable to decode list machine NICs response")
 	}
 
 	return result, nil
@@ -811,7 +811,7 @@ func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to get machine NIC")
+		return nil, pkgerrors.Wrap(err, "unable to get machine NIC")
 	}
 	if response != nil {
 		defer response.Body.Close()
@@ -827,7 +827,7 @@ func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC,
 	var result *NIC
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode get machine NIC response")
+		return nil, pkgerrors.Wrap(err, "unable to decode get machine NIC response")
 	}
 
 	return result, nil
@@ -852,7 +852,7 @@ func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC,
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to add NIC to machine")
+		return nil, pkgerrors.Wrap(err, "unable to add NIC to machine")
 	}
 	if response != nil {
 		defer response.Body.Close()
@@ -869,7 +869,7 @@ func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC,
 	var result *NIC
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode add NIC to machine response")
+		return nil, pkgerrors.Wrap(err, "unable to decode add NIC to machine response")
 	}
 
 	return result, nil
@@ -893,10 +893,10 @@ func (c *InstancesClient) RemoveNIC(ctx context.Context, input *RemoveNICInput) 
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return stderrors.Wrap(err, "unable to remove NIC from machine")
+		return pkgerrors.Wrap(err, "unable to remove NIC from machine")
 	}
 	if response == nil {
-		return stderrors.Wrap(err, "unable to remove NIC from machine")
+		return pkgerrors.Wrap(err, "unable to remove NIC from machine")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
@@ -932,7 +932,7 @@ func (c *InstancesClient) Stop(ctx context.Context, input *StopInstanceInput) er
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to stop machine")
+		return pkgerrors.Wrap(err, "unable to stop machine")
 	}
 
 	return nil
@@ -958,7 +958,7 @@ func (c *InstancesClient) Start(ctx context.Context, input *StartInstanceInput) 
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to start machine")
+		return pkgerrors.Wrap(err, "unable to start machine")
 	}
 
 	return nil
@@ -984,7 +984,7 @@ func (c *InstancesClient) Reboot(ctx context.Context, input *RebootInstanceInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return stderrors.Wrap(err, "unable to reboot machine")
+		return pkgerrors.Wrap(err, "unable to reboot machine")
 	}
 
 	return nil

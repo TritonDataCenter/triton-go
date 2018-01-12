@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/joyent/triton-go/client"
-	stderrors "github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 const pingEndpoint = "/--ping"
@@ -29,10 +29,10 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 	}
 	response, err := c.Client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to ping")
+		return nil, pkgerrors.Wrap(err, "unable to ping")
 	}
 	if response == nil {
-		return nil, stderrors.Wrap(err, "unable to ping")
+		return nil, pkgerrors.Wrap(err, "unable to ping")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
@@ -42,7 +42,7 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		if err != nil {
-			return nil, stderrors.Wrap(err, "unable to decode ping response")
+			return nil, pkgerrors.Wrap(err, "unable to decode ping response")
 		}
 	}
 

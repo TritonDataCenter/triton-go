@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -20,7 +21,7 @@ type APIError struct {
 
 // Error implements interface Error on the APIError type.
 func (e APIError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Code, e.Message)
+	return strings.Trim(fmt.Sprintf("%+q", e.Code), `"`) + ": " + strings.Trim(fmt.Sprintf("%+q", e.Message), `"`)
 }
 
 // ClientError represents an error code and message returned
@@ -33,7 +34,7 @@ type ClientError struct {
 
 // Error implements interface Error on the ClientError type.
 func (e ClientError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Code, e.Message)
+	return strings.Trim(fmt.Sprintf("%+q", e.Code), `"`) + ": " + strings.Trim(fmt.Sprintf("%+q", e.Message), `"`)
 }
 
 func IsAuthSchemeError(err error) bool {

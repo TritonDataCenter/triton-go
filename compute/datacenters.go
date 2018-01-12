@@ -3,15 +3,14 @@ package compute
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"path"
 	"sort"
 
-	"fmt"
-
 	"github.com/joyent/triton-go/client"
 	"github.com/joyent/triton-go/errors"
-	stderrors "github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type DataCentersClient struct {
@@ -37,13 +36,13 @@ func (c *DataCentersClient) List(ctx context.Context, _ *ListDataCentersInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to list datacenters")
+		return nil, pkgerrors.Wrap(err, "unable to list data centers")
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, stderrors.Wrap(err, "unable to decode list datacenters response")
+		return nil, pkgerrors.Wrap(err, "unable to decode list data centers response")
 	}
 
 	keys := make([]string, len(intermediate))
@@ -74,7 +73,7 @@ type GetDataCenterInput struct {
 func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
 	dcs, err := c.List(ctx, &ListDataCentersInput{})
 	if err != nil {
-		return nil, stderrors.Wrap(err, "unable to get datacenter")
+		return nil, pkgerrors.Wrap(err, "unable to get data center")
 	}
 
 	for _, dc := range dcs {
@@ -87,8 +86,8 @@ func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) 
 	}
 
 	return nil, &errors.APIError{
-		StatusCode: 404,
+		StatusCode: http.StatusNotFound,
 		Code:       "ResourceNotFound",
-		Message:    fmt.Sprintf("datacenter %q not found", input.Name),
+		Message:    fmt.Sprintf("data center %q not found", input.Name),
 	}
 }

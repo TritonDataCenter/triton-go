@@ -1,16 +1,14 @@
 package compute_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
-	"time"
-
-	"context"
-
 	"path"
 	"strings"
+	"testing"
+	"time"
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
@@ -20,7 +18,7 @@ import (
 )
 
 var (
-	fakeImageId = "2b683a82-a066-11e3-97ab-2faa44701c5a"
+	fakeImageID = "2b683a82-a066-11e3-97ab-2faa44701c5a"
 )
 
 func TestAccImagesList(t *testing.T) {
@@ -223,12 +221,12 @@ func TestDeleteImage(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		return cc.Images().Delete(ctx, &compute.DeleteImageInput{
-			ImageID: fakeImageId,
+			ImageID: fakeImageID,
 		})
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "images", fakeImageId), deleteImageSuccess)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "images", fakeImageID), deleteImageSuccess)
 
 		err := do(context.Background(), computeClient)
 		if err != nil {
@@ -237,7 +235,7 @@ func TestDeleteImage(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "images", fakeImageId), deleteImageError)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "images", fakeImageID), deleteImageError)
 
 		err := do(context.Background(), computeClient)
 		if err == nil {
@@ -257,7 +255,7 @@ func TestGetImage(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		image, err := cc.Images().Get(ctx, &compute.GetImageInput{
-			ImageID: fakeImageId,
+			ImageID: fakeImageID,
 		})
 		if err != nil {
 			return nil, err
@@ -266,7 +264,7 @@ func TestGetImage(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageId), getImageSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageID), getImageSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -279,7 +277,7 @@ func TestGetImage(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageId), getImageEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageID), getImageEmpty)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -292,7 +290,7 @@ func TestGetImage(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageId), getImageBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageID), getImageBadDecode)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -305,7 +303,7 @@ func TestGetImage(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageId), getImageError)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageID), getImageError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -437,7 +435,7 @@ func TestUpdateImage(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		image, err := cc.Images().Update(ctx, &compute.UpdateImageInput{
-			ImageID: fakeImageId,
+			ImageID: fakeImageID,
 			Version: "1.0.1",
 		})
 		if err != nil {
@@ -448,7 +446,7 @@ func TestUpdateImage(t *testing.T) {
 
 	t.Run("successful", func(t *testing.T) {
 
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=update", accountURL, fakeImageId), updateImageSuccess)
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=update", accountURL, fakeImageID), updateImageSuccess)
 
 		_, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -477,7 +475,7 @@ func TestExportImage(t *testing.T) {
 		defer testutils.DeactivateClient()
 
 		location, err := cc.Images().Export(ctx, &compute.ExportImageInput{
-			ImageID:   fakeImageId,
+			ImageID:   fakeImageID,
 			MantaPath: "/stor/images/myimages",
 		})
 		if err != nil {
@@ -488,7 +486,7 @@ func TestExportImage(t *testing.T) {
 
 	t.Run("successful", func(t *testing.T) {
 
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=export", accountURL, fakeImageId), exportImageSuccess)
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=export", accountURL, fakeImageID), exportImageSuccess)
 
 		_, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -497,7 +495,7 @@ func TestExportImage(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=export", accountURL, fakeImageId), exportImageError)
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/images/%s?action=export", accountURL, fakeImageID), exportImageError)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -515,7 +513,7 @@ func deleteImageSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: 204,
+		StatusCode: http.StatusNoContent,
 		Header:     header,
 	}, nil
 }
@@ -556,7 +554,7 @@ func getImageSuccess(req *http.Request) (*http.Response, error) {
 `)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -593,7 +591,7 @@ func getImageBadDecode(req *http.Request) (*http.Response, error) {
 }`)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -604,7 +602,7 @@ func getImageEmpty(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(strings.NewReader("")),
 	}, nil
@@ -647,7 +645,7 @@ func listImagesSuccess(req *http.Request) (*http.Response, error) {
 ]`)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -658,7 +656,7 @@ func listImagesEmpty(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(strings.NewReader("")),
 	}, nil
@@ -695,7 +693,7 @@ func listImagesBadDecode(req *http.Request) (*http.Response, error) {
   }]`)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -721,7 +719,7 @@ func createImageFromMachineSuccess(req *http.Request) (*http.Response, error) {
 `)
 
 	return &http.Response{
-		StatusCode: 201,
+		StatusCode: http.StatusCreated,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -750,7 +748,7 @@ func updateImageSuccess(req *http.Request) (*http.Response, error) {
 `)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -772,7 +770,7 @@ func exportImageSuccess(req *http.Request) (*http.Response, error) {
 `)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil

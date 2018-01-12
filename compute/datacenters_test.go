@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
-
 	"path"
 	"strings"
+	"testing"
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
@@ -17,9 +16,7 @@ import (
 	"github.com/joyent/triton-go/testutils"
 )
 
-var (
-	dataCenterName = "us-east-1"
-)
+const dataCenterName = "us-east-1"
 
 // Note that this is specific to Joyent Public Cloud and will not pass on
 // private installations of Triton.
@@ -123,6 +120,7 @@ func TestListDataCenters(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
+
 		return dcs, nil
 	}
 
@@ -194,6 +192,7 @@ func TestGetDataCenter(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
+
 		return dc, nil
 	}
 
@@ -247,7 +246,7 @@ func listDataCentersSuccess(req *http.Request) (*http.Response, error) {
 `)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
@@ -258,7 +257,7 @@ func listDataCentersEmpty(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(strings.NewReader("")),
 	}, nil
@@ -278,7 +277,7 @@ func listDataCentersBadDecode(req *http.Request) (*http.Response, error) {
 }`)
 
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
