@@ -23,17 +23,17 @@ func (e APIError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
-// Error implements interface Error on the ClientError type.
-func (e ClientError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Code, e.Message)
-}
-
 // ClientError represents an error code and message returned
 // when connecting to the triton-go client
 type ClientError struct {
 	StatusCode int
 	Code       string `json:"code"`
 	Message    string `json:"message"`
+}
+
+// Error implements interface Error on the ClientError type.
+func (e ClientError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 func IsAuthSchemeError(err error) bool {
