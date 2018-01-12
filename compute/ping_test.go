@@ -14,10 +14,8 @@ import (
 )
 
 var (
-	mockVersions  = []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
-	testError     = errors.New("we got the funk")
-	defaultHeader = http.Header{}
-	blankError    = "Ping request has empty response"
+	mockVersions = []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
+	testError    = errors.New("unable to ping")
 )
 
 func TestPing(t *testing.T) {
@@ -74,7 +72,7 @@ func TestPing(t *testing.T) {
 			t.Error("expected pingOut to be nil")
 		}
 
-		if err.Error() != blankError {
+		if !strings.Contains(err.Error(), "unable to ping") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -129,6 +127,7 @@ func pingSuccessFunc(req *http.Request) (*http.Response, error) {
 		"versions": ["7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"]
 	}
 }`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -139,6 +138,7 @@ func pingSuccessFunc(req *http.Request) (*http.Response, error) {
 func pingEmptyFunc(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -149,6 +149,7 @@ func pingEmptyFunc(req *http.Request) (*http.Response, error) {
 func ping404Func(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 404,
 		Header:     header,
@@ -158,6 +159,7 @@ func ping404Func(req *http.Request) (*http.Response, error) {
 func ping410Func(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 410,
 		Header:     header,
@@ -185,6 +187,8 @@ func pingDecodeFunc(req *http.Request) (*http.Response, error) {
 
 func MockComputeClient() *compute.ComputeClient {
 	return &compute.ComputeClient{
-		Client: testutils.DefaultMockClient,
+		Client: testutils.NewMockClient(testutils.MockClientInput{
+			AccountName: accountURL,
+		}),
 	}
 }

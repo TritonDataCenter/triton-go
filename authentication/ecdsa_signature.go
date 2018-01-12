@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/hashicorp/errwrap"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -44,7 +44,7 @@ func newECDSASignature(signatureBlob []byte) (*ecdsaSignature, error) {
 	}
 
 	if err := ssh.Unmarshal(signatureBlob, &ecSig); err != nil {
-		return nil, errwrap.Wrapf("Error unmarshaling signature: {{err}}", err)
+		return nil, errors.Wrap(err, "unable to unmarshall signature")
 	}
 
 	rValue := ecSig.R.Bytes()

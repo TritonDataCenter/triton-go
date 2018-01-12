@@ -13,21 +13,21 @@ import (
 	"github.com/joyent/triton-go/testutils"
 )
 
-const accountUrl = "testing"
+const accountURL = "testing"
 
 var (
-	listSnapshotErrorType             = errors.New("Error executing List request:")
-	getSnapshotErrorType              = errors.New("Error executing Get request:")
-	deleteSnapshotErrorType           = errors.New("Error executing Delete request:")
-	createSnapshotErrorType           = errors.New("Error executing Create request:")
-	startMachineFromSnapshotErrorType = errors.New("Error executing StartMachine request:")
+	listSnapshotErrorType             = errors.New("unable to list snapshots")
+	getSnapshotErrorType              = errors.New("unable to get snapshot")
+	deleteSnapshotErrorType           = errors.New("unable to delete snapshot")
+	createSnapshotErrorType           = errors.New("unable to create snapshot")
+	startMachineFromSnapshotErrorType = errors.New("unable to start machine")
 	testMachineId                     = "123-3456-2335"
 )
 
 func MockIdentityClient() *compute.ComputeClient {
 	return &compute.ComputeClient{
 		Client: testutils.NewMockClient(testutils.MockClientInput{
-			AccountName: accountUrl,
+			AccountName: accountURL,
 		}),
 	}
 }
@@ -48,7 +48,7 @@ func TestListSnapshots(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), listSnapshotsSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), listSnapshotsSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -61,7 +61,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), listSnapshotEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), listSnapshotEmpty)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -74,7 +74,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), listSnapshotBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), listSnapshotBadDecode)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -87,7 +87,7 @@ func TestListSnapshots(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), listSnapshotError)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), listSnapshotError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -97,8 +97,8 @@ func TestListSnapshots(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing List request:") {
-			t.Errorf("expected error to equal testError: found %s", err)
+		if !strings.Contains(err.Error(), "unable to list snapshots") {
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -120,7 +120,7 @@ func TestGetSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -133,7 +133,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("eof", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotEmpty)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotEmpty)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -146,7 +146,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("bad_decode", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotBadDecode)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotBadDecode)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -159,7 +159,7 @@ func TestGetSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotError)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), getSnapshotError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -169,7 +169,7 @@ func TestGetSnapshot(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Get request:") {
+		if !strings.Contains(err.Error(), "unable to get snapshot") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -188,7 +188,7 @@ func TestDeleteSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), deleteSnapshotSuccess)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), deleteSnapshotSuccess)
 
 		err := do(context.Background(), computeClient)
 		if err != nil {
@@ -197,14 +197,14 @@ func TestDeleteSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("DELETE", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), deleteSnapshotError)
+		testutils.RegisterResponder("DELETE", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), deleteSnapshotError)
 
 		err := do(context.Background(), computeClient)
 		if err == nil {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Delete request:") {
+		if !strings.Contains(err.Error(), "unable to delete snapshot") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -223,7 +223,7 @@ func TestStartMachineFromSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), startMachineFromSnapshotSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), startMachineFromSnapshotSuccess)
 
 		err := do(context.Background(), computeClient)
 		if err != nil {
@@ -232,14 +232,14 @@ func TestStartMachineFromSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", testMachineId, "snapshots", "sample-snapshot"), startMachineFromSnapshotError)
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", testMachineId, "snapshots", "sample-snapshot"), startMachineFromSnapshotError)
 
 		err := do(context.Background(), computeClient)
 		if err == nil {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing StartMachine request:") {
+		if !strings.Contains(err.Error(), "unable to start machine") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -262,7 +262,7 @@ func TestCreateSnapshot(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), createSnapshotSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), createSnapshotSuccess)
 
 		_, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -271,14 +271,14 @@ func TestCreateSnapshot(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "machines", testMachineId, "snapshots"), createSnapshotError)
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines", testMachineId, "snapshots"), createSnapshotError)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
 			t.Fatal(err)
 		}
 
-		if !strings.Contains(err.Error(), "Error executing Create request:") {
+		if !strings.Contains(err.Error(), "unable to create snapshot") {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -302,6 +302,7 @@ func listSnapshotsSuccess(req *http.Request) (*http.Response, error) {
     "created": "2015-12-23T06:41:11.032Z"
   }
 ]`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -312,6 +313,7 @@ func listSnapshotsSuccess(req *http.Request) (*http.Response, error) {
 func listSnapshotEmpty(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -328,6 +330,7 @@ func listSnapshotBadDecode(req *http.Request) (*http.Response, error) {
 	"state": "queued",
     "updated": "2015-12-23T06:41:11.032Z",
     "created": "2015-12-23T06:41:11.032Z",}]`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -350,6 +353,7 @@ func getSnapshotSuccess(req *http.Request) (*http.Response, error) {
     "created": "2015-12-23T06:41:11.032Z"
   }
 `)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -366,6 +370,7 @@ func getSnapshotBadDecode(req *http.Request) (*http.Response, error) {
 	"state": "queued",
     "updated": "2015-12-23T06:41:11.032Z",
     "created": "2015-12-23T06:41:11.032Z",}`)
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
@@ -376,6 +381,7 @@ func getSnapshotBadDecode(req *http.Request) (*http.Response, error) {
 func getSnapshotEmpty(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
+
 	return &http.Response{
 		StatusCode: 200,
 		Header:     header,
