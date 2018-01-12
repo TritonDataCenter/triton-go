@@ -198,7 +198,8 @@ func TestGetDataCenter(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "datacenters", dataCenterName), getDataCenterSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "datacenters"), listDataCentersSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "datacenters"), getDataCenterSuccess)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -208,10 +209,14 @@ func TestGetDataCenter(t *testing.T) {
 		if resp == nil {
 			t.Fatalf("Expected an output but got nil")
 		}
+
+		if resp.URL != "https://us-east-1.api.joyentcloud.com" {
+			t.Fatal("Expected URL to be `https://us-east-1.api.joyentcloud.com` but got `https://us-east-1.api.joyentcloud.com`", resp.URL)
+		}
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountURL, "datacenters", "not-a-real-dc-name"), getDataCenterError)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "datacenters"), getDataCenterError)
 
 		resp, err := do(context.Background(), computeClient)
 		if err == nil {
@@ -221,7 +226,7 @@ func TestGetDataCenter(t *testing.T) {
 			t.Error("expected resp to be nil")
 		}
 
-		if !strings.Contains(err.Error(), "unable to get datacenter") {
+		if !strings.Contains(err.Error(), fmt.Sprintf("datacenter 'not-a-real-dc-name' not found")) {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
@@ -286,20 +291,19 @@ func listDataCentersError(req *http.Request) (*http.Response, error) {
 func getDataCenterSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
-	header.Add("Location", "https://us-east-1.api.joyentcloud.com")
 
 	body := strings.NewReader(`{
-  "us-east-1": "https://us-east-1.api.joyentcloud.com"
+	"us-east-1": "https://us-east-1.api.joyentcloud.com"
 }
 `)
 
 	return &http.Response{
-		StatusCode: 302,
+		StatusCode: http.StatusOK,
 		Header:     header,
 		Body:       ioutil.NopCloser(body),
 	}, nil
 }
 
 func getDataCenterError(req *http.Request) (*http.Response, error) {
-	return nil, errors.New("unable to get datacenter")
+	return nil, errors.New("datacenter 'not-a-real-dc-name' not found")
 }

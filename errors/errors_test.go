@@ -24,22 +24,6 @@ func TestCheckIsSpecificError(t *testing.T) {
 		}
 	})
 
-	t.Run("Client error", func(t *testing.T) {
-		err := &ClientError{
-			StatusCode: http.StatusNotFound,
-			Code:       "ResourceNotFound",
-			Message:    "ResourceNotFoundError", // note dosesn't matter
-		}
-
-		if !IsSpecificError(err, "ResourceNotFound") {
-			t.Fatalf("Expected `ResourceNotFound`, got %v", err.Code)
-		}
-
-		if IsSpecificError(err, "IncorrectCode") {
-			t.Fatalf("Expected `IncorrectCode`, got %v", err.Code)
-		}
-	})
-
 	t.Run("Non Specific Error Type", func(t *testing.T) {
 		err := errors.New("This is a new error")
 

@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/errors"
 	stderrors "github.com/pkg/errors"
@@ -164,19 +165,20 @@ func doNotFollowRedirects(*http.Request, []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
-// TODO(justinwr): Deprecated?
-// func (c *Client) FormatURL(path string) string {
-// 	return fmt.Sprintf("%s%s", c.Endpoint, path)
-// }
-
-func (c *Client) DecodeError(statusCode int, body io.Reader) error {
+func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 	err := &errors.APIError{
-		StatusCode: statusCode,
+		StatusCode: resp.StatusCode,
 	}
 
-	errorDecoder := json.NewDecoder(body)
-	if err := errorDecoder.Decode(err); err != nil {
-		return stderrors.Wrapf(err, "unable to decode error response")
+	if requestMethod != http.MethodHead && resp.Body != nil {
+		errorDecoder := json.NewDecoder(resp.Body)
+		if err := errorDecoder.Decode(err); err != nil {
+			return stderrors.Wrapf(err, "unable to decode error response")
+		}
+	}
+
+	if err.Message == "" {
+		err.Message = fmt.Sprintf("HTTP response returned status code %d", err.StatusCode)
 	}
 
 	return err
@@ -230,7 +232,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go Client API")
+	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -245,7 +247,7 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		return resp.Body, nil
 	}
 
-	return nil, c.DecodeError(resp.StatusCode, resp.Body)
+	return nil, c.DecodeError(resp, req.Method)
 }
 
 func (c *Client) ExecuteRequest(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
@@ -286,7 +288,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", "8")
-	req.Header.Set("User-Agent", "triton-go c API")
+	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -297,7 +299,11 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		return nil, stderrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	return resp, nil
+	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+		return resp, nil
+	}
+
+	return nil, c.DecodeError(resp, req.Method)
 }
 
 func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput) (io.ReadCloser, http.Header, error) {
@@ -344,7 +350,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
-	req.Header.Set("User-Agent", "manta-go client API")
+	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
@@ -359,22 +365,7 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		return resp.Body, resp.Header, nil
 	}
 
-	mantaError := &errors.ClientError{
-		StatusCode: resp.StatusCode,
-	}
-
-	if req.Method != http.MethodHead {
-		errorDecoder := json.NewDecoder(resp.Body)
-		if err := errorDecoder.Decode(mantaError); err != nil {
-			return nil, nil, stderrors.Wrapf(err, "unable to decode error response")
-		}
-	}
-
-	if mantaError.Message == "" {
-		mantaError.Message = fmt.Sprintf("HTTP response returned status code %d", resp.StatusCode)
-	}
-
-	return nil, nil, mantaError
+	return nil, nil, c.DecodeError(resp, req.Method)
 }
 
 type RequestNoEncodeInput struct {
@@ -417,7 +408,8 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 	}
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
-	req.Header.Set("User-Agent", "manta-go client API")
+	req.Header.Set("Accept-Version", "8")
+	req.Header.Set("User-Agent", triton.UserAgent())
 
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
@@ -432,13 +424,5 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 		return resp.Body, resp.Header, nil
 	}
 
-	mantaError := &errors.ClientError{
-		StatusCode: resp.StatusCode,
-	}
-
-	errorDecoder := json.NewDecoder(resp.Body)
-	if err := errorDecoder.Decode(mantaError); err != nil {
-		return nil, nil, stderrors.Wrapf(err, "unable to decode error response")
-	}
-	return nil, nil, mantaError
+	return nil, nil, c.DecodeError(resp, req.Method)
 }

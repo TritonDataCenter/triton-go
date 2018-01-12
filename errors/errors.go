@@ -266,10 +266,6 @@ func IsSpecificError(myError error, errorCode string) bool {
 		if err.Code == errorCode {
 			return true
 		}
-	case *ClientError:
-		if err.Code == errorCode {
-			return true
-		}
 	}
 
 	return false

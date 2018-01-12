@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/joyent/triton-go/client"
-	"github.com/joyent/triton-go/errors"
 	stderrors "github.com/pkg/errors"
 )
 
@@ -37,12 +36,6 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
-	}
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return nil, &errors.APIError{
-			StatusCode: response.StatusCode,
-			Code:       "ResourceNotFound",
-		}
 	}
 
 	var result *PingOutput

@@ -77,32 +77,6 @@ func TestPing(t *testing.T) {
 		}
 	})
 
-	t.Run("404", func(t *testing.T) {
-		testutils.RegisterResponder("GET", "/--ping", ping404Func)
-
-		_, err := do(context.Background(), computeClient)
-		if err == nil {
-			t.Fatal(err)
-		}
-
-		if !strings.Contains(err.Error(), "ResourceNotFound") {
-			t.Errorf("expected error to be a 404: found %s", err)
-		}
-	})
-
-	t.Run("410", func(t *testing.T) {
-		testutils.RegisterResponder("GET", "/--ping", ping410Func)
-
-		_, err := do(context.Background(), computeClient)
-		if err == nil {
-			t.Fatal(err)
-		}
-
-		if !strings.Contains(err.Error(), "ResourceNotFound") {
-			t.Errorf("expected error to be a 410: found %s", err)
-		}
-	})
-
 	t.Run("bad decode", func(t *testing.T) {
 		testutils.RegisterResponder("GET", "/--ping", pingDecodeFunc)
 
@@ -143,26 +117,6 @@ func pingEmptyFunc(req *http.Request) (*http.Response, error) {
 		StatusCode: 200,
 		Header:     header,
 		Body:       ioutil.NopCloser(strings.NewReader("")),
-	}, nil
-}
-
-func ping404Func(req *http.Request) (*http.Response, error) {
-	header := http.Header{}
-	header.Add("Content-Type", "application/json")
-
-	return &http.Response{
-		StatusCode: 404,
-		Header:     header,
-	}, nil
-}
-
-func ping410Func(req *http.Request) (*http.Response, error) {
-	header := http.Header{}
-	header.Add("Content-Type", "application/json")
-
-	return &http.Response{
-		StatusCode: 410,
-		Header:     header,
 	}, nil
 }
 
