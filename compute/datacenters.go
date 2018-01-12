@@ -3,14 +3,14 @@ package compute
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"path"
 	"sort"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/joyent/triton-go/client"
+	"github.com/joyent/triton-go/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type DataCentersClient struct {
@@ -36,13 +36,13 @@ func (c *DataCentersClient) List(ctx context.Context, _ *ListDataCentersInput) (
 		defer respReader.Close()
 	}
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing List request: {{err}}", err)
+		return nil, pkgerrors.Wrap(err, "unable to list data centers")
 	}
 
 	var intermediate map[string]string
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&intermediate); err != nil {
-		return nil, errwrap.Wrapf("Error decoding List response: {{err}}", err)
+		return nil, pkgerrors.Wrap(err, "unable to decode list data centers response")
 	}
 
 	keys := make([]string, len(intermediate))
@@ -71,28 +71,23 @@ type GetDataCenterInput struct {
 }
 
 func (c *DataCentersClient) Get(ctx context.Context, input *GetDataCenterInput) (*DataCenter, error) {
-	fullPath := path.Join("/", c.client.AccountName, "datacenters", input.Name)
-	reqInputs := client.RequestInput{
-		Method: http.MethodGet,
-		Path:   fullPath,
-	}
-	resp, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	dcs, err := c.List(ctx, &ListDataCentersInput{})
 	if err != nil {
-		return nil, errwrap.Wrapf("Error executing Get request: {{err}}", err)
+		return nil, pkgerrors.Wrap(err, "unable to get data center")
 	}
 
-	if resp.StatusCode != http.StatusFound {
-		return nil, fmt.Errorf("Error executing Get request: expected status code 302, got %d",
-			resp.StatusCode)
+	for _, dc := range dcs {
+		if dc.Name == input.Name {
+			return &DataCenter{
+				Name: input.Name,
+				URL:  dc.URL,
+			}, nil
+		}
 	}
 
-	location := resp.Header.Get("Location")
-	if location == "" {
-		return nil, errors.New("Error decoding Get response: no Location header")
+	return nil, &errors.APIError{
+		StatusCode: http.StatusNotFound,
+		Code:       "ResourceNotFound",
+		Message:    fmt.Sprintf("data center %q not found", input.Name),
 	}
-
-	return &DataCenter{
-		Name: input.Name,
-		URL:  location,
-	}, nil
 }

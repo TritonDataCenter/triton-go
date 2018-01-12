@@ -26,8 +26,8 @@ func TestNew(t *testing.T) {
 	}{
 		{"default", tritonURL, mantaURL, accountName, signer, nil},
 		{"missing url", "", "", accountName, signer, ErrMissingURL},
-		{"bad tritonURL", BadURL, mantaURL, accountName, signer, BadTritonURL},
-		{"bad mantaURL", tritonURL, BadURL, accountName, signer, BadMantaURL},
+		{"bad tritonURL", BadURL, mantaURL, accountName, signer, InvalidTritonURL},
+		{"bad mantaURL", tritonURL, BadURL, accountName, signer, InvalidMantaURL},
 		{"missing accountName", tritonURL, mantaURL, "", signer, ErrAccountName},
 		{"missing signer", tritonURL, mantaURL, accountName, nil, ErrDefaultAuth},
 	}
@@ -88,7 +88,7 @@ func TestNew(t *testing.T) {
 		if err == nil {
 			t.Error("expected error to not be nil")
 		}
-		if !strings.Contains(err.Error(), "problem initializing NewSSHAgentSigner") {
+		if !strings.Contains(err.Error(), "unable to initialize NewSSHAgentSigner") {
 			t.Errorf("expected error to be from NewSSHAgentSigner: received '%v'", err)
 		}
 	})

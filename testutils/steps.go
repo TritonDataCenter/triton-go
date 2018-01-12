@@ -1,16 +1,15 @@
 package testutils
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
 
 	"github.com/abdullin/seq"
-	"github.com/hashicorp/errwrap"
 	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/client"
+	"github.com/joyent/triton-go/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type StepClient struct {
@@ -84,7 +83,7 @@ type StepAssertFunc struct {
 
 func (s *StepAssertFunc) Run(state TritonStateBag) StepAction {
 	if s.AssertFunc == nil {
-		state.AppendError(errors.New("StepAssertFunc may not have a nil AssertFunc"))
+		state.AppendError(pkgerrors.New("StepAssertFunc may not have a nil AssertFunc"))
 		return Halt
 	}
 
@@ -190,22 +189,21 @@ type StepAssertTritonError struct {
 func (s *StepAssertTritonError) Run(state TritonStateBag) StepAction {
 	err, ok := state.GetOk(s.ErrorKey)
 	if !ok {
-		state.AppendError(fmt.Errorf("Expected TritonError %q to be in state", s.Code))
+		state.AppendError(fmt.Errorf("Expected APIError %q to be in state", s.Code))
 		return Halt
 	}
 
-	tritonErrorInterface := errwrap.GetType(err.(error), &client.TritonError{})
-	if tritonErrorInterface == nil {
-		state.AppendError(errors.New("Expected a TritonError in wrapped error chain"))
+	switch err := pkgerrors.Cause(err.(error)).(type) {
+	case *errors.APIError:
+		if err.Code == s.Code {
+			return Continue
+		}
+		state.AppendError(fmt.Errorf("Expected APIError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, err.Code))
 		return Halt
+	default:
+		state.AppendError(pkgerrors.New("Expected a APIError in wrapped error chain"))
 	}
 
-	tritonErr := tritonErrorInterface.(*client.TritonError)
-	if tritonErr.Code == s.Code {
-		return Continue
-	}
-
-	state.AppendError(fmt.Errorf("Expected TritonError code %q to be in state key %q, was %q", s.Code, s.ErrorKey, tritonErr.Code))
 	return Halt
 }
 

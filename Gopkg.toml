@@ -27,10 +27,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/hashicorp/errwrap"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/sean-/seed"
 
 [[constraint]]

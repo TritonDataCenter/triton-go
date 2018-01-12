@@ -9,12 +9,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/hashicorp/errwrap"
-  packages = ["."]
-  revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
-
-[[projects]]
-  branch = "master"
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "e881fd58d78e04cf6d0de1217f8707c8cc2249bc"
@@ -34,6 +28,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2d7f5cbac607606a1ad89739777c639e55443897d1407d8605cbf5d603457313"
+  inputs-digest = "f7efd974ae38e2ee077c4d2698df74128a04797460b5f9c833853ddfaa86a0a0"
   solver-name = "gps-cdcl"
   solver-version = 1
