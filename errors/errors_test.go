@@ -8,7 +8,7 @@ import (
 )
 
 func TestCheckIsSpecificError(t *testing.T) {
-	t.Run("Triton error", func(t *testing.T) {
+	t.Run("API error", func(t *testing.T) {
 		err := &APIError{
 			StatusCode: http.StatusNotFound,
 			Code:       "ResourceNotFound",
@@ -24,7 +24,7 @@ func TestCheckIsSpecificError(t *testing.T) {
 		}
 	})
 
-	t.Run("Manta error", func(t *testing.T) {
+	t.Run("Client error", func(t *testing.T) {
 		err := &ClientError{
 			StatusCode: http.StatusNotFound,
 			Code:       "ResourceNotFound",
