@@ -60,7 +60,7 @@ func TestGetVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "EOF") {
-			t.Errorf("expected error to contain EOF: found %s", err)
+			t.Errorf("expected error to contain EOF: found %v", err)
 		}
 	})
 
@@ -73,7 +73,7 @@ func TestGetVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "invalid character") {
-			t.Errorf("expected decode to fail: found %s", err)
+			t.Errorf("expected decode to fail: found %v", err)
 		}
 	})
 
@@ -89,7 +89,7 @@ func TestGetVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "unable to get volume") {
-			t.Errorf("expected error to equal testError: found %s", err)
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -123,7 +123,7 @@ func TestDeleteVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "unable to delete volume") {
-			t.Errorf("expected error to equal testError: found %s", err)
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -163,7 +163,7 @@ func TestCreateVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "unable to create volume") {
-			t.Errorf("expected error to equal testError: found %s", err)
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -198,7 +198,7 @@ func TestUpdateVolume(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "unable to update volume") {
-			t.Errorf("expected error to equal testError: found %s", err)
+			t.Errorf("expected error to equal testError: found %v", err)
 		}
 	})
 }
@@ -238,7 +238,7 @@ func TestListVolumes(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "EOF") {
-			t.Errorf("expected error to contain EOF: found %s", err)
+			t.Errorf("expected error to contain EOF: found %v", err)
 		}
 	})
 
@@ -251,7 +251,7 @@ func TestListVolumes(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "invalid character") {
-			t.Errorf("expected decode to fail: found %s", err)
+			t.Errorf("expected decode to fail: found %v", err)
 		}
 	})
 

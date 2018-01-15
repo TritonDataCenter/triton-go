@@ -77,7 +77,7 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   os.Getenv("SDC_URL"),
+		TritonURL:   os.Getenv("TRITON_URL"),
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
