@@ -43,6 +43,13 @@ type InstanceCNS struct {
 	Services   []string
 }
 
+type InstanceVolume struct {
+	Name       string `json:"name,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Mode       string `json:"mode,omitempty"`
+	Mountpoint string `json:"mountpoint,omitempty"`
+}
+
 type Instance struct {
 	ID              string                 `json:"id"`
 	Name            string                 `json:"name"`
@@ -228,6 +235,7 @@ type CreateInstanceInput struct {
 	Tags            map[string]string
 	FirewallEnabled bool
 	CNS             InstanceCNS
+	Volumes         []InstanceVolume
 }
 
 func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
@@ -250,6 +258,10 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 
 	if len(input.Networks) > 0 {
 		result["networks"] = input.Networks
+	}
+
+	if len(input.Volumes) > 0 {
+		result["volumes"] = input.Volumes
 	}
 
 	// validate that affinity and locality are not included together
