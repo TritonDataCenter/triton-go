@@ -29,6 +29,7 @@ type Volume struct {
 	Owner          string   `json:"owner_uuid"`
 	Type           string   `json:"type"`
 	FileSystemPath string   `json:"filesystem_path"`
+	Size           int64    `json:"size"`
 	State          string   `json:"state"`
 	Networks       []string `json:"networks"`
 	Refs           []string `json:"refs"`
