@@ -40,3 +40,29 @@ func TestCheckIsSpecificError(t *testing.T) {
 		}
 	})
 }
+
+func TestCheckIsSpecificStatusCode(t *testing.T) {
+	t.Run("API error", func(t *testing.T) {
+		err := &APIError{
+			StatusCode: http.StatusNotFound,
+			Code:       "ResourceNotFound",
+			Message:    "Resource Not Found", // note dosesn't matter
+		}
+
+		if !IsSpecificStatusCode(err, http.StatusNotFound) {
+			t.Fatalf("Expected `404`, got %v", err.StatusCode)
+		}
+
+		if IsSpecificStatusCode(err, http.StatusNoContent) {
+			t.Fatalf("Expected `404`, got %v", err.Code)
+		}
+	})
+
+	t.Run("Non Specific Error Type", func(t *testing.T) {
+		err := errors.New("This is a new error")
+
+		if IsSpecificStatusCode(err, http.StatusNotFound) {
+			t.Fatalf("Specific Error Type Found")
+		}
+	})
+}

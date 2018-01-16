@@ -10,6 +10,7 @@ package errors
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -269,10 +270,25 @@ func IsEmptyResponse(err error) bool {
 	return IsSpecificError(err, "EmptyResponse")
 }
 
+func IsStatusNotFoundCode(err error) bool {
+	return IsSpecificStatusCode(err, http.StatusNotFound)
+}
+
 func IsSpecificError(myError error, errorCode string) bool {
 	switch err := errors.Cause(myError).(type) {
 	case *APIError:
 		if err.Code == errorCode {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsSpecificStatusCode(myError error, statusCode int) bool {
+	switch err := errors.Cause(myError).(type) {
+	case *APIError:
+		if err.StatusCode == statusCode {
 			return true
 		}
 	}
