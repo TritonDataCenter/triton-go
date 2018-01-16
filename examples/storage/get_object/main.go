@@ -44,7 +44,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("error creating SSH agent signer: %v", err.Error())
+			log.Fatalf("error creating SSH agent signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -78,7 +78,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("error creating SSH private key signer: %v", err.Error())
+			log.Fatalf("error creating SSH private key signer: %v", err)
 		}
 	}
 

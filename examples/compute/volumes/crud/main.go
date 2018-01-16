@@ -86,7 +86,7 @@ func main() {
 
 	c, err := compute.NewClient(config)
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("compute.NewClient: %v", err)
 	}
 
 	startTime := time.Now()

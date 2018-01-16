@@ -39,7 +39,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -73,7 +73,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -86,14 +86,14 @@ func main() {
 
 	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("NewClient: %v", err)
 	}
 
 	ctx := context.Background()
 	input := &storage.ListDirectoryInput{}
 	output, err := client.Dir().List(ctx, input)
 	if err != nil {
-		log.Fatalf("storage.Dir.List: %s", err)
+		log.Fatalf("storage.Dir.List: %v", err)
 	}
 
 	spew.Dump(output)
