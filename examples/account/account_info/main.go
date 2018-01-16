@@ -45,7 +45,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -79,7 +79,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -92,7 +92,7 @@ func main() {
 
 	a, err := account.NewClient(config)
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("compute.NewClient: %v", err)
 	}
 
 	acct, err := a.Get(context.Background(), &account.GetInput{})

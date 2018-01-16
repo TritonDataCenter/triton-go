@@ -39,7 +39,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -73,7 +73,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -86,7 +86,7 @@ func main() {
 
 	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("NewClient: %v", err)
 	}
 
 	input := &storage.SignURLInput{
@@ -96,7 +96,7 @@ func main() {
 	}
 	signed, err := client.SignURL(input)
 	if err != nil {
-		log.Fatalf("SignURL: %s", err)
+		log.Fatalf("SignURL: %v", err)
 	}
 
 	log.Printf("Signed URL: %s", signed.SignedURL("http"))

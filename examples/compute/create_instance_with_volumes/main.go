@@ -96,19 +96,19 @@ func main() {
 
 	c, err := compute.NewClient(config)
 	if err != nil {
-		log.Fatalf("compute.NewClient: %s", err)
+		log.Fatalf("compute.NewClient: %v", err)
 	}
 
 	n, err := network.NewClient(config)
 	if err != nil {
-		log.Fatalf("Network NewClient(): %s", err)
+		log.Fatalf("Network NewClient(): %v", err)
 	}
 
 	var publicNet *network.Network
 	var privateNet *network.Network
 	nets, err := n.List(context.Background(), &network.ListInput{})
 	if err != nil {
-		log.Fatalf("Network List(): %s", err)
+		log.Fatalf("Network List(): %v", err)
 	}
 	for _, found := range nets {
 		if found.Name == PublicNetworkName {

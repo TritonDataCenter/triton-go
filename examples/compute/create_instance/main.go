@@ -48,7 +48,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -82,7 +82,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -95,11 +95,11 @@ func main() {
 
 	c, err := compute.NewClient(config)
 	if err != nil {
-		log.Fatalf("Compute NewClient(): %s", err)
+		log.Fatalf("Compute NewClient(): %v", err)
 	}
 	n, err := network.NewClient(config)
 	if err != nil {
-		log.Fatalf("Network NewClient(): %s", err)
+		log.Fatalf("Network NewClient(): %v", err)
 	}
 
 	images, err := c.Images().List(context.Background(), &compute.ListImagesInput{
@@ -119,7 +119,7 @@ func main() {
 	var net *network.Network
 	nets, err := n.List(context.Background(), &network.ListInput{})
 	if err != nil {
-		log.Fatalf("Network List(): %s", err)
+		log.Fatalf("Network List(): %v", err)
 	}
 	for _, found := range nets {
 		if found.Name == NetworkName {

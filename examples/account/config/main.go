@@ -40,7 +40,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -74,7 +74,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -87,12 +87,12 @@ func main() {
 
 	nc, err := network.NewClient(config)
 	if err != nil {
-		log.Fatalf("network.NewClient: %s", err)
+		log.Fatalf("network.NewClient: %v", err)
 	}
 
 	ac, err := account.NewClient(config)
 	if err != nil {
-		log.Fatalf("account.NewClient: %s", err)
+		log.Fatalf("account.NewClient: %v", err)
 	}
 
 	cfg, err := ac.Config().Get(context.Background(), &account.GetConfigInput{})
@@ -105,7 +105,7 @@ func main() {
 	var defaultNet string
 	networks, err := nc.List(context.Background(), &network.ListInput{})
 	if err != nil {
-		log.Fatalf("network.List: %s", err)
+		log.Fatalf("network.List: %v", err)
 	}
 	for _, iterNet := range networks {
 		if iterNet.Id != currentNet {

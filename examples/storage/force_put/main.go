@@ -40,7 +40,7 @@ func main() {
 		}
 		signer, err = authentication.NewSSHAgentSigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Agent Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Agent Signer: %v", err)
 		}
 	} else {
 		var keyBytes []byte
@@ -74,7 +74,7 @@ func main() {
 		}
 		signer, err = authentication.NewPrivateKeySigner(input)
 		if err != nil {
-			log.Fatalf("Error Creating SSH Private Key Signer: %s", err.Error())
+			log.Fatalf("Error Creating SSH Private Key Signer: %v", err)
 		}
 	}
 
@@ -87,12 +87,12 @@ func main() {
 
 	client, err := storage.NewClient(config)
 	if err != nil {
-		log.Fatalf("NewClient: %s", err)
+		log.Fatalf("NewClient: %v", err)
 	}
 
 	reader, err := os.Open("/tmp/foo.txt")
 	if err != nil {
-		log.Fatalf("os.Open: %s", err)
+		log.Fatalf("os.Open: %v", err)
 	}
 	defer reader.Close()
 
@@ -103,7 +103,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatalf("Error creating nested folder structure: %s", err.Error())
+		log.Fatalf("Error creating nested folder structure: %v", err)
 	}
 	fmt.Println("Successfully uploaded /tmp/foo.txt to /stor/folder1/folder2/folder3/folder4/foo.txt")
 }
