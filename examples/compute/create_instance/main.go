@@ -106,7 +106,15 @@ func main() {
 		Name:    ImageName,
 		Version: ImageVersion,
 	})
-	img := images[0]
+	if err != nil {
+		log.Fatalf("compute.Images.List: %v", err)
+	}
+	var img compute.Image
+	if len(images) > 0 {
+		img = *images[0]
+	} else {
+		log.Fatalf("Unable to find an Image")
+	}
 
 	var net *network.Network
 	nets, err := n.List(context.Background(), &network.ListInput{})
