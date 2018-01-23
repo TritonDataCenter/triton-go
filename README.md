@@ -73,8 +73,8 @@ if err != nil {
 ## Error Handling
 
 If an error is returned by the HTTP API, the `error` returned from the function
-will contain an instance of `compute.TritonError` in the chain. Error wrapping
-is performed using the [errwrap][7] library from HashiCorp.
+will contain an instance of `errors.APIError` in the chain. Error wrapping
+is performed using the [pkg/errors][7] library.
 
 ## Acceptance Tests
 
@@ -235,4 +235,4 @@ func main() {
 [4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md
 [5]: https://godoc.org/github.com/joyent/triton-go/authentication
 [6]: https://godoc.org/github.com/joyent/triton-go/authentication
-[7]: https://github.com/hashicorp/go-errwrap
+[7]: https://github.com/pkg/errors
