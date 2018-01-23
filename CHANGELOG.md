@@ -2,7 +2,7 @@
 
 ## 0.9.0 (January 23)
 
-Please Note: This is a precursor release to marking triton-go as 1.0.0. We are going to wait and fix any bugs that occur from this large set of changes that has happened since 0.5.2
+**Please Note:** This is a precursor release to marking triton-go as 1.0.0. We are going to wait and fix any bugs that occur from this large set of changes that has happened since 0.5.2
 
 - Add support for managing columes in Triton [#100]
 - identity/policies: Add support for managing policies in Triton [#86]
