@@ -133,12 +133,15 @@ func main() {
 		ID:   volume.ID,
 	})
 	if err != nil {
-		log.Fatalf("compute.Volumes.Update: %v", err)
+		log.Fatalf("Failed to update name of volume %q: %v", volume.ID, err)
 	}
 
 	volume, err = c.Volumes().Get(context.Background(), &compute.GetVolumeInput{
 		ID: volume.ID,
 	})
+	if err != nil {
+		log.Fatalf("Failed to retrieve details of volume %q: %v", volume.ID, err)
+	}
 
 	fmt.Println("Name:", volume.Name)
 	fmt.Println("State:", volume.State)
@@ -148,6 +151,6 @@ func main() {
 		ID: volume.ID,
 	})
 	if err != nil {
-		log.Fatalf("Delete(): %v", err)
+		log.Fatalf("Failed to delete volume %q: %v", volume.ID, err)
 	}
 }
