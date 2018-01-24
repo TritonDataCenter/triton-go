@@ -4,9 +4,9 @@
 
 **Please Note:** This is a precursor release to marking triton-go as 1.0.0. We are going to wait and fix any bugs that occur from this large set of changes that has happened since 0.5.2
 
-- Add support for managing columes in Triton [#100]
+- Add support for managing volumes in Triton [#100]
 - identity/policies: Add support for managing policies in Triton [#86]
-- addition of triton-go errors package to expose unwraping of internal errors
+- addition of triton-go errors package to expose unwrapping of internal errors
 - Migration from hashicorp/errwrap to pkg/errors
 - Using path.Join() for URL structures rather than fmt.Sprintf()
 

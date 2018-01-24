@@ -271,7 +271,7 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 		return nil, fmt.Errorf("Cannot include both Affinity and Locality")
 	}
 
-	// affinity takes precendence over locality regardless
+	// affinity takes precedence over locality regardless
 	if len(input.Affinity) > 0 {
 		result["affinity"] = input.Affinity
 	} else {
