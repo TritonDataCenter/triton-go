@@ -38,7 +38,7 @@ ssh-keygen -Emd5 -lf ~/.ssh/id_rsa.pub | cut -d " " -f 2 | sed 's/MD5://'
 ```
 
 Each top level package, `account`, `compute`, `identity`, `network`, all have
-their own seperate client. In order to initialize a package client, simply pass
+their own separate client. In order to initialize a package client, simply pass
 the global `triton.ClientConfig` struct into the client's constructor function.
 
 ```go
