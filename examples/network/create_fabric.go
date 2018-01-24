@@ -120,6 +120,9 @@ func main() {
 		Enabled: false,
 		Rule:    "FROM any TO tag \"bone-thug\" = \"basket-ball\" ALLOW udp PORT 8600",
 	})
+	if err != nil {
+		log.Fatalf("Failed to create Firewall Rule: %v", err)
+	}
 
 	fmt.Println("Firewall Rule was successfully added!")
 	time.Sleep(5 * time.Second)
@@ -127,6 +130,9 @@ func main() {
 	err = n.Firewall().DeleteRule(context.Background(), &network.DeleteRuleInput{
 		ID: fwrule.ID,
 	})
+	if err != nil {
+		log.Fatalf("Failed to delete Firewall Rule: %v", err)
+	}
 
 	fmt.Println("Firewall Rule was successfully deleted!")
 	time.Sleep(5 * time.Second)

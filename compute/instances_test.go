@@ -109,6 +109,10 @@ func TestAccInstances_Create(t *testing.T) {
 						Name:    "ubuntu-16.04",
 						Version: "20170403",
 					})
+					if err != nil {
+						return nil, err
+					}
+
 					img := images[0]
 
 					var net *network.Network
