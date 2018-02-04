@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path"
+	"strings"
 
 	"github.com/joyent/triton-go/client"
 	"github.com/pkg/errors"
@@ -188,4 +189,97 @@ func (c *RolesClient) Delete(ctx context.Context, input *DeleteRoleInput) error 
 	}
 
 	return nil
+}
+
+// RoleTags represents a set of results after an operation
+// of either querying or setting role tags.
+type RoleTags struct {
+	// Path to the resource.
+	Name string `json:"name"`
+	// The list of role tags assigned to this resource.
+	RoleTags []string `json:"role-tag"`
+}
+
+// SetRoleTagsInput represents the options that can be
+// specified when setting a given list of role tags for
+// either a whole group of resources or an individual
+// resource of the same type.
+type SetRoleTagsInput struct {
+	// A type of the resource. Required.
+	ResourceType string `json:"-"`
+	// An unique identifier of an individual resource.
+	// Optional.
+	ResourceID string `json:"-"`
+	// The list of role tags assigned to this resource.
+	// Required.
+	RoleTags []string `json:"role-tag"`
+}
+
+// SetRoleTags sets a given list of role tags for either a whole group of
+// resources or an individual resource of the same type. To set a given
+// list of role tags for an individual resource an unique identifier (ID)
+// of this resource has to be provided in an addition to the resource type.
+// Returns an object with a set of results, or an error otherwise.
+func (c *RolesClient) SetRoleTags(ctx context.Context, input *SetRoleTagsInput) (*RoleTags, error) {
+	fullPath := path.Join("/", c.client.AccountName, input.ResourceType, input.ResourceID)
+	reqInputs := client.RequestInput{
+		Method: http.MethodPut,
+		Path:   fullPath,
+		Body:   input,
+	}
+
+	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to set role tags")
+	}
+	defer respReader.Close()
+
+	var result *RoleTags
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, errors.Wrap(err, "unable to decode set role tags response")
+	}
+
+	return result, nil
+}
+
+// GetRoleTagsInput represents the options that can be
+// specified when querying for a list of currently set
+// role tags for either a whole group of resources or
+// an individual resource of the same type.
+type GetRoleTagsInput struct {
+	// A type of the resource. Required.
+	ResourceType string
+	// An unique identifier of an individual resource.
+	// Optional.
+	ResourceID string
+}
+
+// GetRoleTags retrieves a list of currently set role tags for either a whole
+// group of resources or an individual resource of the same type. To retrieve
+// a list of role tags currently set for an individual resource an unique
+// identifier (ID) of this resource has to be provided in an additon to the
+// resource type. Returns an object with a set of results, or an error
+// otherwise.
+func (c *RolesClient) GetRoleTags(ctx context.Context, input *GetRoleTagsInput) (*RoleTags, error) {
+	fullPath := path.Join("/", c.client.AccountName, input.ResourceType, input.ResourceID)
+	reqInputs := client.RequestInput{
+		Method: http.MethodGet,
+		Path:   fullPath,
+	}
+
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get role tags")
+	}
+	defer response.Body.Close()
+
+	roleTags := response.Header.Get("Role-Tag")
+
+	result := &RoleTags{
+		Name:     fullPath,
+		RoleTags: strings.Split(roleTags, ","),
+	}
+
+	return result, nil
 }
