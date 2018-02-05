@@ -1,7 +1,7 @@
 TEST?=$$(go list ./... |grep -Ev 'vendor|examples|testutils')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
-default: vet errcheck test
+default: vet fmtcheck errcheck test
 
 tools:: ## Download and install all dev/code tools
 	@echo "==> Installing dev tools"
