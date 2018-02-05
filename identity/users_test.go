@@ -11,12 +11,15 @@ package identity_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 	"strings"
 	"testing"
 
+	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/identity"
 	"github.com/joyent/triton-go/testutils"
 )
@@ -24,11 +27,12 @@ import (
 const accountUrl = "testing"
 
 var (
-	listUserErrorType   = errors.New("unable to list users")
-	getUserErrorType    = errors.New("unable to get user")
-	deleteUserErrorType = errors.New("unable to delete user")
-	createUserErrorType = errors.New("unable to create user")
-	updateUserErrorType = errors.New("unable to update user")
+	listUserErrorType          = errors.New("unable to list users")
+	getUserErrorType           = errors.New("unable to get user")
+	deleteUserErrorType        = errors.New("unable to delete user")
+	createUserErrorType        = errors.New("unable to create user")
+	updateUserErrorType        = errors.New("unable to update user")
+	chageUserPasswordErrorType = errors.New("unable to change user password")
 )
 
 func MockIdentityClient() *identity.IdentityClient {
@@ -37,6 +41,127 @@ func MockIdentityClient() *identity.IdentityClient {
 			AccountName: accountUrl,
 		}),
 	}
+}
+
+func TestAccUser_ChangeUserPassword(t *testing.T) {
+	testUserLogin := testutils.RandPrefixString("TestAccUser", 32)
+	testUserEmail := fmt.Sprintf("%s@example.com", testUserLogin)
+
+	testUserNewPassword := testutils.RandString(32)
+
+	// Holds newly created user.
+	var newUser *identity.User
+
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepClient{
+				StateBagKey: "user",
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return identity.NewClient(config)
+				},
+			},
+
+			&testutils.StepAPICall{
+				StateBagKey: "user",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*identity.IdentityClient)
+					ctx := context.Background()
+					input := &identity.CreateUserInput{
+						Email:    testUserEmail,
+						Login:    testUserLogin,
+						Password: testutils.RandString(32),
+					}
+					user, err := c.Users().Create(ctx, input)
+					newUser = user
+					return user, err
+				},
+				CleanupFunc: func(client interface{}, callState interface{}) {
+					user, userOk := callState.(*identity.User)
+					if !userOk {
+						log.Println("Expected state to include user")
+						return
+					}
+
+					if user.Login != testUserLogin {
+						log.Printf("Expected user login name to be %q, found %q\n",
+							testUserLogin, user.Login)
+						return
+					}
+
+					c := client.(*identity.IdentityClient)
+					ctx := context.Background()
+					input := &identity.DeleteUserInput{
+						UserID: newUser.ID,
+					}
+
+					err := c.Users().Delete(ctx, input)
+					if err != nil {
+						log.Printf("Could not delete user %q: %v\n", user.ID, err)
+					}
+				},
+			},
+
+			&testutils.StepAPICall{
+				StateBagKey: "getChangeUserPassword",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*identity.IdentityClient)
+					ctx := context.Background()
+					input := &identity.ChangeUserPasswordInput{
+						UserID:               newUser.ID,
+						Password:             testUserNewPassword,
+						PasswordConfirmation: testUserNewPassword,
+					}
+					return c.Users().ChangeUserPassword(ctx, input)
+				},
+			},
+
+			// Verify that the user object in CloudAPI was in fact updated.
+			&testutils.StepAssertFunc{
+				AssertFunc: func(state testutils.TritonStateBag) error {
+					userRaw, found := state.GetOk("getChangeUserPassword")
+					if !found {
+						return fmt.Errorf("State key %q not found", "getChangeUserPassword")
+					}
+
+					user, userOk := userRaw.(*identity.User)
+					if !userOk {
+						return errors.New("Expected state to include user")
+					}
+
+					if !user.UpdatedAt.After(newUser.UpdatedAt) {
+						return fmt.Errorf("Expected user updated time to be newer than %q, found %q",
+							newUser.UpdatedAt, user.UpdatedAt)
+					}
+
+					return nil
+
+				},
+			},
+
+			// An attempt to set the same password twice results in an error,
+			// which can be leveraged to confirm that the password has been
+			// successfully set, and also gives an error condition to check.
+			&testutils.StepAPICall{
+				ErrorKey: "getChangeUserPasswordError",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*identity.IdentityClient)
+					ctx := context.Background()
+					input := &identity.ChangeUserPasswordInput{
+						UserID:               newUser.ID,
+						Password:             testUserNewPassword,
+						PasswordConfirmation: testUserNewPassword,
+					}
+					return c.Users().ChangeUserPassword(ctx, input)
+				},
+			},
+
+			&testutils.StepAssertTritonError{
+				ErrorKey: "getChangeUserPasswordError",
+				Code:     "InvalidArgument",
+			},
+		},
+	})
 }
 
 func TestListUsers(t *testing.T) {
@@ -293,6 +418,48 @@ func TestUpdateUser(t *testing.T) {
 	})
 }
 
+func TestChangeUserPassword(t *testing.T) {
+	identityClient := MockIdentityClient()
+
+	do := func(ctx context.Context, ic *identity.IdentityClient) (*identity.User, error) {
+		defer testutils.DeactivateClient()
+
+		return ic.Users().ChangeUserPassword(ctx, &identity.ChangeUserPasswordInput{
+			UserID:               "123-3456-2335",
+			Password:             "Password123",
+			PasswordConfirmation: "Password123",
+		})
+	}
+
+	fullPath := path.Join("/", accountUrl, "users", "123-3456-2335", "change_password")
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fullPath, chageUserPasswordSuccess)
+
+		resp, err := do(context.Background(), identityClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fullPath, chageUserPasswordError)
+
+		_, err := do(context.Background(), identityClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to change user password") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
 func getUserSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
@@ -495,4 +662,31 @@ func updateUserSuccess(req *http.Request) (*http.Response, error) {
 
 func updateUserError(req *http.Request) (*http.Response, error) {
 	return nil, updateUserErrorType
+}
+
+func chageUserPasswordSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+    "id": "123-3456-2335",
+    "login": "wile",
+    "email": "wile@acme.com",
+    "companyName": "Acme, Inc.",
+    "firstName": "Wile",
+    "lastName": "Coyote",
+    "phone": "(123)457-6890",
+    "updated": "2015-12-23T06:41:11.032Z",
+    "created": "2015-12-23T06:41:11.032Z"
+  }
+`)
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func chageUserPasswordError(req *http.Request) (*http.Response, error) {
+	return nil, chageUserPasswordErrorType
 }
