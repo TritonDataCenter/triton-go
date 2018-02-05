@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -101,6 +102,38 @@ func (gmi *GetInstanceInput) Validate() error {
 	}
 
 	return nil
+}
+
+//
+func (c *InstancesClient) Count(ctx context.Context) (int, error) {
+	fullPath := path.Join("/", c.client.AccountName, "machines")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodHead,
+		Path:   fullPath,
+	}
+
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if err != nil {
+		return -1, pkgerrors.Wrap(err, "unable to get machines count")
+	}
+
+	if response == nil {
+		return -1, pkgerrors.New("request to get machines count has empty response")
+	}
+	defer response.Body.Close()
+
+	var result int
+
+	if count := response.Header.Get("X-Resource-Count"); count != "" {
+		value, err := strconv.Atoi(count)
+		if err != nil {
+			return -1, pkgerrors.Wrap(err, "unable to decode machines count response")
+		}
+		result = value
+	}
+
+	return result, nil
 }
 
 func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*Instance, error) {
