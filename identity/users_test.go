@@ -27,12 +27,12 @@ import (
 const accountUrl = "testing"
 
 var (
-	listUserErrorType          = errors.New("unable to list users")
-	getUserErrorType           = errors.New("unable to get user")
-	deleteUserErrorType        = errors.New("unable to delete user")
-	createUserErrorType        = errors.New("unable to create user")
-	updateUserErrorType        = errors.New("unable to update user")
-	chageUserPasswordErrorType = errors.New("unable to change user password")
+	listUserErrorType           = errors.New("unable to list users")
+	getUserErrorType            = errors.New("unable to get user")
+	deleteUserErrorType         = errors.New("unable to delete user")
+	createUserErrorType         = errors.New("unable to create user")
+	updateUserErrorType         = errors.New("unable to update user")
+	changeUserPasswordErrorType = errors.New("unable to change user password")
 )
 
 func MockIdentityClient() *identity.IdentityClient {
@@ -434,7 +434,7 @@ func TestChangeUserPassword(t *testing.T) {
 	fullPath := path.Join("/", accountUrl, "users", "123-3456-2335", "change_password")
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fullPath, chageUserPasswordSuccess)
+		testutils.RegisterResponder("POST", fullPath, changeUserPasswordSuccess)
 
 		resp, err := do(context.Background(), identityClient)
 		if err != nil {
@@ -447,7 +447,7 @@ func TestChangeUserPassword(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", fullPath, chageUserPasswordError)
+		testutils.RegisterResponder("POST", fullPath, changeUserPasswordError)
 
 		_, err := do(context.Background(), identityClient)
 		if err == nil {
@@ -664,7 +664,7 @@ func updateUserError(req *http.Request) (*http.Response, error) {
 	return nil, updateUserErrorType
 }
 
-func chageUserPasswordSuccess(req *http.Request) (*http.Response, error) {
+func changeUserPasswordSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
 
@@ -687,6 +687,6 @@ func chageUserPasswordSuccess(req *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-func chageUserPasswordError(req *http.Request) (*http.Response, error) {
-	return nil, chageUserPasswordErrorType
+func changeUserPasswordError(req *http.Request) (*http.Response, error) {
+	return nil, changeUserPasswordErrorType
 }
