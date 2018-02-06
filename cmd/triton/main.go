@@ -6,10 +6,8 @@ import (
 )
 
 func main() {
-	defer func() {
-		p := console_writer.GetTerminal()
-		p.Wait()
-	}()
+	p := console_writer.GetTerminal()
+	defer p.Close()
 
 	cmd.Execute()
 }
