@@ -21,9 +21,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/errors"
+	"github.com/joyent/triton-go/triton"
 	pkgerrors "github.com/pkg/errors"
 )
 

@@ -15,8 +15,8 @@ import (
 	"reflect"
 
 	"github.com/abdullin/seq"
-	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/errors"
+	"github.com/joyent/triton-go/triton"
 	pkgerrors "github.com/pkg/errors"
 )
 
