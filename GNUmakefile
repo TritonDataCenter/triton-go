@@ -11,6 +11,12 @@ tools:: ## Download and install all dev/code tools
 	@echo "==> Installing test package dependencies"
 	go test -i $(TEST) || exit 1
 
+build::
+	@govvv build
+
+install::
+	@govvv install
+
 test:: ## Run unit tests
 	@echo "==> Running unit test with coverage"
 	@./scripts/go-test-with-coverage.sh
