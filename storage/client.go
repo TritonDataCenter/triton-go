@@ -9,8 +9,8 @@
 package storage
 
 import (
-	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/client"
+	"github.com/joyent/triton-go/triton"
 )
 
 type StorageClient struct {
