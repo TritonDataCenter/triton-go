@@ -52,3 +52,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/spf13/viper"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mattn/go-isatty"
