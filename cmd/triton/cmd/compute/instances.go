@@ -4,10 +4,8 @@ import (
 	"context"
 
 	"fmt"
-
-	"time"
-
 	"net/http"
+	"time"
 
 	"github.com/joyent/triton-go/cmd/internal/api"
 	"github.com/joyent/triton-go/cmd/internal/command"
@@ -41,7 +39,7 @@ var InstancesCommand = &command.Command{
 			parent.Cobra.AddCommand(cmd.Cobra)
 		}
 
-		initComputeFlags()
+		initComputeFlags(parent)
 
 		return nil
 	},
@@ -54,6 +52,14 @@ var DeleteInstanceCommand = &command.Command{
 		Short:        "delete instance",
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if !viper.IsSet(config.KeyInstanceID) && !viper.IsSet(config.KeyInstanceName) {
+				return errors.New("Either `id` or `name` must be specified")
+			}
+
+			if getMachineID() != "" && getMachineName() != "" {
+				return errors.New("Only 1 of `id` or `name` must be specified")
+			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -91,43 +97,17 @@ var DeleteInstanceCommand = &command.Command{
 				machine = instance
 			}
 
-			startTime := time.Now()
 			err = client.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
 				ID: machine.ID,
 			})
 			if err != nil {
+				if terrors.IsSpecificStatusCode(err, http.StatusNotFound) || terrors.IsSpecificStatusCode(err, http.StatusGone) {
+					cons.Write([]byte(fmt.Sprintf("Instance %s (%s) not found", machine.Name, machine.ID)))
+				}
 				return err
 			}
 
-			if blockingAction() {
-				state := make(chan *compute.Instance, 1)
-				go func(machineID string, c *compute.ComputeClient) {
-					for {
-						time.Sleep(1 * time.Second)
-						instance, err := c.Instances().Get(context.Background(), &compute.GetInstanceInput{
-							ID: machineID,
-						})
-
-						if err != nil {
-							if !terrors.IsSpecificStatusCode(err, http.StatusNotFound) && !terrors.IsSpecificStatusCode(err, http.StatusGone) {
-								panic(err)
-							}
-						}
-						if instance.State == "deleting" || instance.State == "deleted" {
-							state <- instance
-						}
-					}
-				}(machine.ID, client)
-
-				select {
-				case instance := <-state:
-					cons.Write([]byte(fmt.Sprintf("Deleted instance %q (%s) in %fs", instance.Name, instance.ID, time.Since(startTime).Seconds())))
-				case <-time.After(5 * time.Minute):
-					cons.Write([]byte("Create instance operation timed out"))
-				}
-			} else {
-				cons.Write([]byte(fmt.Sprintf("Delete (async) instance %s (%s)", machine.Name, machine.ID)))
-			}
+			cons.Write([]byte(fmt.Sprintf("Delete (async) instance %s (%s)", machine.Name, machine.ID)))
 
 			return nil
 		},
@@ -141,7 +121,7 @@ var ListInstancesCommand = &command.Command{
 	Cobra: &cobra.Command{
 		Args:         cobra.NoArgs,
 		Use:          "list",
-		Short:        "lists triton instances",
+		Short:        "list triton instances",
 		Aliases:      []string{"ls"},
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -182,7 +162,7 @@ var ListInstancesCommand = &command.Command{
 				return err
 			}
 
-			images, err := client.Images().List(context.Background(), &compute.ListImagesInput{})
+			images, err := getImagesList(context.Background(), client)
 			if err != nil {
 				return err
 			}
@@ -223,11 +203,11 @@ var GetInstanceCommand = &command.Command{
 		Short:        "get a triton instance",
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !viper.IsSet(config.KeyImageId) && !viper.IsSet(config.KeyImageName) {
+			if !viper.IsSet(config.KeyInstanceID) && !viper.IsSet(config.KeyInstanceName) {
 				return errors.New("Either `id` or `name` must be specified")
 			}
 
-			if viper.IsSet(config.KeyImageId) && viper.IsSet(config.KeyImageName) {
+			if getMachineID() != "" && getMachineName() != "" {
 				return errors.New("Only 1 of `id` or `name` must be specified")
 			}
 
@@ -250,27 +230,26 @@ var GetInstanceCommand = &command.Command{
 
 			machineName := getMachineName()
 			if machineName != "" {
-				machines, err := client.Instances().List(context.Background(), &compute.ListInstancesInput{
-					Name: machineName,
-				})
+				instance, err := getInstanceByName(context.Background(), client, machineName)
 				if err != nil {
 					return err
 				}
 
-				if machines != nil {
-					//Name has to be unique with an account and a region
-					machine = machines[0]
-				}
+				machine = instance
 			}
 
 			machineID := getMachineID()
 			if machineID != "" {
-				machine, err = client.Instances().Get(context.Background(), &compute.GetInstanceInput{
-					ID: machineID,
-				})
+				instance, err := getInstanceByID(context.Background(), client, machineID)
 				if err != nil {
 					return err
 				}
+
+				machine = instance
+			}
+
+			if machine == nil {
+				return errors.New("No Instance Found")
 			}
 
 			table := tablewriter.NewWriter(cons)
@@ -309,16 +288,18 @@ var CreateInstanceCommand = &command.Command{
 		Use:          "create",
 		Short:        "create a triton instance",
 		SilenceUsage: true,
-		Args: func(cmd *cobra.Command, args []string) error {
-			return nil
-		},
+		Args:         cobra.NoArgs,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !viper.IsSet(config.KeyPackageId) && !viper.IsSet(config.KeyPackageName) {
-				return errors.New("Either `pkg-name` or `pkg-id` must be specified")
+			if getMachineName() == "" {
+				return errors.New("Name must be specified for Create Instance")
 			}
 
-			if !viper.IsSet(config.KeyImageId) && !viper.IsSet(config.KeyImageName) {
-				return errors.New("Either `img-name` or `img-id` must be specified")
+			if getPkgName() == "" && getPkgID() == "" {
+				return errors.New("Either `pkg-name` or `pkg-id` must be specified for Create Instance")
+			}
+
+			if getImgID() == "" && getImgName() == "" {
+				return errors.New("Either `img-name` or `img-id` must be specified for Create Instance")
 			}
 			return nil
 		},
@@ -344,16 +325,14 @@ var CreateInstanceCommand = &command.Command{
 			if pkgID != "" {
 				params.Package = pkgID
 			} else {
-				pkgName := getPkgName()
-				packages, err := client.Packages().List(context.Background(), &compute.ListPackagesInput{})
+				packages, err := getPackagesList(context.Background(), client)
 				if err != nil {
 					return err
 				}
 
 				for _, pkg := range packages {
-					if pkg.Name == pkgName {
+					if pkg.Name == getPkgName() {
 						params.Package = pkg.ID
-						cons.Write([]byte(fmt.Sprintf("Found Package: %q\n", pkg.Name)))
 						break
 					}
 				}
@@ -363,16 +342,14 @@ var CreateInstanceCommand = &command.Command{
 			if imgID != "" {
 				params.Image = imgID
 			} else {
-				imgName := getImgName()
-				images, err := client.Images().List(context.Background(), &compute.ListImagesInput{})
+				images, err := getImagesList(context.Background(), client)
 				if err != nil {
 					return err
 				}
 
 				for _, img := range images {
-					if img.Name == imgName {
+					if img.Name == getImgName() {
 						params.Image = img.ID
-						cons.Write([]byte(fmt.Sprintf("Found Image: %q\n", img.Name)))
 						break
 					}
 				}
@@ -449,8 +426,8 @@ func getImgName() string {
 }
 
 func getMachineID() string {
-	if viper.IsSet(config.KeyInstanceId) {
-		return viper.GetString(config.KeyInstanceId)
+	if viper.IsSet(config.KeyInstanceID) {
+		return viper.GetString(config.KeyInstanceID)
 	}
 	return ""
 }
@@ -495,11 +472,14 @@ func getInstanceByName(ctx context.Context, client *compute.ComputeClient, insta
 		Name: instanceName,
 	})
 	if err != nil {
+		if terrors.IsSpecificStatusCode(err, http.StatusNotFound) || terrors.IsSpecificStatusCode(err, http.StatusGone) {
+			return nil, errors.New("Instance not found")
+		}
 		return nil, err
 	}
 
 	if len(instances) == 0 {
-		return nil, errors.New("No instance found")
+		return nil, errors.New("No instance(s) found")
 	}
 
 	return instances[0], nil
@@ -510,23 +490,45 @@ func getInstanceByID(ctx context.Context, client *compute.ComputeClient, instanc
 		ID: instanceID,
 	})
 	if err != nil {
+		if terrors.IsSpecificStatusCode(err, http.StatusNotFound) || terrors.IsSpecificStatusCode(err, http.StatusGone) {
+			return nil, errors.New("Instance not found")
+		}
 		return nil, err
 	}
 
 	return instance, nil
 }
 
-func initComputeFlags() {
+func getImagesList(ctx context.Context, client *compute.ComputeClient) ([]*compute.Image, error) {
+	images, err := client.Images().List(ctx, &compute.ListImagesInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return images, nil
+}
+
+func getPackagesList(ctx context.Context, client *compute.ComputeClient) ([]*compute.Package, error) {
+	packages, err := client.Packages().List(ctx, &compute.ListPackagesInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return packages, nil
+}
+
+func initComputeFlags(parent *command.Command) {
 	{
 		const (
-			key          = config.KeyInstanceId
+			key          = config.KeyInstanceID
 			longName     = "id"
 			defaultValue = ""
 			description  = "Instance id (defaults to '')"
 		)
 
-		DeleteInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
+		flags := parent.Cobra.PersistentFlags()
+		flags.String(longName, defaultValue, description)
+		viper.BindPFlag(key, flags.Lookup(longName))
 	}
 
 	{
@@ -538,11 +540,25 @@ func initComputeFlags() {
 			description  = "Instance name (defaults to '')"
 		)
 
-		ListInstancesCommand.Cobra.Flags().StringP(longName, shortName, defaultValue, description)
-		viper.BindPFlag(key, ListInstancesCommand.Cobra.Flags().Lookup(longName))
+		flags := parent.Cobra.PersistentFlags()
+		flags.StringP(longName, shortName, defaultValue, description)
+		viper.BindPFlag(key, flags.Lookup(longName))
+	}
 
-		DeleteInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
+	{
+		const (
+			key          = config.KeyInstanceWait
+			longName     = "wait"
+			shortName    = "w"
+			defaultValue = false
+			description  = "Block until instance state indicates the action is complete. (defaults to false)"
+		)
+
+		flags := parent.Cobra.PersistentFlags()
+		flags.BoolP(longName, shortName, defaultValue, description)
+		viper.BindPFlag(key, flags.Lookup(longName))
+
+		viper.SetDefault(key, defaultValue)
 	}
 
 	{
@@ -569,80 +585,65 @@ func initComputeFlags() {
 		viper.BindPFlag(key, ListInstancesCommand.Cobra.Flags().Lookup(longName))
 	}
 
-	//{
-	//	const (
-	//		key          = config.KeyPackageName
-	//		longName     = "pkg-name"
-	//		defaultValue = ""
-	//		description  = "Package name (defaults to '')"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//}
-	//
-	//{
-	//	const (
-	//		key          = config.KeyPackageId
-	//		longName     = "pkg-id"
-	//		defaultValue = ""
-	//		description  = "Package id (defaults to ''). This takes precedence over 'pkg-name'"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//}
-	//
-	//{
-	//	const (
-	//		key          = config.KeyImageId
-	//		longName     = "img-id"
-	//		defaultValue = ""
-	//		description  = "Image id (defaults to ''). This takes precedence over 'img-name'"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//}
-	//
-	//{
-	//	const (
-	//		key          = config.KeyImageName
-	//		longName     = "img-name"
-	//		defaultValue = ""
-	//		description  = "Image name (defaults to '')"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//}
-	//
 	{
 		const (
-			key          = config.KeyInstanceWait
-			longName     = "wait"
-			shortName    = "w"
-			defaultValue = false
-			description  = "Block until instance state indicates the action is complete. (defaults to false)"
+			key          = config.KeyPackageId
+			longName     = "pkg-id"
+			defaultValue = ""
+			description  = "Package id (defaults to ''). This takes precedence over 'pkg-name'"
 		)
 
-		DeleteInstanceCommand.Cobra.Flags().BoolP(longName, shortName, defaultValue, description)
-		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
+		CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
+	}
+
+	{
+		const (
+			key          = config.KeyPackageName
+			longName     = "pkg-name"
+			defaultValue = ""
+			description  = "Package name (defaults to '')"
+		)
+
+		CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
+	}
+
+	{
+		const (
+			key          = config.KeyImageId
+			longName     = "img-id"
+			defaultValue = ""
+			description  = "Image id (defaults to ''). This takes precedence over 'img-name'"
+		)
+
+		CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
+	}
+
+	{
+		const (
+			key          = config.KeyImageName
+			longName     = "img-name"
+			defaultValue = ""
+			description  = "Image name (defaults to '')"
+		)
+
+		CreateInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
+	}
+
+	{
+		const (
+			key          = config.KeyInstanceFirewall
+			longName     = "firewall"
+			defaultValue = false
+			description  = "Enable Cloud Firewall on this instance (defaults to false)"
+		)
+
+		CreateInstanceCommand.Cobra.Flags().Bool(longName, defaultValue, description)
+		viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
 
 		viper.SetDefault(key, defaultValue)
 	}
-	//
-	//{
-	//	const (
-	//		key          = config.KeyInstanceFirewall
-	//		longName     = "firewall"
-	//		defaultValue = false
-	//		description  = "Enable Cloud Firewall on this instance (defaults to false)"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().Bool(longName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//
-	//	viper.SetDefault(key, defaultValue)
-	//}
 }

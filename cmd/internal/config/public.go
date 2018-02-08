@@ -4,7 +4,7 @@ const (
 	KeyUsePager = "global.use-pager"
 
 	KeyInstanceName     = "compute.instance.name"
-	KeyInstanceId       = "compute.instance.id"
+	KeyInstanceID       = "compute.instance.id"
 	KeyInstanceWait     = "compute.instance.wait"
 	KeyInstanceFirewall = "compute.instance.firewall"
 	KeyInstanceState    = "compute.instance.state"
