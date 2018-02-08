@@ -9,7 +9,6 @@ import (
 	"github.com/joyent/triton-go/cmd/internal/logger"
 	"github.com/joyent/triton-go/cmd/triton/cmd/compute"
 	isatty "github.com/mattn/go-isatty"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -62,7 +61,7 @@ func Execute() error {
 	}
 
 	if err := rootCmd.Cobra.Execute(); err != nil {
-		log.Error().Err(err).Msg("unable to run")
+		//log.Error().Err(err).Msg("unable to run")
 		return err
 	}
 
