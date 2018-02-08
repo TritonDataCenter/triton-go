@@ -9,7 +9,11 @@
 package config
 
 const (
-	KeyUsePager = "global.use-pager"
+	KeyUsePager             = "global.use-pager"
+	KeyManPageDirectory     = "global.dir.man"
+	KeyMarkdownDirectory    = "global.dir.md"
+	KeyAutoCompletionType   = "global.autocompletion.type"
+	KeyAutoCompletionTarget = "global.autocompletion.target"
 
 	KeyInstanceName     = "compute.instance.name"
 	KeyInstanceID       = "compute.instance.id"

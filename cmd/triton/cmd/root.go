@@ -15,7 +15,10 @@ import (
 	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/internal/console_writer"
 	"github.com/joyent/triton-go/cmd/internal/logger"
+	"github.com/joyent/triton-go/cmd/triton/cmd/autocompletion"
 	"github.com/joyent/triton-go/cmd/triton/cmd/compute"
+	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
+	"github.com/joyent/triton-go/cmd/triton/cmd/man"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,6 +26,9 @@ import (
 
 var subCommands = []*command.Command{
 	compute.InstancesCommand,
+	man.Cmd,
+	autocompletion.Cmd,
+	docs.Cmd,
 }
 
 var rootCmd = &command.Command{
@@ -49,6 +55,58 @@ var rootCmd = &command.Command{
 			viper.SetDefault(key, defaultValue)
 		}
 
+		{
+			const (
+				key          = config.KeyManPageDirectory
+				longName     = "dir"
+				defaultValue = ""
+				description  = "the directory to write the man pages"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeyMarkdownDirectory
+				longName     = "docs-dir"
+				defaultValue = ""
+				description  = "the directory to write the markdown documentation pages"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeyAutoCompletionTarget
+				longName     = "completionfile"
+				defaultValue = "/etc/bash_completion.d/triton.sh"
+				description  = "autocompletion file"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeyAutoCompletionType
+				longName     = "type"
+				defaultValue = "bash"
+				description  = "autocompletion type (currently only bash supported)"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
 		return nil
 	},
 }
@@ -72,6 +130,15 @@ func Execute() error {
 		//log.Error().Err(err).Msg("unable to run")
 		return err
 	}
+
+	return nil
+}
+
+func generateDocumentation(cmd *cobra.Command) error {
+	//err := doc.GenMarkdownTree(cmd, "./docs/md")
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
