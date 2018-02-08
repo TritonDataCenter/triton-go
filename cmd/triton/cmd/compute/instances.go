@@ -2,9 +2,7 @@ package compute
 
 import (
 	"context"
-
 	"fmt"
-
 	"time"
 
 	"github.com/joyent/triton-go/cmd/internal/api"
