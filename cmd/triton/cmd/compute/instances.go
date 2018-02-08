@@ -7,11 +7,14 @@ import (
 
 	"time"
 
+	"net/http"
+
 	"github.com/joyent/triton-go/cmd/internal/api"
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/internal/console_writer"
 	"github.com/joyent/triton-go/compute"
+	terrors "github.com/joyent/triton-go/errors"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -20,10 +23,9 @@ import (
 
 var InstancesCommand = &command.Command{
 	Cobra: &cobra.Command{
-		Use:        "instance",
-		Aliases:    []string{"instances"},
-		SuggestFor: []string{"machines"},
-		Short:      "instance interaction with triton",
+		Use:     "instances",
+		Aliases: []string{"instance", "vms", "machines"},
+		Short:   "Instances (aka VMs/Machines/Containers)",
 	},
 
 	Setup: func(parent *command.Command) error {
@@ -31,6 +33,7 @@ var InstancesCommand = &command.Command{
 			ListInstancesCommand,
 			GetInstanceCommand,
 			CreateInstanceCommand,
+			DeleteInstanceCommand,
 		}
 
 		for _, cmd := range cmds {
@@ -44,11 +47,102 @@ var InstancesCommand = &command.Command{
 	},
 }
 
+var DeleteInstanceCommand = &command.Command{
+	Cobra: &cobra.Command{
+		Args:         cobra.NoArgs,
+		Use:          "delete",
+		Short:        "delete instance",
+		SilenceUsage: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cons := console_writer.GetTerminal()
+
+			tritonClientConfig, err := api.InitConfig()
+			if err != nil {
+				return err
+			}
+
+			client, err := tritonClientConfig.GetComputeClient()
+			if err != nil {
+				return err
+			}
+
+			var machine *compute.Instance
+
+			id := getMachineID()
+			if id != "" {
+				instance, err := getInstanceByID(context.Background(), client, id)
+				if err != nil {
+					return err
+				}
+
+				machine = instance
+			}
+
+			name := getMachineName()
+			if name != "" {
+				instance, err := getInstanceByName(context.Background(), client, name)
+				if err != nil {
+					return err
+				}
+
+				machine = instance
+			}
+
+			startTime := time.Now()
+			err = client.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
+				ID: machine.ID,
+			})
+			if err != nil {
+				return err
+			}
+
+			if blockingAction() {
+				state := make(chan *compute.Instance, 1)
+				go func(machineID string, c *compute.ComputeClient) {
+					for {
+						time.Sleep(1 * time.Second)
+						instance, err := c.Instances().Get(context.Background(), &compute.GetInstanceInput{
+							ID: machineID,
+						})
+
+						if err != nil {
+							if !terrors.IsSpecificStatusCode(err, http.StatusNotFound) && !terrors.IsSpecificStatusCode(err, http.StatusGone) {
+								panic(err)
+							}
+						}
+						if instance.State == "deleting" || instance.State == "deleted" {
+							state <- instance
+						}
+					}
+				}(machine.ID, client)
+
+				select {
+				case instance := <-state:
+					cons.Write([]byte(fmt.Sprintf("Deleted instance %q (%s) in %fs", instance.Name, instance.ID, time.Since(startTime).Seconds())))
+				case <-time.After(5 * time.Minute):
+					cons.Write([]byte("Create instance operation timed out"))
+				}
+			} else {
+				cons.Write([]byte(fmt.Sprintf("Delete (async) instance %s (%s)", machine.Name, machine.ID)))
+			}
+
+			return nil
+		},
+	},
+	Setup: func(parent *command.Command) error {
+		return nil
+	},
+}
+
 var ListInstancesCommand = &command.Command{
 	Cobra: &cobra.Command{
 		Args:         cobra.NoArgs,
-		Use:          "list instances",
-		Short:        "lists instances associated with triton account",
+		Use:          "list",
+		Short:        "lists triton instances",
+		Aliases:      []string{"ls"},
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
@@ -292,7 +386,7 @@ var CreateInstanceCommand = &command.Command{
 
 			cons.Write([]byte(fmt.Sprintf("Creating instance %q (%s)", machine.Name, machine.ID)))
 
-			if viper.GetBool(config.KeyInstanceWait) {
+			if blockingAction() {
 				state := make(chan *compute.Instance, 1)
 				go func(machineID string, c *compute.ComputeClient) {
 					for {
@@ -305,8 +399,6 @@ var CreateInstanceCommand = &command.Command{
 						}
 						if instance.State == "running" {
 							state <- instance
-						} else {
-							fmt.Print(".")
 						}
 					}
 				}(machine.ID, client)
@@ -377,6 +469,10 @@ func getMachineState() string {
 	return ""
 }
 
+func blockingAction() bool {
+	return viper.GetBool(config.KeyInstanceWait)
+}
+
 func getMachineBrand() string {
 	if viper.IsSet(config.KeyInstanceBrand) {
 		return viper.GetString(config.KeyInstanceBrand)
@@ -394,18 +490,44 @@ func getImageName(imgID string, imgList []*compute.Image) string {
 	return string(imgID[:8])
 }
 
+func getInstanceByName(ctx context.Context, client *compute.ComputeClient, instanceName string) (*compute.Instance, error) {
+	instances, err := client.Instances().List(ctx, &compute.ListInstancesInput{
+		Name: instanceName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(instances) == 0 {
+		return nil, errors.New("No instance found")
+	}
+
+	return instances[0], nil
+}
+
+func getInstanceByID(ctx context.Context, client *compute.ComputeClient, instanceID string) (*compute.Instance, error) {
+	instance, err := client.Instances().Get(ctx, &compute.GetInstanceInput{
+		ID: instanceID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return instance, nil
+}
+
 func initComputeFlags() {
-	//{
-	//	const (
-	//		key          = config.KeyInstanceId
-	//		longName     = "id"
-	//		defaultValue = ""
-	//		description  = "Instance id (defaults to '')"
-	//	)
-	//
-	//	GetInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
-	//	viper.BindPFlag(key, GetInstanceCommand.Cobra.Flags().Lookup(longName))
-	//}
+	{
+		const (
+			key          = config.KeyInstanceId
+			longName     = "id"
+			defaultValue = ""
+			description  = "Instance id (defaults to '')"
+		)
+
+		DeleteInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
+	}
 
 	{
 		const (
@@ -419,12 +541,8 @@ func initComputeFlags() {
 		ListInstancesCommand.Cobra.Flags().StringP(longName, shortName, defaultValue, description)
 		viper.BindPFlag(key, ListInstancesCommand.Cobra.Flags().Lookup(longName))
 
-		//GetInstanceCommand.Cobra.Flags().StringP(longName, shortName, defaultValue, description)
-		//viper.BindPFlag(key, GetInstanceCommand.Cobra.Flags().Lookup(longName))
-		//
-		//CreateInstanceCommand.Cobra.Flags().StringP(longName, shortName, defaultValue, description)
-		//CreateInstanceCommand.Cobra.MarkFlagRequired(longName)
-		//viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
+		DeleteInstanceCommand.Cobra.Flags().String(longName, defaultValue, description)
+		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
 	}
 
 	{
@@ -499,20 +617,20 @@ func initComputeFlags() {
 	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
 	//}
 	//
-	//{
-	//	const (
-	//		key          = config.KeyInstanceWait
-	//		longName     = "wait"
-	//		shortName    = "w"
-	//		defaultValue = false
-	//		description  = "Wait for the creation to complete (defaults to false)"
-	//	)
-	//
-	//	CreateInstanceCommand.Cobra.Flags().BoolP(longName, shortName, defaultValue, description)
-	//	viper.BindPFlag(key, CreateInstanceCommand.Cobra.Flags().Lookup(longName))
-	//
-	//	viper.SetDefault(key, defaultValue)
-	//}
+	{
+		const (
+			key          = config.KeyInstanceWait
+			longName     = "wait"
+			shortName    = "w"
+			defaultValue = false
+			description  = "Block until instance state indicates the action is complete. (defaults to false)"
+		)
+
+		DeleteInstanceCommand.Cobra.Flags().BoolP(longName, shortName, defaultValue, description)
+		viper.BindPFlag(key, DeleteInstanceCommand.Cobra.Flags().Lookup(longName))
+
+		viper.SetDefault(key, defaultValue)
+	}
 	//
 	//{
 	//	const (
