@@ -36,3 +36,19 @@
 [[constraint]]
   branch = "master"
   name = "github.com/pkg/errors"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
+
+[[constraint]]
+  name = "github.com/rs/zerolog"
+  version = "1.4.0"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+  version = "0.0.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/spf13/viper"
