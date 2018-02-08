@@ -1,3 +1,11 @@
+//
+//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+
 package compute
 
 import (
@@ -363,7 +371,7 @@ var CreateInstanceCommand = &command.Command{
 
 			cons.Write([]byte(fmt.Sprintf("Creating instance %q (%s)", machine.Name, machine.ID)))
 
-			if blockingAction() {
+			if isBlockingAction() {
 				state := make(chan *compute.Instance, 1)
 				go func(machineID string, c *compute.ComputeClient) {
 					for {
@@ -446,7 +454,7 @@ func getMachineState() string {
 	return ""
 }
 
-func blockingAction() bool {
+func isBlockingAction() bool {
 	return viper.GetBool(config.KeyInstanceWait)
 }
 
