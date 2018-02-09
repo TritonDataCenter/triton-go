@@ -9,13 +9,13 @@
 package main
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/console_writer"
 	"github.com/joyent/triton-go/cmd/triton/cmd"
+	"github.com/sean-/conswriter"
 )
 
 func main() {
 	defer func() {
-		p := console_writer.GetTerminal()
+		p := conswriter.GetTerminal()
 		p.Wait()
 	}()
 

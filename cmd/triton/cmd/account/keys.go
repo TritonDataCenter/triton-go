@@ -11,7 +11,7 @@ package account
 import (
 	"strings"
 
-	"github.com/joyent/triton-go/cmd/internal/console_writer"
+	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +31,7 @@ var ListKeysCommand = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		cons := console_writer.GetTerminal()
+		cons := conswriter.GetTerminal()
 		cons.Write([]byte(strings.Repeat("some crap\n", 1000)))
 
 		//tritonClientConfig, err := api.InitConfig()
