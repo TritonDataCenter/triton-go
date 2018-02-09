@@ -265,17 +265,17 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 }
 
 type CreateInstanceInput struct {
-	Name            string
-	Package         string
-	Image           string
-	Networks        []string
-	Affinity        []string
+	Name            string   //
+	Package         string   //
+	Image           string   //
+	Networks        []string //
+	Affinity        []string //
 	LocalityStrict  bool
 	LocalityNear    []string
 	LocalityFar     []string
 	Metadata        map[string]string
-	Tags            map[string]string
-	FirewallEnabled bool
+	Tags            map[string]string //
+	FirewallEnabled bool              //
 	CNS             InstanceCNS
 	Volumes         []InstanceVolume
 }

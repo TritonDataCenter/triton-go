@@ -13,28 +13,35 @@ import (
 
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/internal/console_writer"
 	"github.com/joyent/triton-go/cmd/internal/logger"
-	"github.com/joyent/triton-go/cmd/triton/cmd/autocompletion"
-	"github.com/joyent/triton-go/cmd/triton/cmd/compute"
 	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
-	"github.com/joyent/triton-go/cmd/triton/cmd/man"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
+	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
 	isatty "github.com/mattn/go-isatty"
+	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var subCommands = []*command.Command{
-	compute.InstancesCommand,
-	man.Cmd,
-	autocompletion.Cmd,
+	instances.Cmd,
 	docs.Cmd,
+	shell.Cmd,
 }
 
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "triton",
 		Short: "cli for interacting with triton",
+		Long: `CLI for Joyent Triton. In order to interact with Triton, 
+you will need to have the following environment variables set:
+
+* SDC_KEY_ID or TRITON_KEY_ID
+* SDC_ACCOUNT or TRITON_ACCOUNT
+* SDC_URL or TRITON_URL
+
+This CLI doesn't have support for passing key material. It will try and
+locate your SSH KEY from ssh-agent.`,
 	},
 	Setup: func(parent *command.Command) error {
 		{
@@ -57,54 +64,65 @@ var rootCmd = &command.Command{
 
 		{
 			const (
-				key          = config.KeyManPageDirectory
-				longName     = "dir"
-				defaultValue = ""
-				description  = "the directory to write the man pages"
+				key          = config.KeyLogLevel
+				longOpt      = "log-level"
+				shortOpt     = "l"
+				defaultValue = "INFO"
+				description  = "Change the log level being sent to stdout"
 			)
 
 			flags := parent.Cobra.PersistentFlags()
-			flags.String(longName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
+			flags.StringP(longOpt, shortOpt, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longOpt))
+			viper.SetDefault(key, defaultValue)
 		}
 
 		{
 			const (
-				key          = config.KeyMarkdownDirectory
-				longName     = "docs-dir"
-				defaultValue = ""
-				description  = "the directory to write the markdown documentation pages"
+				key         = config.KeyLogFormat
+				longOpt     = "log-format"
+				shortOpt    = "F"
+				description = `Specify the log format ("auto", "zerolog", or "human")`
 			)
+			defaultValue := logger.FormatAuto.String()
 
 			flags := parent.Cobra.PersistentFlags()
-			flags.String(longName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
+			flags.StringP(longOpt, shortOpt, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longOpt))
+			viper.SetDefault(key, defaultValue)
 		}
 
 		{
 			const (
-				key          = config.KeyAutoCompletionTarget
-				longName     = "completionfile"
-				defaultValue = "/etc/bash_completion.d/triton.sh"
-				description  = "autocompletion file"
+				key         = config.KeyLogTermColor
+				longOpt     = "use-color"
+				shortOpt    = ""
+				description = "Use ASCII colors"
 			)
+			defaultValue := false
+			if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+				defaultValue = true
+			}
 
 			flags := parent.Cobra.PersistentFlags()
-			flags.String(longName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
+			flags.BoolP(longOpt, shortOpt, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longOpt))
+			viper.SetDefault(key, defaultValue)
 		}
 
 		{
 			const (
-				key          = config.KeyAutoCompletionType
-				longName     = "type"
-				defaultValue = "bash"
-				description  = "autocompletion type (currently only bash supported)"
+				key          = config.KeyUseUTC
+				longName     = "utc"
+				shortName    = "Z"
+				defaultValue = false
+				description  = "Display times in UTC"
 			)
 
 			flags := parent.Cobra.PersistentFlags()
-			flags.String(longName, defaultValue, description)
+			flags.BoolP(longName, shortName, defaultValue, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
+			viper.SetDefault(key, defaultValue)
 		}
 
 		return nil
@@ -115,9 +133,9 @@ func Execute() error {
 
 	rootCmd.Setup(rootCmd)
 
-	console_writer.UsePager(viper.GetBool(config.KeyUsePager))
+	conswriter.UsePager(viper.GetBool(config.KeyUsePager))
 
-	if err := logger.Config(); err != nil {
+	if err := logger.Setup(); err != nil {
 		return err
 	}
 
@@ -127,18 +145,8 @@ func Execute() error {
 	}
 
 	if err := rootCmd.Cobra.Execute(); err != nil {
-		//log.Error().Err(err).Msg("unable to run")
 		return err
 	}
-
-	return nil
-}
-
-func generateDocumentation(cmd *cobra.Command) error {
-	//err := doc.GenMarkdownTree(cmd, "./docs/md")
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
