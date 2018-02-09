@@ -5,7 +5,7 @@ echo "==> Checking for unchecked errors"
 err_files=$(errcheck -ignoretests \
                      -ignore 'bytes:.*' \
                      -ignore 'io:Close|Write' \
-                     $(go list ./...| grep -Ev 'vendor|examples|testutils'))
+                     $(go list ./...| grep -Ev 'vendor|examples|testutils|cmd'))
 
 if [[ -n ${err_files} ]]; then
     echo 'Unchecked errors found in the following places:'
