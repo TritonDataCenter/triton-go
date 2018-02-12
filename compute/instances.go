@@ -153,7 +153,7 @@ type ListInstancesInput struct {
 	Memory      uint16
 	Limit       uint16
 	Offset      uint16
-	Tags        []string // query by arbitrary tags prefixed with "tag."
+	Tags        map[string]interface{} // query by arbitrary tags prefixed with "tag."
 	Tombstone   bool
 	Docker      bool
 	Credentials bool
@@ -192,6 +192,11 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 	}
 	if input.Credentials {
 		query.Set("credentials", "true")
+	}
+	if input.Tags != nil {
+		for k, v := range input.Tags {
+			query.Set(fmt.Sprintf("tag.%s", k), v.(string))
+		}
 	}
 
 	reqInputs := client.RequestInput{
