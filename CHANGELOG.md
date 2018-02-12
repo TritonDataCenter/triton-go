@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Add support for ChangeUserPassword [#111]
+- Add support for passing a list of tags to filter List instances [#116]
 
 ## 0.9.0 (January 23)
 
