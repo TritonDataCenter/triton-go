@@ -12,16 +12,24 @@ import (
 	"fmt"
 
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/cmd/internal/command"
+	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 )
 
-var Cmd = &cobra.Command{
-	Use:          "version",
-	Short:        "print triton cli version",
-	SilenceUsage: true,
+var Cmd = &command.Command{
+	Cobra: &cobra.Command{
+		Use:          "version",
+		Short:        "print triton cli version",
+		SilenceUsage: true,
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("Version: %s\n", triton.UserAgent())
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cons := conswriter.GetTerminal()
+			cons.Write([]byte(fmt.Sprintf("Version: %s\n", triton.UserAgent())))
+			return nil
+		},
+	},
+	Setup: func(parent *command.Command) error {
 		return nil
 	},
 }

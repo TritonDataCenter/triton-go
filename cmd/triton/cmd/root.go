@@ -17,6 +17,7 @@ import (
 	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
 	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
+	"github.com/joyent/triton-go/cmd/triton/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
@@ -27,6 +28,7 @@ var subCommands = []*command.Command{
 	instances.Cmd,
 	docs.Cmd,
 	shell.Cmd,
+	version.Cmd,
 }
 
 var rootCmd = &command.Command{
