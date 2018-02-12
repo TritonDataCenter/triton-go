@@ -90,7 +90,7 @@ func (c *AgentComputeClient) DeleteInstance() (*tcc.Instance, error) {
 func (c *AgentComputeClient) GetInstanceList() ([]*tcc.Instance, error) {
 	params := &tcc.ListInstancesInput{}
 
-	name := config.GetMachineNamePrefix()
+	name := config.GetMachineName()
 	if name != "" {
 		params.Name = name
 	}

@@ -122,7 +122,7 @@ var rootCmd = &command.Command{
 			const (
 				key          = config.KeyAccount
 				longName     = "account"
-				shortName    = "a"
+				shortName    = "A"
 				defaultValue = ""
 				description  = "Account (login name). If not specified, the environment variable TRITON_ACCOUNT or SDC_ACCOUNT will be used"
 			)
@@ -150,7 +150,7 @@ var rootCmd = &command.Command{
 			const (
 				key          = config.KeySshKeyID
 				longName     = "key-id"
-				shortName    = "k"
+				shortName    = "K"
 				defaultValue = ""
 				description  = "SSH key fingerprint. If not specified, the environment variable TRITON_KEY_ID or SDC_KEY_ID will be used"
 			)
