@@ -16,6 +16,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -126,6 +127,19 @@ var Cmd = &command.Command{
 			flags := parent.Cobra.Flags()
 			flags.StringSlice(longName, nil, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			flags := parent.Cobra.Flags()
+			flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+				switch name {
+				case "tag":
+					name = "tags"
+					break
+				}
+
+				return pflag.NormalizedName(name)
+			})
 		}
 
 		return nil
