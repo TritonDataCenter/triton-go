@@ -21,8 +21,8 @@ func New() (*TritonClientConfig, error) {
 	var err error
 
 	signer, err = authentication.NewSSHAgentSigner(authentication.SSHAgentSignerInput{
-		KeyID:       viper.GetString("SDC_KEY_ID"),
-		AccountName: viper.GetString("SDC_ACCOUNT"),
+		KeyID:       GetTritonKeyID(),
+		AccountName: GetTritonAccount(),
 	})
 	if err != nil {
 		log.Fatal().Str("func", "initConfig").Msg("Error Creating SSH Agent Signer")
@@ -30,14 +30,53 @@ func New() (*TritonClientConfig, error) {
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   viper.GetString("SDC_URL"),
-		AccountName: viper.GetString("SDC_ACCOUNT"),
+		TritonURL:   GetTritonUrl(),
+		AccountName: GetTritonAccount(),
 		Signers:     []authentication.Signer{signer},
 	}
 
 	return &TritonClientConfig{
 		Config: config,
 	}, nil
+}
+
+var envPrefixes = []string{"TRITON", "SDC"}
+
+func getEnvVar(name string) string {
+	for _, prefix := range envPrefixes {
+		if val := viper.GetString(prefix + "_" + name); val != "" {
+			return val
+		}
+	}
+
+	return ""
+}
+
+func GetTritonUrl() string {
+	url := viper.GetString(config.KeyUrl)
+	if url == "" {
+		url = getEnvVar("URL")
+	}
+
+	return url
+}
+
+func GetTritonAccount() string {
+	account := viper.GetString(config.KeyAccount)
+	if account == "" {
+		account = getEnvVar("ACCOUNT")
+	}
+
+	return account
+}
+
+func GetTritonKeyID() string {
+	keyID := viper.GetString(config.KeySshKeyID)
+	if keyID == "" {
+		keyID = getEnvVar("KEY_ID")
+	}
+
+	return keyID
 }
 
 func GetPkgID() string {

@@ -32,16 +32,7 @@ var subCommands = []*command.Command{
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "triton",
-		Short: "cli for interacting with triton",
-		Long: `CLI for Joyent Triton. In order to interact with Triton, 
-you will need to have the following environment variables set:
-
-* SDC_KEY_ID or TRITON_KEY_ID
-* SDC_ACCOUNT or TRITON_ACCOUNT
-* SDC_URL or TRITON_URL
-
-This CLI doesn't have support for passing key material. It will try and
-locate your SSH KEY from ssh-agent.`,
+		Short: "Joyent Triton CLI and client (https://www.joyent.com/triton)",
 	},
 	Setup: func(parent *command.Command) error {
 		{
@@ -123,6 +114,48 @@ locate your SSH KEY from ssh-agent.`,
 			flags.BoolP(longName, shortName, defaultValue, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
 			viper.SetDefault(key, defaultValue)
+		}
+
+		{
+			const (
+				key          = config.KeyAccount
+				longName     = "account"
+				shortName    = "a"
+				defaultValue = ""
+				description  = "Account (login name). If not specified, the environment variable TRITON_ACCOUNT or SDC_ACCOUNT will be used"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.StringP(longName, shortName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeyUrl
+				longName     = "url"
+				shortName    = "U"
+				defaultValue = ""
+				description  = "CloudAPI URL. If not specified, the environment variable TRITON_URL or SDC_URL will be used"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.StringP(longName, shortName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeySshKeyID
+				longName     = "key-id"
+				shortName    = "k"
+				defaultValue = ""
+				description  = "SSH key fingerprint. If not specified, the environment variable TRITON_KEY_ID or SDC_KEY_ID will be used"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.StringP(longName, shortName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
 		}
 
 		return nil
