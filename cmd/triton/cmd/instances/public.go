@@ -10,11 +10,14 @@ package instances
 
 import (
 	"github.com/joyent/triton-go/cmd/internal/command"
+	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/create"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/delete"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/get"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/list"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var Cmd = &command.Command{
@@ -25,6 +28,7 @@ var Cmd = &command.Command{
 	},
 
 	Setup: func(parent *command.Command) error {
+
 		cmds := []*command.Command{
 			list.Cmd,
 			create.Cmd,
@@ -35,6 +39,46 @@ var Cmd = &command.Command{
 		for _, cmd := range cmds {
 			cmd.Setup(cmd)
 			parent.Cobra.AddCommand(cmd.Cobra)
+		}
+
+		{
+			const (
+				key          = config.KeyInstanceName
+				longName     = "name"
+				shortName    = "n"
+				defaultValue = ""
+				description  = "Instance Name"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.StringP(longName, shortName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key         = config.KeyInstanceTag
+				longName    = "tag"
+				shortName   = "t"
+				description = "Instance Tags. This flag can be used multiple times"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.StringSliceP(longName, shortName, nil, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			flags := parent.Cobra.PersistentFlags()
+			flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+				switch name {
+				case "tag":
+					name = "tags"
+					break
+				}
+
+				return pflag.NormalizedName(name)
+			})
 		}
 
 		return nil

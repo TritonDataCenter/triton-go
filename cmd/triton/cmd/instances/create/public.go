@@ -62,19 +62,7 @@ var Cmd = &command.Command{
 	},
 	Setup: func(parent *command.Command) error {
 		{
-			const (
-				key          = config.KeyInstanceName
-				longName     = "name"
-				shortName    = "n"
-				defaultValue = ""
-				description  = "Instance Name (required)"
-			)
-
-			flags := parent.Cobra.Flags()
-			flags.StringP(longName, shortName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
-
-			parent.Cobra.MarkFlagRequired(longName)
+			parent.Cobra.MarkFlagRequired("name")
 		}
 
 		{
@@ -175,22 +163,6 @@ var Cmd = &command.Command{
 
 		{
 			const (
-				key         = config.KeyInstanceTag
-				longName    = "tag"
-				shortName   = "t"
-				description = `Add a tag when creating the instance. Tags are key/value pairs
-			       available on the instance API object as the "tags" field. TAG is
-			       one of: a "key=value" string (bool and numeric "value" are
-			       converted to that type). This option can be used multiple times.`
-			)
-
-			flags := parent.Cobra.Flags()
-			flags.StringSliceP(longName, shortName, nil, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
-		}
-
-		{
-			const (
 				key         = config.KeyInstanceMetadata
 				longName    = "metadata"
 				shortName   = "m"
@@ -210,7 +182,6 @@ var Cmd = &command.Command{
 			const (
 				key         = config.KeyInstanceAffinityRule
 				longName    = "affinity"
-				shortName   = "a"
 				description = `Affinity rules for selecting a server for this instance. Rules
 have one of the following forms: "instance==INST" (the new
 instance must be on the same server as INST), "instance!=INST"
@@ -224,7 +195,7 @@ This option can be used multiple times.`
 			)
 
 			flags := parent.Cobra.Flags()
-			flags.StringSliceP(longName, shortName, nil, description)
+			flags.StringSlice(longName, nil, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
 		}
 

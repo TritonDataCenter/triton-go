@@ -80,49 +80,27 @@ func GetTritonKeyID() string {
 }
 
 func GetPkgID() string {
-	if viper.IsSet(config.KeyPackageId) {
-		return viper.GetString(config.KeyPackageId)
-	}
-	return ""
+	return viper.GetString(config.KeyPackageId)
 }
 
 func GetPkgName() string {
-	if viper.IsSet(config.KeyPackageName) {
-		return viper.GetString(config.KeyPackageName)
-	}
-	return ""
+	return viper.GetString(config.KeyPackageName)
 }
 
 func GetImgID() string {
-	if viper.IsSet(config.KeyImageId) {
-		return viper.GetString(config.KeyImageId)
-	}
-	return ""
+	return viper.GetString(config.KeyImageId)
 }
 
 func GetImgName() string {
-	if viper.IsSet(config.KeyImageName) {
-		return viper.GetString(config.KeyImageName)
-	}
-	return ""
+	return viper.GetString(config.KeyImageName)
 }
 
 func GetMachineID() string {
-	if viper.IsSet(config.KeyInstanceID) {
-		return viper.GetString(config.KeyInstanceID)
-	}
-	return ""
+	return viper.GetString(config.KeyInstanceID)
 }
 
 func GetMachineName() string {
-	if viper.IsSet(config.KeyInstanceName) {
-		return viper.GetString(config.KeyInstanceName)
-	}
-	return ""
-}
-
-func GetMachineNamePrefix() string {
-	return viper.GetString(config.KeyInstanceNamePrefix)
+	return viper.GetString(config.KeyInstanceName)
 }
 
 func GetMachineState() string {
@@ -165,23 +143,23 @@ func GetMachineAffinityRules() []string {
 
 func GetMachineTags() map[string]string {
 	if viper.IsSet(config.KeyInstanceTag) {
-		metadata := make(map[string]string, 0)
+		tags := make(map[string]string, 0)
 		cfg := viper.GetStringSlice(config.KeyInstanceTag)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")
-			metadata[m[0]] = m[1]
+			tags[m[0]] = m[1]
 		}
 
-		return metadata
+		return tags
 	}
 
 	return nil
 }
 
 func GetSearchTags() map[string]interface{} {
-	if viper.IsSet(config.KeyInstanceSearchTag) {
+	if viper.IsSet(config.KeyInstanceTag) {
 		tags := make(map[string]interface{}, 0)
-		cfg := viper.GetStringSlice(config.KeyInstanceSearchTag)
+		cfg := viper.GetStringSlice(config.KeyInstanceTag)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")
 			tags[m[0]] = m[1]
@@ -209,11 +187,7 @@ func GetMachineMetadata() map[string]string {
 }
 
 func GetMachineUserdata() string {
-	if viper.IsSet(config.KeyInstanceUserdata) {
-		return viper.GetString(config.KeyInstanceUserdata)
-	}
-
-	return ""
+	return viper.GetString(config.KeyInstanceUserdata)
 }
 
 func IsBlockingAction() bool {
