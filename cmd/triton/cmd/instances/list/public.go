@@ -9,10 +9,15 @@
 package list
 
 import (
+	"time"
+
+	"strings"
+
 	"github.com/joyent/triton-go/cmd/agent/compute"
 	cfg "github.com/joyent/triton-go/cmd/config"
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
+	tc "github.com/joyent/triton-go/compute"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
@@ -63,11 +68,11 @@ var Cmd = &command.Command{
 			table.SetColumnSeparator("")
 			table.SetRowSeparator("")
 
-			table.SetHeader([]string{"SHORTID", "NAME", "IMG", "STATE", "AGE"})
+			table.SetHeader([]string{"SHORTID", "NAME", "IMG", "STATE", "FLAGS", "AGE"})
 
 			var numInstances uint
 			for _, instance := range instances {
-				table.Append([]string{string(instance.ID[:8]), instance.Name, a.FormatImageName(images, instance.Image), instance.State, "--"})
+				table.Append([]string{string(instance.ID[:8]), instance.Name, a.FormatImageName(images, instance.Image), instance.State, formatInstanceFlags(instance), formatInstanceAge(instance.Created)})
 				numInstances++
 			}
 
@@ -105,4 +110,25 @@ var Cmd = &command.Command{
 
 		return nil
 	},
+}
+
+func formatInstanceAge(t time.Time) string {
+	return time.Since(t).Truncate(24 * time.Hour).String()
+}
+
+func formatInstanceFlags(instance *tc.Instance) string {
+	flags := []string{}
+
+	if instance.Docker {
+		flags = append(flags, "D")
+	}
+	if strings.ToLower(instance.Brand) == "kvm" {
+		flags = append(flags, "K")
+	}
+	if instance.FirewallEnabled {
+		flags = append(flags, "F")
+	}
+
+	return strings.Join(flags, "")
+
 }
