@@ -9,7 +9,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/joyent/triton-go/cmd/triton/cmd"
+	"github.com/rs/zerolog/log"
 	"github.com/sean-/conswriter"
 )
 
@@ -19,5 +22,8 @@ func main() {
 		p.Wait()
 	}()
 
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		log.Error().Err(err).Msg("unable to run")
+		os.Exit(1)
+	}
 }
