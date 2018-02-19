@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,6 +104,38 @@ func (gmi *GetInstanceInput) Validate() error {
 	return nil
 }
 
+func (c *InstancesClient) Count(ctx context.Context, input *ListInstancesInput) (int, error) {
+	fullPath := path.Join("/", c.client.AccountName, "machines")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodHead,
+		Path:   fullPath,
+		Query:  buildQueryFilter(input),
+	}
+
+	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	if err != nil {
+		return -1, pkgerrors.Wrap(err, "unable to get machines count")
+	}
+
+	if response == nil {
+		return -1, pkgerrors.New("request to get machines count has empty response")
+	}
+	defer response.Body.Close()
+
+	var result int
+
+	if count := response.Header.Get("X-Resource-Count"); count != "" {
+		value, err := strconv.Atoi(count)
+		if err != nil {
+			return -1, pkgerrors.Wrap(err, "unable to decode machines count response")
+		}
+		result = value
+	}
+
+	return result, nil
+}
+
 func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*Instance, error) {
 	if err := input.Validate(); err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to get machine")
@@ -159,9 +192,7 @@ type ListInstancesInput struct {
 	Credentials bool
 }
 
-func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) ([]*Instance, error) {
-	fullPath := path.Join("/", c.client.AccountName, "machines")
-
+func buildQueryFilter(input *ListInstancesInput) *url.Values {
 	query := &url.Values{}
 	if input.Brand != "" {
 		query.Set("brand", input.Brand)
@@ -175,10 +206,10 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 	if input.State != "" {
 		query.Set("state", input.State)
 	}
-	if input.Memory >= 1 && input.Memory <= 1000 {
+	if input.Memory >= 1 {
 		query.Set("memory", fmt.Sprintf("%d", input.Memory))
 	}
-	if input.Limit >= 1 {
+	if input.Limit >= 1 && input.Limit <= 1000 {
 		query.Set("limit", fmt.Sprintf("%d", input.Limit))
 	}
 	if input.Offset >= 0 {
@@ -199,10 +230,16 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 		}
 	}
 
+	return query
+}
+
+func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) ([]*Instance, error) {
+	fullPath := path.Join("/", c.client.AccountName, "machines")
+
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   fullPath,
-		Query:  query,
+		Query:  buildQueryFilter(input),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
 	if err != nil {
