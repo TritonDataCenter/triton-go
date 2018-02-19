@@ -65,20 +65,6 @@ var Cmd = &command.Command{
 	Setup: func(parent *command.Command) error {
 		{
 			const (
-				key          = config.KeyInstanceName
-				longName     = "name"
-				shortName    = "n"
-				defaultValue = ""
-				description  = "Instance Name"
-			)
-
-			flags := parent.Cobra.Flags()
-			flags.StringP(longName, shortName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
-		}
-
-		{
-			const (
 				key          = config.KeyInstanceID
 				longName     = "id"
 				defaultValue = ""
