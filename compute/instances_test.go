@@ -1663,7 +1663,7 @@ func TestCountInstances(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("HEAD", path.Join("/", accountURL, "machines"), countMachinesSuccess)
+		testutils.RegisterResponder("HEAD", path.Join("/", accountURL, "machines?offset=0"), countMachinesSuccess)
 
 		_, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -1672,7 +1672,7 @@ func TestCountInstances(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines"), countMachinesError)
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines?offset=0"), countMachinesError)
 
 		_, err := do(context.Background(), computeClient)
 		if err == nil {
