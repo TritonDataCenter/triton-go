@@ -268,6 +268,7 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 	method := inputs.Method
 	path := inputs.Path
 	body := inputs.Body
+	query := inputs.Query
 
 	var requestBody io.Reader
 	if body != nil {
@@ -280,6 +281,9 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 
 	endpoint := c.TritonURL
 	endpoint.Path = path
+	if query != nil {
+		endpoint.RawQuery = query.Encode()
+	}
 
 	req, err := http.NewRequest(method, endpoint.String(), requestBody)
 	if err != nil {
