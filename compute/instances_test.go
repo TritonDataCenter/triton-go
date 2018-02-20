@@ -1649,6 +1649,42 @@ func TestCreateInstance(t *testing.T) {
 	})
 }
 
+func TestCountInstances(t *testing.T) {
+	computeClient := MockIdentityClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (int, error) {
+		defer testutils.DeactivateClient()
+
+		instances, err := cc.Instances().Count(ctx, &compute.ListInstancesInput{})
+		if err != nil {
+			return -1, err
+		}
+		return instances, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("HEAD", path.Join("/", accountURL, "machines"), countMachinesSuccess)
+
+		_, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", path.Join("/", accountURL, "machines"), countMachinesError)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to get machines count") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
 func getMachineSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
@@ -2267,6 +2303,22 @@ func createMachineSuccess(req *http.Request) (*http.Response, error) {
 
 func createMachineError(req *http.Request) (*http.Response, error) {
 	return nil, errors.New("unable to create machine")
+}
+
+func countMachinesSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	header.Add("x-resource-count", "3")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func countMachinesError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to get machines count")
 }
 
 func replaceMachineTagsSuccess(req *http.Request) (*http.Response, error) {
