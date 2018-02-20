@@ -119,6 +119,38 @@ func (c *AgentComputeClient) GetInstanceList() ([]*tcc.Instance, error) {
 
 }
 
+func (c *AgentComputeClient) CountInstanceList() (int, error) {
+	params := &tcc.ListInstancesInput{}
+
+	name := config.GetMachineName()
+	if name != "" {
+		params.Name = name
+	}
+
+	tags := config.GetSearchTags()
+	if len(tags) > 0 {
+		params.Tags = tags
+	}
+
+	state := config.GetMachineState()
+	if state != "" {
+		params.State = state
+	}
+
+	brand := config.GetMachineBrand()
+	if brand != "" {
+		params.Brand = brand
+	}
+
+	instances, err := c.client.Instances().Count(context.Background(), params)
+	if err != nil {
+		return -1, err
+	}
+
+	return instances, nil
+
+}
+
 func (c *AgentComputeClient) GetInstance() (*tcc.Instance, error) {
 
 	id := config.GetMachineID()
