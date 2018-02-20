@@ -11,6 +11,7 @@ package instances
 import (
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances/count"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/create"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/delete"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/get"
@@ -34,6 +35,7 @@ var Cmd = &command.Command{
 			create.Cmd,
 			delete.Cmd,
 			get.Cmd,
+			count.Cmd,
 		}
 
 		for _, cmd := range cmds {
@@ -79,6 +81,32 @@ var Cmd = &command.Command{
 
 				return pflag.NormalizedName(name)
 			})
+		}
+
+		{
+			const (
+				key          = config.KeyInstanceState
+				longName     = "state"
+				defaultValue = ""
+				description  = "Instance state (e.g. running)"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeyInstanceBrand
+				longName     = "brand"
+				defaultValue = ""
+				description  = "Instance brand (e.g. lx, kvm)"
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
 		}
 
 		return nil
