@@ -9,9 +9,10 @@
 package config
 
 const (
-	KeyAccount  = "general.account"
-	KeyUrl      = "general.url"
-	KeySshKeyID = "general.key-id"
+	KeyAccount        = "general.account"
+	KeyUrl            = "general.url"
+	KeySshKeyMaterial = "general.key-material"
+	KeySshKeyID       = "general.key-id"
 
 	DefaultManDir = "./docs/man"
 	ManSect       = 8

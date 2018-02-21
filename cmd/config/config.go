@@ -1,11 +1,16 @@
 package config
 
 import (
+	"encoding/pem"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -20,13 +25,48 @@ func New() (*TritonClientConfig, error) {
 	var signer authentication.Signer
 	var err error
 
-	signer, err = authentication.NewSSHAgentSigner(authentication.SSHAgentSignerInput{
-		KeyID:       GetTritonKeyID(),
-		AccountName: GetTritonAccount(),
-	})
-	if err != nil {
-		log.Fatal().Str("func", "initConfig").Msg("Error Creating SSH Agent Signer")
-		return nil, err
+	keyMaterial := GetTritonKeyMaterial()
+	if keyMaterial == "" {
+		signer, err = authentication.NewSSHAgentSigner(authentication.SSHAgentSignerInput{
+			KeyID:       GetTritonKeyID(),
+			AccountName: GetTritonAccount(),
+		})
+		if err != nil {
+			log.Fatal().Str("func", "initConfig").Msg("Error Creating SSH Agent Signer")
+			return nil, err
+		}
+	} else {
+		var keyBytes []byte
+		if _, err = os.Stat(keyMaterial); err == nil {
+			keyBytes, err = ioutil.ReadFile(keyMaterial)
+			if err != nil {
+				return nil, fmt.Errorf("error reading key material from %s: %s",
+					keyMaterial, err)
+			}
+			block, _ := pem.Decode(keyBytes)
+			if block == nil {
+				return nil, fmt.Errorf(
+					"failed to read key material '%s': no key found", keyMaterial)
+			}
+
+			if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
+				return nil, fmt.Errorf(
+					"failed to read key '%s': password protected keys are\n"+
+						"not currently supported. Please decrypt the key prior to use.", keyMaterial)
+			}
+
+		} else {
+			keyBytes = []byte(keyMaterial)
+		}
+
+		signer, err = authentication.NewPrivateKeySigner(authentication.PrivateKeySignerInput{
+			KeyID:              GetTritonKeyID(),
+			PrivateKeyMaterial: keyBytes,
+			AccountName:        GetTritonAccount(),
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "Error Creating SSH Private Key Signer")
+		}
 	}
 
 	config := &triton.ClientConfig{
@@ -56,6 +96,15 @@ func GetTritonUrl() string {
 	url := viper.GetString(config.KeyUrl)
 	if url == "" {
 		url = getEnvVar("URL")
+	}
+
+	return url
+}
+
+func GetTritonKeyMaterial() string {
+	url := viper.GetString(config.KeySshKeyMaterial)
+	if url == "" {
+		url = getEnvVar("KEY_MATERIAL")
 	}
 
 	return url
