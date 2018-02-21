@@ -152,11 +152,24 @@ var rootCmd = &command.Command{
 				longName     = "key-id"
 				shortName    = "K"
 				defaultValue = ""
-				description  = "SSH key fingerprint. If not specified, the environment variable TRITON_KEY_ID or SDC_KEY_ID will be used"
+				description  = "This is the fingerprint of the public key matching the key specified in key_path. It can be obtained via the command ssh-keygen -l -E md5 -f /path/to/key. It can be provided via the SDC_KEY_ID or TRITON_KEY_ID environment variables."
 			)
 
 			flags := parent.Cobra.PersistentFlags()
 			flags.StringP(longName, shortName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
+		}
+
+		{
+			const (
+				key          = config.KeySshKeyMaterial
+				longName     = "key-material"
+				defaultValue = ""
+				description  = "This is the private key of an SSH key associated with the Triton account to be used. If this is not set, the private key corresponding to the fingerprint in key_id must be available via an SSH Agent. It can be provided via the SDC_KEY_MATERIAL or TRITON_KEY_MATERIAL environment variables."
+			)
+
+			flags := parent.Cobra.PersistentFlags()
+			flags.String(longName, defaultValue, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
 		}
 
