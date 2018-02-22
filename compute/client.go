@@ -9,6 +9,8 @@
 package compute
 
 import (
+	"net/http"
+
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/client"
 )
@@ -32,6 +34,12 @@ func NewClient(config *triton.ClientConfig) (*ComputeClient, error) {
 		return nil, err
 	}
 	return newComputeClient(client), nil
+}
+
+// SetHeaders allows a consumer of the current client to set custom headers for
+// the next backend HTTP request sent to CloudAPI
+func (c *ComputeClient) SetHeader(header *http.Header) {
+	c.Client.RequestHeader = header
 }
 
 // Datacenters returns a Compute client used for accessing functions pertaining
