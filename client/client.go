@@ -31,19 +31,21 @@ var (
 	ErrAccountName = pkgerrors.New("missing account name")
 	ErrMissingURL  = pkgerrors.New("missing API URL")
 
-	InvalidTritonURL = "invalid format of Triton URL"
-	InvalidMantaURL  = "invalid format of Manta URL"
+	InvalidTritonURL   = "invalid format of Triton URL"
+	InvalidMantaURL    = "invalid format of Manta URL"
+	InvalidServicesURL = "invalid format of Triton Service Groups URL"
 )
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
 type Client struct {
-	HTTPClient    *http.Client
-	RequestHeader *http.Header
-	Authorizers   []authentication.Signer
-	TritonURL     url.URL
-	MantaURL      url.URL
-	AccountName   string
-	Username      string
+	HTTPClient       *http.Client
+	RequestHeader    *http.Header
+	Authorizers      []authentication.Signer
+	TritonURL        url.URL
+	MantaURL         url.URL
+	ServiceGroupsURL url.URL
+	AccountName      string
+	Username         string
 }
 
 // New is used to construct a Client in order to make API
@@ -51,12 +53,12 @@ type Client struct {
 //
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
-func New(tritonURL string, mantaURL string, accountName string, signers ...authentication.Signer) (*Client, error) {
+func New(tritonURL string, mantaURL string, tsgURL string, accountName string, signers ...authentication.Signer) (*Client, error) {
 	if accountName == "" {
 		return nil, ErrAccountName
 	}
 
-	if tritonURL == "" && mantaURL == "" {
+	if tritonURL == "" && mantaURL == "" && tsgURL == "" {
 		return nil, ErrMissingURL
 	}
 
@@ -68,6 +70,11 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	storageURL, err := url.Parse(mantaURL)
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, InvalidMantaURL)
+	}
+
+	servicesURL, err := url.Parse(tsgURL)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, InvalidServicesURL)
 	}
 
 	authorizers := make([]authentication.Signer, 0)
@@ -85,6 +92,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		Authorizers: authorizers,
 		TritonURL:   *cloudURL,
 		MantaURL:    *storageURL,
+		ServicesURL: *servicesURL,
 		AccountName: accountName,
 	}
 
@@ -462,4 +470,65 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 	}
 
 	return nil, nil, c.DecodeError(resp, req.Method)
+}
+
+func (c *Client) ExecuteRequestTSG(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
+	defer c.resetHeader()
+
+	method := inputs.Method
+	path := inputs.Path
+	body := inputs.Body
+	query := inputs.Query
+
+	var requestBody io.Reader
+	if body != nil {
+		marshaled, err := json.MarshalIndent(body, "", "    ")
+		if err != nil {
+			return nil, err
+		}
+		requestBody = bytes.NewReader(marshaled)
+	}
+
+	endpoint := c.ServicesURL
+	endpoint.Path = path
+	if query != nil {
+		endpoint.RawQuery = query.Encode()
+	}
+
+	req, err := http.NewRequest(method, endpoint.String(), requestBody)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
+	}
+
+	dateHeader := time.Now().UTC().Format(time.RFC1123)
+	req.Header.Set("date", dateHeader)
+
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
+	req.Header.Set("User-Agent", triton.UserAgent())
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	c.overrideHeader(req)
+
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
+	}
+
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
+		return resp.Body, nil
+	}
+
+	return nil, fmt.Errorf("something awful happened under TSG")
 }
