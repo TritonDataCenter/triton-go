@@ -69,7 +69,7 @@ func main() {
 	}
 
 	config := &triton.ClientConfig{
-		ServicesURL: "http://localhost:3000/v1/tsg",
+		ServicesURL: "http://localhost:3000/",
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
