@@ -40,12 +40,13 @@ var (
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
 type Client struct {
-	HTTPClient  *http.Client
-	Authorizers []authentication.Signer
-	TritonURL   url.URL
-	MantaURL    url.URL
-	AccountName string
-	Username    string
+	HTTPClient    *http.Client
+	RequestHeader *http.Header
+	Authorizers   []authentication.Signer
+	TritonURL     url.URL
+	MantaURL      url.URL
+	AccountName   string
+	Username      string
 }
 
 // New is used to construct a Client in order to make API
@@ -153,6 +154,8 @@ func (c *Client) InsecureSkipTLSVerify() {
 	c.HTTPClient.Transport = httpTransport(true)
 }
 
+// httpTransport is responsible for setting up our HTTP client's transport
+// settings
 func httpTransport(insecureSkipTLSVerify bool) *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -173,6 +176,7 @@ func doNotFollowRedirects(*http.Request, []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
+// DecodeError decodes a backend Triton error into a more usable Go error type
 func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 	err := &errors.APIError{
 		StatusCode: resp.StatusCode,
@@ -192,6 +196,23 @@ func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 	return err
 }
 
+// overrideHeader overrides the header of the passed in HTTP request
+func (c *Client) overrideHeader(req *http.Request) {
+	if c.RequestHeader != nil {
+		for k, vs := range *c.RequestHeader {
+			for _, v := range vs {
+				req.Header.Add(k, v)
+			}
+		}
+	}
+}
+
+// resetHeader will reset the struct field that stores custom header
+// information
+func (c *Client) resetHeader() {
+	c.RequestHeader = nil
+}
+
 // -----------------------------------------------------------------------------
 
 type RequestInput struct {
@@ -203,6 +224,8 @@ type RequestInput struct {
 }
 
 func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
+	defer c.resetHeader()
+
 	method := inputs.Method
 	path := inputs.Path
 	body := inputs.Body
@@ -245,6 +268,8 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+
+	c.overrideHeader(req)
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
@@ -265,6 +290,8 @@ func (c *Client) ExecuteRequest(ctx context.Context, inputs RequestInput) (io.Re
 }
 
 func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*http.Response, error) {
+	defer c.resetHeader()
+
 	method := inputs.Method
 	path := inputs.Path
 	body := inputs.Body
@@ -308,6 +335,8 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	c.overrideHeader(req)
+
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
@@ -323,6 +352,8 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 }
 
 func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput) (io.ReadCloser, http.Header, error) {
+	defer c.resetHeader()
+
 	method := inputs.Method
 	path := inputs.Path
 	query := inputs.Query
@@ -372,6 +403,8 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		req.URL.RawQuery = query.Encode()
 	}
 
+	c.overrideHeader(req)
+
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
@@ -395,6 +428,8 @@ type RequestNoEncodeInput struct {
 }
 
 func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEncodeInput) (io.ReadCloser, http.Header, error) {
+	defer c.resetHeader()
+
 	method := inputs.Method
 	path := inputs.Path
 	query := inputs.Query
@@ -432,6 +467,8 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
 	}
+
+	c.overrideHeader(req)
 
 	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {

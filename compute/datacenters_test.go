@@ -119,7 +119,7 @@ func TestAccDataCenters_List(t *testing.T) {
 }
 
 func TestListDataCenters(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.DataCenter, error) {
 		defer testutils.DeactivateClient()
@@ -189,7 +189,7 @@ func TestListDataCenters(t *testing.T) {
 }
 
 func TestGetDataCenter(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.DataCenter, error) {
 		defer testutils.DeactivateClient()
