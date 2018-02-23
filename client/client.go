@@ -38,14 +38,14 @@ var (
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
 type Client struct {
-	HTTPClient       *http.Client
-	RequestHeader    *http.Header
-	Authorizers      []authentication.Signer
-	TritonURL        url.URL
-	MantaURL         url.URL
-	ServiceGroupsURL url.URL
-	AccountName      string
-	Username         string
+	HTTPClient    *http.Client
+	RequestHeader *http.Header
+	Authorizers   []authentication.Signer
+	TritonURL     url.URL
+	MantaURL      url.URL
+	ServicesURL   url.URL
+	AccountName   string
+	Username      string
 }
 
 // New is used to construct a Client in order to make API

@@ -23,6 +23,7 @@ import (
 type ClientConfig struct {
 	TritonURL   string
 	MantaURL    string
+	ServicesURL string
 	AccountName string
 	Username    string
 	Signers     []authentication.Signer
