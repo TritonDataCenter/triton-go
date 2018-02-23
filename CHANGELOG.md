@@ -4,6 +4,7 @@
 - Add support for passing a list of tags to filter List instances [#116]
 - Add support for getting a count of current instances from the CloudAPI [#119]
 - Add support for querystring in client/ExecuteRequestRaw [#121]
+- client: Introduce SetHeader for overriding API request header [#125]
 
 ## 0.9.0 (January 23)
 
