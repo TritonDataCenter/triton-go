@@ -24,7 +24,7 @@ import (
 const fakeVolumeID = "1fd4ecb9-7f66-cf31-9a8a-b661d3adebcf"
 
 func TestGetVolume(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Volume, error) {
 		defer testutils.DeactivateClient()
@@ -95,7 +95,7 @@ func TestGetVolume(t *testing.T) {
 }
 
 func TestDeleteVolume(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -129,7 +129,7 @@ func TestDeleteVolume(t *testing.T) {
 }
 
 func TestCreateVolume(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Volume, error) {
 		defer testutils.DeactivateClient()
@@ -169,7 +169,7 @@ func TestCreateVolume(t *testing.T) {
 }
 
 func TestUpdateVolume(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -204,7 +204,7 @@ func TestUpdateVolume(t *testing.T) {
 }
 
 func TestListVolumes(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Volume, error) {
 		defer testutils.DeactivateClient()

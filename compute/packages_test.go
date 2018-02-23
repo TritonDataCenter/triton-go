@@ -118,7 +118,7 @@ func TestAccPackagesList(t *testing.T) {
 }
 
 func TestListPackages(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Package, error) {
 		defer testutils.DeactivateClient()
@@ -208,7 +208,7 @@ func TestListPackages(t *testing.T) {
 }
 
 func TestGetPackage(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Package, error) {
 		defer testutils.DeactivateClient()

@@ -9,6 +9,8 @@
 package account
 
 import (
+	"net/http"
+
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/client"
 )
@@ -32,6 +34,12 @@ func NewClient(config *triton.ClientConfig) (*AccountClient, error) {
 		return nil, err
 	}
 	return newAccountClient(client), nil
+}
+
+// SetHeaders allows a consumer of the current client to set custom headers for
+// the next backend HTTP request sent to CloudAPI
+func (c *AccountClient) SetHeader(header *http.Header) {
+	c.Client.RequestHeader = header
 }
 
 // Config returns a c used for accessing functions pertaining
