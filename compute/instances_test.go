@@ -1650,7 +1650,7 @@ func TestCreateInstance(t *testing.T) {
 }
 
 func TestCountInstances(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (int, error) {
 		defer testutils.DeactivateClient()
