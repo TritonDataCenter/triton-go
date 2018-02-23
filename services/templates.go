@@ -24,13 +24,13 @@ type TemplatesClient struct {
 }
 
 type Template struct {
-	Name string `json:"name"`
+	Name string
 }
 
 type ListTemplatesInput struct{}
 
 func (c *TemplatesClient) List(ctx context.Context, _ *ListTemplatesInput) ([]*Template, error) {
-	fullPath := path.Join("/", c.client.AccountName, "templates")
+	fullPath := path.Join("/v1/tsg/templates")
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
