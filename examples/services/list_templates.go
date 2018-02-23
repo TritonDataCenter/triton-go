@@ -83,9 +83,8 @@ func main() {
 	input := &services.ListTemplatesInput{}
 	templates, err := s.Templates().List(context.Background(), input)
 	if err != nil {
-		log.Fatalf("failed to list machine templates")
+		log.Fatalf("failed to list machine templates: %v", err)
 	}
-
 	for _, template := range templates {
 		fmt.Println("Template Name", template.Name)
 	}

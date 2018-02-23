@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"path"
-	"sort"
 
 	"github.com/joyent/triton-go/client"
 	pkgerrors "github.com/pkg/errors"
@@ -44,28 +43,11 @@ func (c *TemplatesClient) List(ctx context.Context, _ *ListTemplatesInput) ([]*T
 		return nil, pkgerrors.Wrap(err, "unable to list templates")
 	}
 
-	var intermediate map[string]string
+	var results []*Template
 	decoder := json.NewDecoder(respReader)
-	if err = decoder.Decode(&intermediate); err != nil {
+	if err = decoder.Decode(&results); err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to decode list templates response")
 	}
 
-	keys := make([]string, len(intermediate))
-	i := 0
-	for k := range intermediate {
-		keys[i] = k
-		i++
-	}
-	sort.Strings(keys)
-
-	result := make([]*Template, len(intermediate))
-	i = 0
-	for _, key := range keys {
-		result[i] = &Template{
-			Name: key,
-		}
-		i++
-	}
-
-	return result, nil
+	return results, nil
 }
