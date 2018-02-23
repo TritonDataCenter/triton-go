@@ -17,7 +17,6 @@ import (
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/client"
 )
 
 const TestEnvVar = "TRITON_TEST"
@@ -43,12 +42,12 @@ func AccTest(t *testing.T, c TestCase) {
 		return
 	}
 
-	tritonURL := client.GetTritonEnv("URL")
-	tritonAccount := client.GetTritonEnv("ACCOUNT")
-	tritonKeyID := client.GetTritonEnv("KEY_ID")
-	tritonKeyMaterial := client.GetTritonEnv("KEY_MATERIAL")
-	userName := client.GetTritonEnv("USER")
-	mantaURL := client.GetTritonEnv("MANTA_URL")
+	tritonURL := triton.GetEnv("URL")
+	tritonAccount := triton.GetEnv("ACCOUNT")
+	tritonKeyID := triton.GetEnv("KEY_ID")
+	tritonKeyMaterial := triton.GetEnv("KEY_MATERIAL")
+	userName := triton.GetEnv("USER")
+	mantaURL := triton.GetEnv("MANTA_URL")
 
 	var prerollErrors []error
 	if tritonURL == "" {
