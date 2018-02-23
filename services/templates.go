@@ -16,6 +16,7 @@ import (
 	"sort"
 
 	"github.com/joyent/triton-go/client"
+	pkgerrors "github.com/pkg/errors"
 )
 
 type TemplatesClient struct {

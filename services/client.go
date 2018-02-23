@@ -27,9 +27,15 @@ func newServiceGroupClient(client *client.Client) *ServiceGroupClient {
 
 // NewClient returns a new client for working with Service Groups endpoints and
 // resources within TSG
-func NewClient(config *triton.ClientConfig) (*GroupsClient, error) {
+func NewClient(config *triton.ClientConfig) (*ServiceGroupClient, error) {
 	// TODO: Utilize config interface within the function itself
-	client, err := client.New(config.TritonURL, config.MantaURL, config.AccountName, config.Signers...)
+	client, err := client.New(
+		config.TritonURL,
+		config.MantaURL,
+		config.ServicesURL,
+		config.AccountName,
+		config.Signers...,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +44,12 @@ func NewClient(config *triton.ClientConfig) (*GroupsClient, error) {
 
 // SetHeaders allows a consumer of the current client to set custom headers for
 // the next backend HTTP request sent to CloudAPI
-func (c *GroupsClient) SetHeader(header *http.Header) {
+func (c *ServiceGroupClient) SetHeader(header *http.Header) {
 	c.Client.RequestHeader = header
 }
 
 // Datacenters returns a Compute client used for accessing functions pertaining
 // to DataCenter functionality in the Triton API.
-func (c *GroupsClient) Templates() *TemplatesClient {
+func (c *ServiceGroupClient) Templates() *TemplatesClient {
 	return &TemplatesClient{c.Client}
 }
