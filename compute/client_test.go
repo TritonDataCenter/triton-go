@@ -71,9 +71,8 @@ func overrideHeaderTest(t *testing.T) func(req *http.Request) (*http.Response, e
 		if strings.Contains(testHeader, testHeaderVal1) {
 			t.Errorf("request header should not contain %q: got %q", testHeaderVal1, testHeader)
 		}
-		// test that final header is the one that is set
-		if !strings.Contains(testHeader, testHeaderVal2) {
-			t.Errorf("request header should contain %q: got %q", testHeaderVal2, testHeader)
+		if strings.Contains(testHeader, testHeaderVal2) {
+			t.Errorf("Request header should contain '%s': got '%s'", testHeaderVal2, testHeader)
 		}
 
 		header := http.Header{}

@@ -187,10 +187,8 @@ func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 // overrideHeader overrides the header of the passed in HTTP request
 func (c *Client) overrideHeader(req *http.Request) {
 	if c.RequestHeader != nil {
-		for k, vs := range *c.RequestHeader {
-			for _, v := range vs {
-				req.Header.Set(k, v)
-			}
+		for k, _ := range *c.RequestHeader {
+			req.Header.Set(k, c.RequestHeader.Get(k))
 		}
 	}
 }
@@ -264,9 +262,11 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, nil
 	}
 
@@ -330,9 +330,11 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
 
@@ -398,9 +400,11 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}
 
@@ -463,9 +467,11 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}
 
