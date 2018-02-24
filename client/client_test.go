@@ -21,6 +21,7 @@ const BadURL = "**ftp://man($$"
 func TestNew(t *testing.T) {
 	tritonURL := "http://triton.test.org"
 	mantaURL := "http://manta.test.org"
+	tsgURL := "http://tsg.test.org"
 	accountName := "test.user"
 	signer, _ := auth.NewTestSigner()
 
@@ -28,16 +29,18 @@ func TestNew(t *testing.T) {
 		name        string
 		tritonURL   string
 		mantaURL    string
+		tsgURL      string
 		accountName string
 		signer      auth.Signer
 		err         interface{}
 	}{
-		{"default", tritonURL, mantaURL, accountName, signer, nil},
-		{"missing url", "", "", accountName, signer, ErrMissingURL},
-		{"bad tritonURL", BadURL, mantaURL, accountName, signer, InvalidTritonURL},
-		{"bad mantaURL", tritonURL, BadURL, accountName, signer, InvalidMantaURL},
-		{"missing accountName", tritonURL, mantaURL, "", signer, ErrAccountName},
-		{"missing signer", tritonURL, mantaURL, accountName, nil, ErrDefaultAuth},
+		{"default", tritonURL, mantaURL, tsgURL, accountName, signer, nil},
+		{"missing url", "", "", "", accountName, signer, ErrMissingURL},
+		{"bad tritonURL", BadURL, mantaURL, tsgURL, accountName, signer, InvalidTritonURL},
+		{"bad mantaURL", tritonURL, BadURL, tsgURL, accountName, signer, InvalidMantaURL},
+		{"bad tsgURL", tritonURL, mantaURL, BadURL, accountName, signer, InvalidServicesURL},
+		{"missing accountName", tritonURL, mantaURL, tsgURL, "", signer, ErrAccountName},
+		{"missing signer", tritonURL, mantaURL, tsgURL, accountName, nil, ErrDefaultAuth},
 	}
 
 	for _, test := range tests {
@@ -50,6 +53,7 @@ func TestNew(t *testing.T) {
 			_, err := New(
 				test.tritonURL,
 				test.mantaURL,
+				test.tsgURL,
 				test.accountName,
 				test.signer,
 			)
@@ -90,6 +94,7 @@ func TestNew(t *testing.T) {
 		_, err = New(
 			tritonURL,
 			mantaURL,
+			tsgURL,
 			accountName,
 			nil,
 		)
