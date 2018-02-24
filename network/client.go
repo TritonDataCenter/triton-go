@@ -29,7 +29,13 @@ func newNetworkClient(client *client.Client) *NetworkClient {
 // resources within CloudAPI
 func NewClient(config *triton.ClientConfig) (*NetworkClient, error) {
 	// TODO: Utilize config interface within the function itself
-	client, err := client.New(config.TritonURL, config.MantaURL, config.AccountName, config.Signers...)
+	client, err := client.New(
+		config.TritonURL,
+		config.MantaURL,
+		config.ServicesURL,
+		config.AccountName,
+		config.Signers...,
+	)
 	if err != nil {
 		return nil, err
 	}
