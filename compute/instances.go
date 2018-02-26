@@ -10,8 +10,11 @@ package compute
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -266,6 +269,7 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 
 type CreateInstanceInput struct {
 	Name            string
+	NamePrefix      string
 	Package         string
 	Image           string
 	Networks        []string
@@ -280,6 +284,12 @@ type CreateInstanceInput struct {
 	Volumes         []InstanceVolume
 }
 
+func buildInstanceName(namePrefix string) string {
+	h := sha1.New()
+	io.WriteString(h, namePrefix+time.Now().UTC().String())
+	return fmt.Sprintf("%s%s", namePrefix, hex.EncodeToString(h.Sum(nil))[:8])
+}
+
 func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 	const numExtraParams = 8
 	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
@@ -288,6 +298,8 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 
 	if input.Name != "" {
 		result["name"] = input.Name
+	} else if input.NamePrefix != "" {
+		result["name"] = buildInstanceName(input.NamePrefix)
 	}
 
 	if input.Package != "" {
