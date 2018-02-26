@@ -18,7 +18,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/joyent/triton-go"
@@ -103,29 +102,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	return newClient, nil
 }
 
-var envPrefixes = []string{"TRITON", "SDC"}
-
-// GetTritonEnv looks up environment variables using the preferred "TRITON"
-// prefix, but falls back to the SDC prefix.  For example, looking up "USER"
-// will search for "TRITON_USER" followed by "SDC_USER".  If the environment
-// variable is not set, an empty string is returned.  GetTritonEnv() is used to
-// aid in the transition and deprecation of the SDC_* environment variables.
-func GetTritonEnv(name string) string {
-	for _, prefix := range envPrefixes {
-		if val, found := os.LookupEnv(prefix + "_" + name); found {
-			return val
-		}
-	}
-
-	return ""
-}
-
 // initDefaultAuth provides a default key signer for a client. This should only
 // be used internally if the client has no other key signer for authenticating
 // with Triton. We first look for both `SDC_KEY_ID` and `SSH_AUTH_SOCK` in the
 // user's environ(7). If so we default to the SSH agent key signer.
 func (c *Client) DefaultAuth() error {
-	tritonKeyId := GetTritonEnv("KEY_ID")
+	tritonKeyId := triton.GetEnv("KEY_ID")
 	if tritonKeyId != "" {
 		input := authentication.SSHAgentSignerInput{
 			KeyID:       tritonKeyId,
