@@ -6,6 +6,7 @@
 - Add support for querystring in client/ExecuteRequestRaw [#121]
 - client: Introduce SetHeader for overriding API request header [#125]
 - expose GetTritonEnv as a root level func [#126]
+- compute/instances: Add ability to support name-prefix [#129]
 
 ## 0.9.0 (January 23)
 
