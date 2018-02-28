@@ -10,13 +10,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"encoding/pem"
 
-	"github.com/davecgh/go-spew/spew"
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/storage"
@@ -96,5 +96,7 @@ func main() {
 		log.Fatalf("storage.Dir.List: %v", err)
 	}
 
-	spew.Dump(output)
+	for _, dir := range output.Entries {
+		fmt.Println(dir.Name)
+	}
 }
