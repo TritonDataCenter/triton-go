@@ -1,12 +1,13 @@
 ## Unreleased
 
-- Add support for ChangeUserPassword [#111]
-- Add support for passing a list of tags to filter List instances [#116]
-- Add support for getting a count of current instances from the CloudAPI [#119]
-- Add support for querystring in client/ExecuteRequestRaw [#121]
+- client: Add support for querystring in client/ExecuteRequestRaw [#121]
 - client: Introduce SetHeader for overriding API request header [#125]
-- expose GetTritonEnv as a root level func [#126]
+- compute/instances: Add support for passing a list of tags to filter List instances [#116]
+- compute/instances: Add support for getting a count of current instances from the CloudAPI [#119]
 - compute/instances: Add ability to support name-prefix [#129]
+- compute/instances: Add support for Instance Deletion Protection [#131]
+- identity/user: Add support for ChangeUserPassword [#111]
+- expose GetTritonEnv as a root level func [#126]
 
 ## 0.9.0 (January 23)
 
