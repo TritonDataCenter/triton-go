@@ -245,6 +245,9 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 		Query:  buildQueryFilter(input),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to list machines")
 	}
