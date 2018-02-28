@@ -1064,6 +1064,58 @@ func (c *InstancesClient) Reboot(ctx context.Context, input *RebootInstanceInput
 	return nil
 }
 
+type EnableDeletionProtectionInput struct {
+	InstanceID string
+}
+
+func (c *InstancesClient) EnableDeletionProtection(ctx context.Context, input *EnableDeletionProtectionInput) error {
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
+
+	params := &url.Values{}
+	params.Set("action", "enable_deletion_protection")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   fullPath,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return pkgerrors.Wrap(err, "unable to enable deletion protection")
+	}
+
+	return nil
+}
+
+type DisableDeletionProtectionInput struct {
+	InstanceID string
+}
+
+func (c *InstancesClient) DisableDeletionProtection(ctx context.Context, input *DisableDeletionProtectionInput) error {
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
+
+	params := &url.Values{}
+	params.Set("action", "disable_deletion_protection")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   fullPath,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return pkgerrors.Wrap(err, "unable to disable deletion protection")
+	}
+
+	return nil
+}
+
 var reservedInstanceCNSTags = map[string]struct{}{
 	CNSTagDisable:    {},
 	CNSTagReversePTR: {},
