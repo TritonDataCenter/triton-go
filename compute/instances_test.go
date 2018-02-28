@@ -1685,6 +1685,74 @@ func TestCountInstances(t *testing.T) {
 	})
 }
 
+func TestEnableDeletionProtection(t *testing.T) {
+	computeClient := MockComputeClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().EnableDeletionProtection(ctx, &compute.EnableDeletionProtectionInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_deletion_protection", accountURL, fakeMachineID), enableDeletionProtectionSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_deletion_protection", accountURL, fakeMachineID), enableDeletionProtectionError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to enable deletion protection") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDisableDeletionProtection(t *testing.T) {
+	computeClient := MockComputeClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DisableDeletionProtection(ctx, &compute.DisableDeletionProtectionInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_deletion_protection", accountURL, fakeMachineID), disableDeletionProtectionSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_deletion_protection", accountURL, fakeMachineID), disableDeletionProtectionError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to disable deletion protection") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
 func getMachineSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
@@ -2368,4 +2436,32 @@ func updateMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
 
 func updateMachineMetaDataError(req *http.Request) (*http.Response, error) {
 	return nil, errors.New("unable to update machine metadata")
+}
+
+func enableDeletionProtectionSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func enableDeletionProtectionError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to enable deletion protection")
+}
+
+func disableDeletionProtectionSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func disableDeletionProtectionError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to disable deletion protection")
 }
