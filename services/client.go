@@ -48,8 +48,14 @@ func (c *ServiceGroupClient) SetHeader(header *http.Header) {
 	c.Client.RequestHeader = header
 }
 
-// Datacenters returns a Compute client used for accessing functions pertaining
-// to DataCenter functionality in the Triton API.
+// Templates returns a TemplatesClient used for accessing functions pertaining
+// to Instance Templates functionality in the TSG API.
 func (c *ServiceGroupClient) Templates() *TemplatesClient {
 	return &TemplatesClient{c.Client}
+}
+
+// Groups returns a GroupsClient used for accessing functions pertaining
+// to Service Groups functionality in the TSG API.
+func (c *ServiceGroupClient) Groups() *GroupsClient {
+	return &GroupsClient{c.Client}
 }
