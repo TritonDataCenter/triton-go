@@ -19,6 +19,8 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
+const groupsPath = "/v1/tsg"
+
 type GroupsClient struct {
 	client *client.Client
 }
@@ -35,11 +37,9 @@ type ServiceGroup struct {
 type ListGroupsInput struct{}
 
 func (c *GroupsClient) List(ctx context.Context, _ *ListGroupsInput) ([]*ServiceGroup, error) {
-	fullPath := path.Join("/v1/tsg/groups")
-
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   fullPath,
+		Path:   groupsPath,
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
 	if respReader != nil {
@@ -75,7 +75,7 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 		return nil, pkgerrors.Wrap(err, "unable to validate get group input")
 	}
 
-	fullPath := path.Join("/v1/tsg/groups", input.Name)
+	fullPath := path.Join(groupsPath, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   fullPath,
@@ -100,7 +100,6 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 type CreateGroupInput struct {
 	GroupName           string
 	TemplateId          int64
-	AccountId           string
 	Capacity            int
 	HealthCheckInterval int
 }
@@ -124,7 +123,6 @@ func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
 }
 
 func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) error {
-	fullPath := path.Join("/v1/tsg/groups")
 	body, err := input.toAPI()
 	if err != nil {
 		return pkgerrors.Wrap(err, "unable to validate create group input")
@@ -132,7 +130,7 @@ func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) erro
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   fullPath,
+		Path:   groupsPath,
 		Body:   body,
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
@@ -163,7 +161,7 @@ func (c *GroupsClient) Delete(ctx context.Context, input *DeleteGroupInput) erro
 		return pkgerrors.Wrap(err, "unable to validate delete group input")
 	}
 
-	fullPath := path.Join("/v1/tsg/group", input.Name)
+	fullPath := path.Join(groupsPath, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   fullPath,
