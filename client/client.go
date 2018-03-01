@@ -536,5 +536,5 @@ func (c *Client) ExecuteRequestTSG(ctx context.Context, inputs RequestInput) (io
 		return resp.Body, nil
 	}
 
-	return nil, c.DecodeError(resp, req.Method)
+	return nil, fmt.Errorf("could not process backend TSG request")
 }
