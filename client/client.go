@@ -536,5 +536,5 @@ func (c *Client) ExecuteRequestTSG(ctx context.Context, inputs RequestInput) (io
 		return resp.Body, nil
 	}
 
-	return nil, fmt.Errorf("something awful happened under TSG")
+	return nil, c.DecodeError(resp, req.Method)
 }
