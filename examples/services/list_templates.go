@@ -116,11 +116,10 @@ func main() {
 
 	fmt.Println("---")
 
-	customTemplateName := "custom-template-1"
+	customTemplateName := "custom-template-2"
 
 	createInput := &services.CreateTemplateInput{
 		TemplateName:       customTemplateName,
-		AccountId:          "joyent",
 		Package:            "test-package",
 		ImageId:            "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
 		InstanceNamePrefix: "sample-",

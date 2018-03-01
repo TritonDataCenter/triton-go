@@ -104,7 +104,6 @@ func (c *TemplatesClient) Get(ctx context.Context, input *GetTemplateInput) (*In
 
 type CreateTemplateInput struct {
 	TemplateName       string
-	AccountId          string
 	Package            string
 	ImageId            string
 	InstanceNamePrefix string
@@ -120,10 +119,6 @@ func (input *CreateTemplateInput) toAPI() map[string]interface{} {
 
 	if input.TemplateName != "" {
 		result["TemplateName"] = input.TemplateName
-	}
-
-	if input.AccountId != "" {
-		result["AccountId"] = input.AccountId
 	}
 
 	if input.Package != "" {
