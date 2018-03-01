@@ -91,8 +91,8 @@ func main() {
 	for _, grp := range groups {
 		fmt.Printf("Group ID: %v\n", grp.ID)
 		fmt.Printf("Group Name: %v\n", grp.GroupName)
-		fmt.Printf("Group TemplateId: %v\n", grp.TemplateId)
-		fmt.Printf("Group AccountId: %v\n", grp.AccountId)
+		fmt.Printf("Group TemplateID: %v\n", grp.TemplateID)
+		fmt.Printf("Group AccountID: %v\n", grp.AccountID)
 		fmt.Printf("Group Capacity: %v\n", grp.Capacity)
 		fmt.Printf("Group HealthCheckInterval: %v\n", grp.HealthCheckInterval)
 		fmt.Println("")
@@ -110,7 +110,7 @@ func main() {
 
 	createInput := &services.CreateGroupInput{
 		GroupName:           customGroupName,
-		TemplateId:          templates[0].ID,
+		TemplateID:          templates[0].ID,
 		Capacity:            2,
 		HealthCheckInterval: 300,
 	}
