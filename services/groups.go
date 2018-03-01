@@ -26,12 +26,12 @@ type GroupsClient struct {
 }
 
 type ServiceGroup struct {
-	ID                  int64
-	GroupName           string
-	TemplateId          int64
-	AccountId           string
-	Capacity            int
-	HealthCheckInterval int
+	ID                  int64  `json:"id"`
+	GroupName           string `json:"group_name"`
+	TemplateID          int64  `json:"template_id"`
+	AccountID           string `json:"account_id"`
+	Capacity            int    `json:"capacity"`
+	HealthCheckInterval int    `json:"health_check_interval"`
 }
 
 type ListGroupsInput struct{}
@@ -98,26 +98,26 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 }
 
 type CreateGroupInput struct {
-	GroupName           string
-	TemplateId          int64
-	Capacity            int
-	HealthCheckInterval int
+	GroupName           string `json:"group_name"`
+	TemplateID          int64  `json:"template_id"`
+	Capacity            int    `json:"capacity"`
+	HealthCheckInterval int    `json:"health_check_interval"`
 }
 
 func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
 	if input.GroupName != "" {
-		result["GroupName"] = input.GroupName
+		result["group_name"] = input.GroupName
 	}
 
-	if input.TemplateId == 0 {
+	if input.TemplateID == 0 {
 		return nil, fmt.Errorf("unable to create service group without template ID")
 	}
-	result["TemplateId"] = input.TemplateId
+	result["template_id"] = input.TemplateID
 
-	result["Capacity"] = input.Capacity
-	result["HealthCheckInterval"] = input.HealthCheckInterval
+	result["capacity"] = input.Capacity
+	result["health_check_interval"] = input.HealthCheckInterval
 
 	return result, nil
 }

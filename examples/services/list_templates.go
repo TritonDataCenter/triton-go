@@ -88,14 +88,14 @@ func main() {
 	for _, template := range templates {
 		fmt.Printf("Template Name: %s\n", template.TemplateName)
 		fmt.Printf("ID: %v\n", template.ID)
-		fmt.Printf("AccountId: %v\n", template.AccountId)
+		fmt.Printf("AccountID: %v\n", template.AccountID)
 		fmt.Printf("Package: %v\n", template.Package)
-		fmt.Printf("ImageId: %v\n", template.ImageId)
+		fmt.Printf("ImageID: %v\n", template.ImageID)
 		fmt.Printf("InstanceNamePrefix: %v\n", template.InstanceNamePrefix)
 		fmt.Printf("FirewallEnabled: %v\n", template.FirewallEnabled)
 		fmt.Printf("Networks: %v\n", template.Networks)
-		fmt.Printf("UserData: %v\n", template.UserData)
-		fmt.Printf("MetaData: %v\n", template.MetaData)
+		fmt.Printf("Userdata: %v\n", template.Userdata)
+		fmt.Printf("Metadata: %v\n", template.Metadata)
 		fmt.Printf("Tags: %v\n", template.Tags)
 		fmt.Println("")
 	}
@@ -121,12 +121,12 @@ func main() {
 	createInput := &services.CreateTemplateInput{
 		TemplateName:       customTemplateName,
 		Package:            "test-package",
-		ImageId:            "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+		ImageID:            "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
 		InstanceNamePrefix: "sample-",
 		FirewallEnabled:    false,
 		Networks:           []string{"f7ed95d3-faaf-43ef-9346-15644403b963"},
-		UserData:           "bash script here",
-		MetaData:           map[string]string{"metadata": "test"},
+		Userdata:           "bash script here",
+		Metadata:           map[string]string{"metadata": "test"},
 		Tags:               map[string]string{"tag": "test"},
 	}
 	err = svc.Templates().Create(context.Background(), createInput)

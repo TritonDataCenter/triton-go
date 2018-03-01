@@ -19,32 +19,32 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
+const templatesPath = "/v1/tsg/templates"
+
 type TemplatesClient struct {
 	client *client.Client
 }
 
 type InstanceTemplate struct {
-	ID                 int64
-	TemplateName       string
-	AccountId          string
-	Package            string
-	ImageId            string
-	InstanceNamePrefix string
-	FirewallEnabled    bool
-	Networks           []string
-	UserData           string
-	MetaData           map[string]string
-	Tags               map[string]string
+	ID                 int64             `json:"id"`
+	TemplateName       string            `json:"template_name"`
+	AccountID          string            `json:"account_id"`
+	Package            string            `json:"package"`
+	ImageID            string            `json:"image_id"`
+	InstanceNamePrefix string            `json:"instance_name_prefix"`
+	FirewallEnabled    bool              `json:"firewall_enabled"`
+	Networks           []string          `json:"networks"`
+	Userdata           string            `json:"userdata"`
+	Metadata           map[string]string `json:"metadata"`
+	Tags               map[string]string `json:"tags"`
 }
 
 type ListTemplatesInput struct{}
 
 func (c *TemplatesClient) List(ctx context.Context, _ *ListTemplatesInput) ([]*InstanceTemplate, error) {
-	fullPath := path.Join("/v1/tsg/templates")
-
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   fullPath,
+		Path:   templatesPath,
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
 	if respReader != nil {
@@ -80,7 +80,7 @@ func (c *TemplatesClient) Get(ctx context.Context, input *GetTemplateInput) (*In
 		return nil, pkgerrors.Wrap(err, "unable to get instance template")
 	}
 
-	fullPath := path.Join("/v1/tsg/templates", input.Name)
+	fullPath := path.Join(templatesPath, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   fullPath,
@@ -103,65 +103,62 @@ func (c *TemplatesClient) Get(ctx context.Context, input *GetTemplateInput) (*In
 }
 
 type CreateTemplateInput struct {
-	TemplateName       string
-	Package            string
-	ImageId            string
-	InstanceNamePrefix string
-	FirewallEnabled    bool
-	Networks           []string
-	UserData           string
-	MetaData           map[string]string
-	Tags               map[string]string
+	TemplateName       string            `json:"template_name"`
+	Package            string            `json:"package"`
+	ImageID            string            `json:"image_id"`
+	InstanceNamePrefix string            `json:"instance_name_prefix"`
+	FirewallEnabled    bool              `json:"firewall_enabled"`
+	Networks           []string          `json:"networks"`
+	Userdata           string            `json:"userdata"`
+	Metadata           map[string]string `json:"metadata"`
+	Tags               map[string]string `json:"tags"`
 }
 
 func (input *CreateTemplateInput) toAPI() map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if input.TemplateName != "" {
-		result["TemplateName"] = input.TemplateName
+		result["template_name"] = input.TemplateName
 	}
 
 	if input.Package != "" {
-		result["Package"] = input.Package
+		result["package"] = input.Package
 	}
 
-	if input.ImageId != "" {
-		result["ImageId"] = input.ImageId
+	if input.ImageID != "" {
+		result["image_id"] = input.ImageID
 	}
 
 	if input.InstanceNamePrefix != "" {
-		result["InstanceNamePrefix"] = input.InstanceNamePrefix
+		result["instance_name_prefix"] = input.InstanceNamePrefix
 	}
 
-	result["FirewallEnabled"] = input.FirewallEnabled
+	result["firewall_enabled"] = input.FirewallEnabled
 
 	if len(input.Networks) > 0 {
 		result["networks"] = input.Networks
 	}
 
-	if input.UserData != "" {
-		result["UserData"] = input.UserData
+	if input.Userdata != "" {
+		result["userdata"] = input.Userdata
 	}
 
-	if len(input.MetaData) > 0 {
-		result["MetaData"] = input.MetaData
+	if len(input.Metadata) > 0 {
+		result["metadata"] = input.Metadata
 	}
 
 	if len(input.Tags) > 0 {
-		result["Tags"] = input.Tags
+		result["tags"] = input.Tags
 	}
 
 	return result
 }
 
 func (c *TemplatesClient) Create(ctx context.Context, input *CreateTemplateInput) error {
-	fullPath := path.Join("/v1/tsg/templates")
-	body := input.toAPI()
-
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
-		Path:   fullPath,
-		Body:   body,
+		Path:   templatesPath,
+		Body:   input.toAPI(),
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
 	if respReader != nil {
@@ -191,7 +188,7 @@ func (c *TemplatesClient) Delete(ctx context.Context, input *DeleteTemplateInput
 		return pkgerrors.Wrap(err, "unable to validate delete template input")
 	}
 
-	fullPath := path.Join("/v1/tsg/templates", input.Name)
+	fullPath := path.Join(templatesPath, input.Name)
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   fullPath,
