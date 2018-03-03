@@ -9,9 +9,9 @@
 package list
 
 import (
-	"time"
-
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/joyent/triton-go/cmd/agent/compute"
 	cfg "github.com/joyent/triton-go/cmd/config"
@@ -56,11 +56,11 @@ var Cmd = &command.Command{
 			}
 
 			table := tablewriter.NewWriter(cons)
-			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetHeaderAlignment(tablewriter.ALIGN_RIGHT)
 			table.SetHeaderLine(false)
 			table.SetAutoFormatHeaders(true)
 
-			table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
+			table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("")
 			table.SetColumnSeparator("")
@@ -85,7 +85,47 @@ var Cmd = &command.Command{
 }
 
 func formatInstanceAge(t time.Time) string {
-	return time.Since(t).Truncate(24 * time.Hour).String()
+	d := time.Since(t)
+
+	timeSegs := make([]string, 0, 6)
+
+	years := int64(float64(d/(24*time.Hour)) / 365.25)
+	if years > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dy", years))
+	}
+
+	months := int64(float64(d/(24*time.Hour)%365) / 30.25)
+	if months > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dmo", months))
+	}
+
+	days := int64(d/(24*time.Hour)) % 365 % 7
+	if days > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dd", days))
+	}
+
+	hours := int64(d.Hours()) % 24
+	if hours > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dh", hours))
+	}
+
+	minutes := int64(d.Minutes()) % 60
+	if minutes > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dm", minutes))
+	}
+
+	seconds := int64(d.Seconds()) % 60
+	if seconds > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2ds", seconds))
+	}
+
+	maxSegs := len(timeSegs)
+	if maxSegs > 3 {
+		maxSegs = 3
+	}
+	timeSegs = timeSegs[0:maxSegs]
+
+	return strings.Join(timeSegs, " ")
 }
 
 func formatInstanceFlags(instance *tc.Instance) string {
