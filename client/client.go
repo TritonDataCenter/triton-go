@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/joyent/triton-go"
@@ -34,6 +35,15 @@ var (
 	InvalidTritonURL   = "invalid format of Triton URL"
 	InvalidMantaURL    = "invalid format of Manta URL"
 	InvalidServicesURL = "invalid format of Triton Service Groups URL"
+	InvalidDCInURL     = "invalid data center in URL"
+
+	knownDCFormats = []string{
+		`https?://(.*).api.joyent.com`,
+		`https?://(.*).api.joyentcloud.com`,
+		`https?://(.*).api.samsungcloud.io`,
+	}
+
+	tsgFormatURL = "https://tsg.%s.svc.joyent.zone"
 )
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
@@ -48,17 +58,32 @@ type Client struct {
 	Username      string
 }
 
+// parseDC parses out the data center commonly found in Triton URLs. Returns an
+// error if the Triton URL does not include a known data center name, in which
+// case a URL override (TRITON_TSG_URL) must be provided.
+func parseDC(url string) (string, error) {
+	for _, pattern := range knownDCFormats {
+		re := regexp.MustCompile(pattern)
+		matches := re.FindStringSubmatch(url)
+		if len(matches) > 1 {
+			return matches[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to parse datacenter from '%s'", url)
+}
+
 // New is used to construct a Client in order to make API
 // requests to the Triton API.
 //
 // At least one signer must be provided - example signers include
 // authentication.PrivateKeySigner and authentication.SSHAgentSigner.
-func New(tritonURL string, mantaURL string, tsgURL string, accountName string, signers ...authentication.Signer) (*Client, error) {
+func New(tritonURL string, mantaURL string, accountName string, signers ...authentication.Signer) (*Client, error) {
 	if accountName == "" {
 		return nil, ErrAccountName
 	}
 
-	if tritonURL == "" && mantaURL == "" && tsgURL == "" {
+	if tritonURL == "" && mantaURL == "" {
 		return nil, ErrMissingURL
 	}
 
@@ -70,6 +95,15 @@ func New(tritonURL string, mantaURL string, tsgURL string, accountName string, s
 	storageURL, err := url.Parse(mantaURL)
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, InvalidMantaURL)
+	}
+
+	tsgURL := triton.GetEnv("TSG_URL")
+	if tsgURL == "" {
+		currentDC, err := parseDC(tritonURL)
+		if err != nil {
+			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
+		}
+		tsgURL = fmt.Sprintf(tsgFormatURL, currentDC)
 	}
 
 	servicesURL, err := url.Parse(tsgURL)
