@@ -32,7 +32,6 @@ func NewClient(config *triton.ClientConfig) (*ComputeClient, error) {
 	client, err := client.New(
 		config.TritonURL,
 		config.MantaURL,
-		config.ServicesURL,
 		config.AccountName,
 		config.Signers...,
 	)
