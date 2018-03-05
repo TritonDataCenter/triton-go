@@ -14,10 +14,11 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("TRITON_KEY_ID")
-	accountName := os.Getenv("TRITON_ACCOUNT")
-	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
-	userName := os.Getenv("TRITON_USER")
+	keyID := triton.GetEnv("KEY_ID")
+	accountName := triton.GetEnv("ACCOUNT")
+	keyMaterial := triton.GetEnv("KEY_MATERIAL")
+	userName := triton.GetEnv("USER")
+	tritonURL := triton.GetEnv("URL")
 
 	var signer authentication.Signer
 	var err error
@@ -68,11 +69,15 @@ func main() {
 		}
 	}
 
+	if err = os.Setenv("TRITON_TSG_URL", "http://localhost:3000/"); err != nil {
+		log.Fatal("failed to set TRITON_TSG_URL")
+	}
+
 	config := &triton.ClientConfig{
-		ServicesURL: "http://localhost:3000/",
 		AccountName: accountName,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
+		TritonURL:   tritonURL,
 	}
 
 	svc, err := services.NewClient(config)
