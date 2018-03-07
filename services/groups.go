@@ -122,10 +122,10 @@ func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
 	return result, nil
 }
 
-func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) error {
+func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) (*ServiceGroup, error) {
 	body, err := input.toAPI()
 	if err != nil {
-		return pkgerrors.Wrap(err, "unable to validate create group input")
+		return nil, pkgerrors.Wrap(err, "unable to validate create group input")
 	}
 
 	reqInputs := client.RequestInput{
@@ -138,10 +138,78 @@ func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) erro
 		defer respReader.Close()
 	}
 	if err != nil {
-		return pkgerrors.Wrap(err, "unable to create group")
+		return nil, pkgerrors.Wrap(err, "unable to create group")
 	}
 
-	return nil
+	var results *ServiceGroup
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&results); err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to decode get group response")
+	}
+
+	return results, nil
+}
+
+type UpdateGroupInput struct {
+	ID                  int64  `json:"id"`
+	GroupName           string `json:"group_name"`
+	TemplateID          int64  `json:"template_id"`
+	Capacity            int    `json:"capacity"`
+	HealthCheckInterval int    `json:"health_check_interval"`
+}
+
+func (input *UpdateGroupInput) updateToAPI() (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+
+	if input.ID != 0 {
+		result["id"] = input.ID
+	}
+
+	if input.GroupName != "" {
+		result["group_name"] = input.GroupName
+	}
+
+	if input.TemplateID != 0 {
+		result["template_id"] = input.TemplateID
+	}
+
+	if input.Capacity != 0 {
+		result["capacity"] = input.Capacity
+	}
+
+	if input.HealthCheckInterval != 0 {
+		result["health_check_interval"] = input.HealthCheckInterval
+	}
+
+	return result, nil
+}
+
+func (c *GroupsClient) Update(ctx context.Context, input *UpdateGroupInput) (*ServiceGroup, error) {
+	body, err := input.updateToAPI()
+	if err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to validate create group input")
+	}
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPut,
+		Path:   path.Join(groupsPath, input.GroupName),
+		Body:   body,
+	}
+	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to create group")
+	}
+
+	var results *ServiceGroup
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&results); err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to decode get group response")
+	}
+
+	return results, nil
 }
 
 type DeleteGroupInput struct {
