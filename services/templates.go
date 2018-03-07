@@ -64,12 +64,12 @@ func (c *TemplatesClient) List(ctx context.Context, _ *ListTemplatesInput) ([]*I
 }
 
 type GetTemplateInput struct {
-	Name string
+	ID int64
 }
 
 func (i *GetTemplateInput) Validate() error {
-	if i.Name == "" {
-		return fmt.Errorf("template name can not be empty")
+	if i.ID == 0 {
+		return fmt.Errorf("template id can not be empty")
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func (c *TemplatesClient) Get(ctx context.Context, input *GetTemplateInput) (*In
 		return nil, pkgerrors.Wrap(err, "unable to get instance template")
 	}
 
-	fullPath := path.Join(templatesPath, input.Name)
+	fullPath := path.Join(templatesPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   fullPath,
@@ -178,11 +178,11 @@ func (c *TemplatesClient) Create(ctx context.Context, input *CreateTemplateInput
 }
 
 type DeleteTemplateInput struct {
-	Name string
+	ID int64
 }
 
 func (i *DeleteTemplateInput) Validate() error {
-	if i.Name == "" {
+	if i.ID == 0 {
 		return fmt.Errorf("template name can not be empty")
 	}
 
@@ -194,7 +194,7 @@ func (c *TemplatesClient) Delete(ctx context.Context, input *DeleteTemplateInput
 		return pkgerrors.Wrap(err, "unable to validate delete template input")
 	}
 
-	fullPath := path.Join(templatesPath, input.Name)
+	fullPath := path.Join(templatesPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   fullPath,
