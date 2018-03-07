@@ -154,7 +154,7 @@ func (input *CreateTemplateInput) toAPI() map[string]interface{} {
 	return result
 }
 
-func (c *TemplatesClient) Create(ctx context.Context, input *CreateTemplateInput) error {
+func (c *TemplatesClient) Create(ctx context.Context, input *CreateTemplateInput) (*InstanceTemplate, error) {
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
 		Path:   templatesPath,
@@ -165,10 +165,16 @@ func (c *TemplatesClient) Create(ctx context.Context, input *CreateTemplateInput
 		defer respReader.Close()
 	}
 	if err != nil {
-		return pkgerrors.Wrap(err, "unable to create template")
+		return nil, pkgerrors.Wrap(err, "unable to create template")
 	}
 
-	return nil
+	var result *InstanceTemplate
+	decoder := json.NewDecoder(respReader)
+	if err = decoder.Decode(&result); err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to decode create template response")
+	}
+
+	return result, nil
 }
 
 type DeleteTemplateInput struct {
