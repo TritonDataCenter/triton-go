@@ -59,12 +59,12 @@ func (c *GroupsClient) List(ctx context.Context, _ *ListGroupsInput) ([]*Service
 }
 
 type GetGroupInput struct {
-	Name string
+	ID int64
 }
 
 func (i *GetGroupInput) Validate() error {
-	if i.Name == "" {
-		return fmt.Errorf("group name can not be empty")
+	if i.ID == 0 {
+		return fmt.Errorf("group id can not be empty")
 	}
 
 	return nil
@@ -75,7 +75,7 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 		return nil, pkgerrors.Wrap(err, "unable to validate get group input")
 	}
 
-	fullPath := path.Join(groupsPath, input.Name)
+	fullPath := path.Join(groupsPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
 		Path:   fullPath,
@@ -192,7 +192,7 @@ func (c *GroupsClient) Update(ctx context.Context, input *UpdateGroupInput) (*Se
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
-		Path:   path.Join(groupsPath, input.GroupName),
+		Path:   path.Join(groupsPath, fmt.Sprintf("%d", input.ID)),
 		Body:   body,
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
@@ -213,12 +213,12 @@ func (c *GroupsClient) Update(ctx context.Context, input *UpdateGroupInput) (*Se
 }
 
 type DeleteGroupInput struct {
-	Name string
+	ID int64
 }
 
 func (i *DeleteGroupInput) Validate() error {
-	if i.Name == "" {
-		return fmt.Errorf("group name can not be empty")
+	if i.ID == 0 {
+		return fmt.Errorf("group id can not be empty")
 	}
 
 	return nil
@@ -229,7 +229,7 @@ func (c *GroupsClient) Delete(ctx context.Context, input *DeleteGroupInput) erro
 		return pkgerrors.Wrap(err, "unable to validate delete group input")
 	}
 
-	fullPath := path.Join(groupsPath, input.Name)
+	fullPath := path.Join(groupsPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
 		Path:   fullPath,
