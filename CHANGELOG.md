@@ -1,6 +1,6 @@
 ## Unreleased
 
-## 1.1.0 (March 13 2018)
+## 1.1.1 (March 13 2018)
 
 - client: Adding the rbac user support to the SSHAgentSigner [BUG!]
 
