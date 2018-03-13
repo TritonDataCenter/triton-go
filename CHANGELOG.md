@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.1.0 (March 13 2018)
+
+- client: Add support for Manta RBAC http signatures
+
 ## 1.0.0 (February 28 2018)
 
 - client: Add support for querystring in client/ExecuteRequestRaw [#121]
