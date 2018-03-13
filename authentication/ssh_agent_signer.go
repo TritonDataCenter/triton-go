@@ -63,6 +63,10 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 		agent:          ag,
 	}
 
+	if input.Username != "" {
+		signer.userName = input.Username
+	}
+
 	matchingKey, err := signer.MatchKey()
 	if err != nil {
 		return nil, err
