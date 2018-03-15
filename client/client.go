@@ -545,7 +545,7 @@ func (c *Client) ExecuteRequestTSG(ctx context.Context, inputs RequestInput) (io
 
 	// NewClient ensures there's always an authorizer (unless this is called
 	// outside that constructor).
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	authHeader, err := c.Authorizers[0].Sign(dateHeader, false)
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
