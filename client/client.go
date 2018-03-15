@@ -26,8 +26,6 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
-const nilContext = "nil context"
-
 var (
 	ErrDefaultAuth = pkgerrors.New("default SSH agent authentication requires SDC_KEY_ID / TRITON_KEY_ID and SSH_AUTH_SOCK")
 	ErrAccountName = pkgerrors.New("missing account name")
