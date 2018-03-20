@@ -22,7 +22,7 @@ const Version = "1.2.0"
 // If this is "" (empty string) then it means that it is a final release.
 // Otherwise, this is a pre-release such as "dev" (in development), "beta",
 // "rc1", etc.
-var Prerelease = "dev"
+var Prerelease = ""
 
 // UserAgent returns a Triton-go characteristic string that allows the
 // network protocol peers to identify the version, release and runtime
