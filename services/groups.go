@@ -59,11 +59,11 @@ func (c *GroupsClient) List(ctx context.Context, _ *ListGroupsInput) ([]*Service
 }
 
 type GetGroupInput struct {
-	ID int64
+	ID string
 }
 
 func (i *GetGroupInput) Validate() error {
-	if i.ID == 0 {
+	if i.ID == "" {
 		return fmt.Errorf("group id can not be empty")
 	}
 
@@ -75,10 +75,9 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 		return nil, pkgerrors.Wrap(err, "unable to validate get group input")
 	}
 
-	fullPath := path.Join(groupsPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   fullPath,
+		Path:   path.Join(groupsPath, input.ID),
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
 	if respReader != nil {
@@ -99,7 +98,7 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 
 type CreateGroupInput struct {
 	GroupName           string `json:"group_name"`
-	TemplateID          int64  `json:"template_id"`
+	TemplateID          string `json:"template_id"`
 	Capacity            int    `json:"capacity"`
 	HealthCheckInterval int    `json:"health_check_interval"`
 }
@@ -111,7 +110,7 @@ func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
 		result["group_name"] = input.GroupName
 	}
 
-	if input.TemplateID == 0 {
+	if input.TemplateID == "" {
 		return nil, fmt.Errorf("unable to create service group without template ID")
 	}
 	result["template_id"] = input.TemplateID
@@ -151,9 +150,9 @@ func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) (*Se
 }
 
 type UpdateGroupInput struct {
-	ID                  int64  `json:"id"`
+	ID                  string `json:"id"`
 	GroupName           string `json:"group_name"`
-	TemplateID          int64  `json:"template_id"`
+	TemplateID          string `json:"template_id"`
 	Capacity            int    `json:"capacity"`
 	HealthCheckInterval int    `json:"health_check_interval"`
 }
@@ -161,7 +160,7 @@ type UpdateGroupInput struct {
 func (input *UpdateGroupInput) updateToAPI() (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
-	if input.ID != 0 {
+	if input.ID != "" {
 		result["id"] = input.ID
 	}
 
@@ -169,7 +168,7 @@ func (input *UpdateGroupInput) updateToAPI() (map[string]interface{}, error) {
 		result["group_name"] = input.GroupName
 	}
 
-	if input.TemplateID != 0 {
+	if input.TemplateID != "" {
 		result["template_id"] = input.TemplateID
 	}
 
@@ -192,7 +191,7 @@ func (c *GroupsClient) Update(ctx context.Context, input *UpdateGroupInput) (*Se
 
 	reqInputs := client.RequestInput{
 		Method: http.MethodPut,
-		Path:   path.Join(groupsPath, fmt.Sprintf("%d", input.ID)),
+		Path:   path.Join(groupsPath, input.ID),
 		Body:   body,
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
@@ -213,11 +212,11 @@ func (c *GroupsClient) Update(ctx context.Context, input *UpdateGroupInput) (*Se
 }
 
 type DeleteGroupInput struct {
-	ID int64
+	ID string
 }
 
 func (i *DeleteGroupInput) Validate() error {
-	if i.ID == 0 {
+	if i.ID == "" {
 		return fmt.Errorf("group id can not be empty")
 	}
 
@@ -229,10 +228,9 @@ func (c *GroupsClient) Delete(ctx context.Context, input *DeleteGroupInput) erro
 		return pkgerrors.Wrap(err, "unable to validate delete group input")
 	}
 
-	fullPath := path.Join(groupsPath, fmt.Sprintf("%d", input.ID))
 	reqInputs := client.RequestInput{
 		Method: http.MethodDelete,
-		Path:   fullPath,
+		Path:   path.Join(groupsPath, input.ID),
 	}
 	respReader, err := c.client.ExecuteRequestTSG(ctx, reqInputs)
 	if respReader != nil {
