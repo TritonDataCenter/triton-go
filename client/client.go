@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/joyent/triton-go"
@@ -31,8 +32,18 @@ var (
 	ErrAccountName = pkgerrors.New("missing account name")
 	ErrMissingURL  = pkgerrors.New("missing API URL")
 
-	InvalidTritonURL = "invalid format of Triton URL"
-	InvalidMantaURL  = "invalid format of Manta URL"
+	InvalidTritonURL   = "invalid format of Triton URL"
+	InvalidMantaURL    = "invalid format of Manta URL"
+	InvalidServicesURL = "invalid format of Triton Service Groups URL"
+	InvalidDCInURL     = "invalid data center in URL"
+
+	knownDCFormats = []string{
+		`https?://(.*).api.joyent.com`,
+		`https?://(.*).api.joyentcloud.com`,
+		`https?://(.*).api.samsungcloud.io`,
+	}
+
+	tsgFormatURL = "https://tsg.%s.svc.joyent.zone"
 )
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
@@ -42,8 +53,24 @@ type Client struct {
 	Authorizers   []authentication.Signer
 	TritonURL     url.URL
 	MantaURL      url.URL
+	ServicesURL   url.URL
 	AccountName   string
 	Username      string
+}
+
+// parseDC parses out the data center commonly found in Triton URLs. Returns an
+// error if the Triton URL does not include a known data center name, in which
+// case a URL override (TRITON_TSG_URL) must be provided.
+func parseDC(url string) (string, error) {
+	for _, pattern := range knownDCFormats {
+		re := regexp.MustCompile(pattern)
+		matches := re.FindStringSubmatch(url)
+		if len(matches) > 1 {
+			return matches[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to parse datacenter from '%s'", url)
 }
 
 // New is used to construct a Client in order to make API
@@ -70,6 +97,20 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		return nil, pkgerrors.Wrapf(err, InvalidMantaURL)
 	}
 
+	tsgURL := triton.GetEnv("TSG_URL")
+	if tsgURL == "" {
+		currentDC, err := parseDC(tritonURL)
+		if err != nil {
+			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
+		}
+		tsgURL = fmt.Sprintf(tsgFormatURL, currentDC)
+	}
+
+	servicesURL, err := url.Parse(tsgURL)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, InvalidServicesURL)
+	}
+
 	authorizers := make([]authentication.Signer, 0)
 	for _, key := range signers {
 		if key != nil {
@@ -85,6 +126,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		Authorizers: authorizers,
 		TritonURL:   *cloudURL,
 		MantaURL:    *storageURL,
+		ServicesURL: *servicesURL,
 		AccountName: accountName,
 	}
 
@@ -179,10 +221,8 @@ func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 // overrideHeader overrides the header of the passed in HTTP request
 func (c *Client) overrideHeader(req *http.Request) {
 	if c.RequestHeader != nil {
-		for k, vs := range *c.RequestHeader {
-			for _, v := range vs {
-				req.Header.Add(k, v)
-			}
+		for k, _ := range *c.RequestHeader {
+			req.Header.Set(k, c.RequestHeader.Get(k))
 		}
 	}
 }
@@ -256,9 +296,11 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, nil
 	}
 
@@ -322,9 +364,11 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
 
@@ -390,9 +434,11 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}
 
@@ -455,11 +501,74 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 		return nil, nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
 	}
 
-	// We will only return a response from the API it is in the HTTP StatusCode 2xx range
+	// We will only return a response from the API it is in the HTTP StatusCode
+	// 2xx range
 	// StatusMultipleChoices is StatusCode 300
-	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
 		return resp.Body, resp.Header, nil
 	}
 
 	return nil, nil, c.DecodeError(resp, req.Method)
+}
+
+func (c *Client) ExecuteRequestTSG(ctx context.Context, inputs RequestInput) (io.ReadCloser, error) {
+	defer c.resetHeader()
+
+	method := inputs.Method
+	path := inputs.Path
+	body := inputs.Body
+	query := inputs.Query
+
+	var requestBody io.Reader
+	if body != nil {
+		marshaled, err := json.MarshalIndent(body, "", "    ")
+		if err != nil {
+			return nil, err
+		}
+		requestBody = bytes.NewReader(marshaled)
+	}
+
+	endpoint := c.ServicesURL
+	endpoint.Path = path
+	if query != nil {
+		endpoint.RawQuery = query.Encode()
+	}
+
+	req, err := http.NewRequest(method, endpoint.String(), requestBody)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
+	}
+
+	dateHeader := time.Now().UTC().Format(time.RFC1123)
+	req.Header.Set("date", dateHeader)
+
+	// NewClient ensures there's always an authorizer (unless this is called
+	// outside that constructor).
+	authHeader, err := c.Authorizers[0].Sign(dateHeader, false)
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
+	req.Header.Set("User-Agent", triton.UserAgent())
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	c.overrideHeader(req)
+
+	resp, err := c.HTTPClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, pkgerrors.Wrapf(err, "unable to execute HTTP request")
+	}
+
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode < http.StatusMultipleChoices {
+		return resp.Body, nil
+	}
+
+	return nil, fmt.Errorf("could not process backend TSG request")
 }

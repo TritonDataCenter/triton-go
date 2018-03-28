@@ -63,7 +63,7 @@ func overrideHeaderTest(t *testing.T) func(req *http.Request) (*http.Response, e
 		if !strings.Contains(testHeader, testHeaderVal1) {
 			t.Errorf("Request header should contain '%s': got '%s'", testHeaderVal1, testHeader)
 		}
-		if !strings.Contains(testHeader, testHeaderVal2) {
+		if strings.Contains(testHeader, testHeaderVal2) {
 			t.Errorf("Request header should contain '%s': got '%s'", testHeaderVal2, testHeader)
 		}
 
