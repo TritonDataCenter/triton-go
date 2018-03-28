@@ -105,37 +105,38 @@ func main() {
 
 	fmt.Println("---")
 
-	listTmpls := &services.ListTemplatesInput{}
-	templates, err := svc.Templates().List(context.Background(), listTmpls)
+	createTmplInput := &services.CreateTemplateInput{
+		TemplateName: "custom-template-1",
+		Package:      "test-package",
+		ImageID:      "test-image-id",
+	}
+	tmpl, err := svc.Templates().Create(context.Background(), createTmplInput)
 	if err != nil {
-		log.Fatalf("failed to list current templates")
+		log.Fatalf("failed to create template")
 	}
 
-	customGroupName := "custom-group-1"
-
 	createInput := &services.CreateGroupInput{
-		GroupName:           customGroupName,
-		TemplateID:          templates[0].ID,
+		GroupName:           "custom-group-1",
+		TemplateID:          tmpl.ID,
 		Capacity:            2,
 		HealthCheckInterval: 300,
 	}
-	err = svc.Groups().Create(context.Background(), createInput)
+	grp, err := svc.Groups().Create(context.Background(), createInput)
 	if err != nil {
 		log.Fatalf("failed to create service group: %v", err)
 	}
 
-	fmt.Printf("Created Group: %s\n", customGroupName)
+	fmt.Printf("Created Group ID: %s\n", grp.ID)
 
 	fmt.Println("---")
 
 	deleteInput := &services.DeleteGroupInput{
-		Name: customGroupName,
+		ID: grp.ID,
 	}
 	err = svc.Groups().Delete(context.Background(), deleteInput)
 	if err != nil {
 		log.Fatalf("failed to delete service group: %v", err)
 	}
 
-	fmt.Printf("Delete Group: %s\n", customGroupName)
-
+	fmt.Printf("Delete Group: %s\n", grp.GroupName)
 }

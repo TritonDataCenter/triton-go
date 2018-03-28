@@ -107,16 +107,18 @@ func main() {
 
 	fmt.Println("---")
 
-	if tmpl := templates[0]; tmpl != nil {
-		getInput := &services.GetTemplateInput{
-			Name: tmpl.TemplateName,
-		}
-		template, err := svc.Templates().Get(context.Background(), getInput)
-		if err != nil {
-			log.Fatalf("failed to get instance template: %v", err)
-		}
+	if len(templates) > 0 {
+		if tmpl := templates[0]; tmpl != nil {
+			getInput := &services.GetTemplateInput{
+				ID: tmpl.ID,
+			}
+			template, err := svc.Templates().Get(context.Background(), getInput)
+			if err != nil {
+				log.Fatalf("failed to get instance template: %v", err)
+			}
 
-		fmt.Printf("Got Template: %s\n", template.TemplateName)
+			fmt.Printf("Got Template: %s\n", template.TemplateName)
+		}
 	}
 
 	fmt.Println("---")
@@ -134,16 +136,18 @@ func main() {
 		Metadata:           map[string]string{"metadata": "test"},
 		Tags:               map[string]string{"tag": "test"},
 	}
-	err = svc.Templates().Create(context.Background(), createInput)
+	newTmpl, err := svc.Templates().Create(context.Background(), createInput)
 	if err != nil {
 		log.Fatalf("failed to create instance template: %v", err)
 	}
 
-	fmt.Printf("Created Template: %s\n", customTemplateName)
+	fmt.Printf("Created ID: %s\n", newTmpl.ID)
+	fmt.Printf("Created TemplateName: %s\n", newTmpl.TemplateName)
+
 	fmt.Println("---")
 
 	deleteInput := &services.DeleteTemplateInput{
-		Name: customTemplateName,
+		ID: newTmpl.ID,
 	}
 	err = svc.Templates().Delete(context.Background(), deleteInput)
 	if err != nil {
