@@ -77,7 +77,7 @@ func TestAccServicesList(t *testing.T) {
 }
 
 func TestListServices(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Service, error) {
 		defer testutils.DeactivateClient()

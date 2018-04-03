@@ -146,11 +146,3 @@ func pingDecodeFunc(req *http.Request) (*http.Response, error) {
 		Body:       ioutil.NopCloser(body),
 	}, nil
 }
-
-func MockComputeClient() *compute.ComputeClient {
-	return &compute.ComputeClient{
-		Client: testutils.NewMockClient(testutils.MockClientInput{
-			AccountName: accountURL,
-		}),
-	}
-}

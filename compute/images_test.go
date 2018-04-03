@@ -223,7 +223,7 @@ func TestAccImagesGet(t *testing.T) {
 }
 
 func TestDeleteImage(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -257,7 +257,7 @@ func TestDeleteImage(t *testing.T) {
 }
 
 func TestGetImage(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Image, error) {
 		defer testutils.DeactivateClient()
@@ -328,7 +328,7 @@ func TestGetImage(t *testing.T) {
 }
 
 func TestListImages(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Image, error) {
 		defer testutils.DeactivateClient()
@@ -397,7 +397,7 @@ func TestListImages(t *testing.T) {
 }
 
 func TestCreateImageFromMachine(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Image, error) {
 		defer testutils.DeactivateClient()
@@ -437,7 +437,7 @@ func TestCreateImageFromMachine(t *testing.T) {
 }
 
 func TestUpdateImage(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Image, error) {
 		defer testutils.DeactivateClient()
@@ -477,7 +477,7 @@ func TestUpdateImage(t *testing.T) {
 }
 
 func TestExportImage(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.MantaLocation, error) {
 		defer testutils.DeactivateClient()
@@ -543,15 +543,15 @@ func getImageSuccess(req *http.Request) (*http.Response, error) {
   "type": "zone-dataset",
   "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
   "files": [
-    {
-      "compression": "gzip",
-      "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-      "size": 110742036
-    }
+	{
+	  "compression": "gzip",
+	  "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
+	  "size": 110742036
+	}
   ],
   "tags": {
-    "role": "os",
-    "group": "base-32"
+	"role": "os",
+	"group": "base-32"
   },
   "homepage": "https://docs.joyent.com/images/smartos/base",
   "published_at": "2014-02-28T10:50:42Z",
@@ -581,15 +581,15 @@ func getImageBadDecode(req *http.Request) (*http.Response, error) {
   "type": "zone-dataset",
   "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
   "files": [
-    {
-      "compression": "gzip",
-      "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-      "size": 110742036
-    }
+	{
+	  "compression": "gzip",
+	  "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
+	  "size": 110742036
+	}
   ],
   "tags": {
-    "role": "os",
-    "group": "base-32"
+	"role": "os",
+	"group": "base-32"
   },
   "homepage": "https://docs.joyent.com/images/smartos/base",
   "published_at": "2014-02-28T10:50:42Z",
@@ -626,29 +626,29 @@ func listImagesSuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`[
 {
-    "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-    "name": "base",
-    "version": "13.4.0",
-    "os": "smartos",
-    "requirements": {},
-    "type": "zone-dataset",
-    "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
-    "files": [
-      {
-        "compression": "gzip",
-        "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-        "size": 110742036
-      }
-    ],
-    "tags": {
-      "role": "os",
-      "group": "base-32"
-    },
-    "homepage": "https://docs.joyent.com/images/smartos/base",
-    "published_at": "2014-02-28T10:50:42Z",
-    "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
-    "public": true,
-    "state": "active"
+	"id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+	"name": "base",
+	"version": "13.4.0",
+	"os": "smartos",
+	"requirements": {},
+	"type": "zone-dataset",
+	"description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+	"files": [
+	  {
+		"compression": "gzip",
+		"sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
+		"size": 110742036
+	  }
+	],
+	"tags": {
+	  "role": "os",
+	  "group": "base-32"
+	},
+	"homepage": "https://docs.joyent.com/images/smartos/base",
+	"published_at": "2014-02-28T10:50:42Z",
+	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
+	"public": true,
+	"state": "active"
   }
 ]`)
 
@@ -675,29 +675,29 @@ func listImagesBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`[{
-    "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-    "name": "base",
-    "version": "13.4.0",
-    "os": "smartos",
-    "requirements": {},
-    "type": "zone-dataset",
-    "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
-    "files": [
-      {
-        "compression": "gzip",
-        "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-        "size": 110742036
-      }
-    ],
-    "tags": {
-      "role": "os",
-      "group": "base-32"
-    },
-    "homepage": "https://docs.joyent.com/images/smartos/base",
-    "published_at": "2014-02-28T10:50:42Z",
-    "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
-    "public": true,
-    "state": "active",
+	"id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+	"name": "base",
+	"version": "13.4.0",
+	"os": "smartos",
+	"requirements": {},
+	"type": "zone-dataset",
+	"description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+	"files": [
+	  {
+		"compression": "gzip",
+		"sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
+		"size": 110742036
+	  }
+	],
+	"tags": {
+	  "role": "os",
+	  "group": "base-32"
+	},
+	"homepage": "https://docs.joyent.com/images/smartos/base",
+	"published_at": "2014-02-28T10:50:42Z",
+	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
+	"public": true,
+	"state": "active",
   }]`)
 
 	return &http.Response{
@@ -716,13 +716,13 @@ func createImageFromMachineSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-    "id": "62306cd7-7b8a-c5dd-d44e-8491c83b9974",
-    "name": "my-custom-image",
-    "version": "1.2.3",
-    "requirements": {},
-    "owner": "47034e57-42d1-0342-b302-00db733e8c8a",
-    "public": false,
-    "state": "active"
+	"id": "62306cd7-7b8a-c5dd-d44e-8491c83b9974",
+	"name": "my-custom-image",
+	"version": "1.2.3",
+	"requirements": {},
+	"owner": "47034e57-42d1-0342-b302-00db733e8c8a",
+	"public": false,
+	"state": "active"
 }
 `)
 

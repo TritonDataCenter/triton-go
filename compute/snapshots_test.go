@@ -32,16 +32,8 @@ var (
 	testMachineId                     = "123-3456-2335"
 )
 
-func MockIdentityClient() *compute.ComputeClient {
-	return &compute.ComputeClient{
-		Client: testutils.NewMockClient(testutils.MockClientInput{
-			AccountName: accountURL,
-		}),
-	}
-}
-
 func TestListSnapshots(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Snapshot, error) {
 		defer testutils.DeactivateClient()
@@ -112,7 +104,7 @@ func TestListSnapshots(t *testing.T) {
 }
 
 func TestGetSnapshot(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Snapshot, error) {
 		defer testutils.DeactivateClient()
@@ -184,7 +176,7 @@ func TestGetSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -219,7 +211,7 @@ func TestDeleteSnapshot(t *testing.T) {
 }
 
 func TestStartMachineFromSnapshot(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -254,7 +246,7 @@ func TestStartMachineFromSnapshot(t *testing.T) {
 }
 
 func TestCreateSnapshot(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Snapshot, error) {
 		defer testutils.DeactivateClient()
@@ -298,16 +290,16 @@ func listSnapshotsSuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`[
 	{
-    "name": "sample-snapshot",
+	"name": "sample-snapshot",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z"
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z"
   },
   {
-    "name": "sample-snapshot-2",
+	"name": "sample-snapshot-2",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z"
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z"
   }
 ]`)
 
@@ -334,10 +326,10 @@ func listSnapshotBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`[{
-    "name": "sample-snapshot",
+	"name": "sample-snapshot",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z",}]`)
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z",}]`)
 
 	return &http.Response{
 		StatusCode: 200,
@@ -355,10 +347,10 @@ func getSnapshotSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-    "name": "sample-snapshot",
+	"name": "sample-snapshot",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z"
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z"
   }
 `)
 
@@ -374,10 +366,10 @@ func getSnapshotBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-    "name": "sample-snapshot",
+	"name": "sample-snapshot",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z",}`)
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z",}`)
 
 	return &http.Response{
 		StatusCode: 200,
@@ -434,10 +426,10 @@ func createSnapshotSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-    "name": "sample-snapshot",
+	"name": "sample-snapshot",
 	"state": "queued",
-    "updated": "2015-12-23T06:41:11.032Z",
-    "created": "2015-12-23T06:41:11.032Z"
+	"updated": "2015-12-23T06:41:11.032Z",
+	"created": "2015-12-23T06:41:11.032Z"
   }
 `)
 

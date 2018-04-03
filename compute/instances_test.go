@@ -530,7 +530,7 @@ func TestValidateInstanceInput(t *testing.T) {
 }
 
 func TestGetInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Instance, error) {
 		defer testutils.DeactivateClient()
@@ -601,7 +601,7 @@ func TestGetInstance(t *testing.T) {
 }
 
 func TestListInstances(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.Instance, error) {
 		defer testutils.DeactivateClient()
@@ -672,7 +672,7 @@ func TestListInstances(t *testing.T) {
 }
 
 func TestDeleteInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -706,7 +706,7 @@ func TestDeleteInstance(t *testing.T) {
 }
 
 func TestRenameInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -741,7 +741,7 @@ func TestRenameInstance(t *testing.T) {
 }
 
 func TestRebootInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -775,7 +775,7 @@ func TestRebootInstance(t *testing.T) {
 }
 
 func TestStartInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -809,7 +809,7 @@ func TestStartInstance(t *testing.T) {
 }
 
 func TestStopInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -843,7 +843,7 @@ func TestStopInstance(t *testing.T) {
 }
 
 func TestResizeInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -878,7 +878,7 @@ func TestResizeInstance(t *testing.T) {
 }
 
 func TestEnableInstanceFirewall(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -912,7 +912,7 @@ func TestEnableInstanceFirewall(t *testing.T) {
 }
 
 func TestDisableInstanceFirewall(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -946,7 +946,7 @@ func TestDisableInstanceFirewall(t *testing.T) {
 }
 
 func TestDeleteInstanceTags(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -980,7 +980,7 @@ func TestDeleteInstanceTags(t *testing.T) {
 }
 
 func TestDeleteInstanceTag(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1015,7 +1015,7 @@ func TestDeleteInstanceTag(t *testing.T) {
 }
 
 func TestGetInstanceTag(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (string, error) {
 		defer testutils.DeactivateClient()
@@ -1063,7 +1063,7 @@ func TestGetInstanceTag(t *testing.T) {
 }
 
 func TestListInstanceTag(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]interface{}, error) {
 		defer testutils.DeactivateClient()
@@ -1110,7 +1110,7 @@ func TestListInstanceTag(t *testing.T) {
 }
 
 func TestReplaceInstanceTags(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1148,7 +1148,7 @@ func TestReplaceInstanceTags(t *testing.T) {
 }
 
 func TestAddInstanceTags(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1186,7 +1186,7 @@ func TestAddInstanceTags(t *testing.T) {
 }
 
 func TestGetInstanceMetaData(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (string, error) {
 		defer testutils.DeactivateClient()
@@ -1234,7 +1234,7 @@ func TestGetInstanceMetaData(t *testing.T) {
 }
 
 func TestListInstanceMetaData(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
 		defer testutils.DeactivateClient()
@@ -1281,7 +1281,7 @@ func TestListInstanceMetaData(t *testing.T) {
 }
 
 func TestDeleteInstanceMetaData(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1316,7 +1316,7 @@ func TestDeleteInstanceMetaData(t *testing.T) {
 }
 
 func TestDeleteAllInstanceMetaData(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1350,7 +1350,7 @@ func TestDeleteAllInstanceMetaData(t *testing.T) {
 }
 
 func TestUpdateInstanceMetaData(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
 		defer testutils.DeactivateClient()
@@ -1393,7 +1393,7 @@ func TestUpdateInstanceMetaData(t *testing.T) {
 }
 
 func TestListInstanceNICs(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) ([]*compute.NIC, error) {
 		defer testutils.DeactivateClient()
@@ -1464,7 +1464,7 @@ func TestListInstanceNICs(t *testing.T) {
 }
 
 func TestGetInstanceNIC(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.NIC, error) {
 		defer testutils.DeactivateClient()
@@ -1536,7 +1536,7 @@ func TestGetInstanceNIC(t *testing.T) {
 }
 
 func TestRemoveInstanceNIC(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
@@ -1571,7 +1571,7 @@ func TestRemoveInstanceNIC(t *testing.T) {
 }
 
 func TestAddNICToInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.NIC, error) {
 		defer testutils.DeactivateClient()
@@ -1611,7 +1611,7 @@ func TestAddNICToInstance(t *testing.T) {
 }
 
 func TestCreateInstance(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Instance, error) {
 		defer testutils.DeactivateClient()
@@ -1650,7 +1650,7 @@ func TestCreateInstance(t *testing.T) {
 }
 
 func TestCountInstances(t *testing.T) {
-	computeClient := MockIdentityClient()
+	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (int, error) {
 		defer testutils.DeactivateClient()
@@ -1685,6 +1685,74 @@ func TestCountInstances(t *testing.T) {
 	})
 }
 
+func TestEnableDeletionProtection(t *testing.T) {
+	computeClient := MockComputeClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().EnableDeletionProtection(ctx, &compute.EnableDeletionProtectionInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_deletion_protection", accountURL, fakeMachineID), enableDeletionProtectionSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=enable_deletion_protection", accountURL, fakeMachineID), enableDeletionProtectionError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to enable deletion protection") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestDisableDeletionProtection(t *testing.T) {
+	computeClient := MockComputeClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) error {
+		defer testutils.DeactivateClient()
+
+		return cc.Instances().DisableDeletionProtection(ctx, &compute.DisableDeletionProtectionInput{
+			InstanceID: fakeMachineID,
+		})
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_deletion_protection", accountURL, fakeMachineID), disableDeletionProtectionSuccess)
+
+		err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("POST", fmt.Sprintf("/%s/machines/%s?action=disable_deletion_protection", accountURL, fakeMachineID), disableDeletionProtectionError)
+
+		err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "unable to disable deletion protection") {
+			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
 func getMachineSuccess(req *http.Request) (*http.Response, error) {
 	header := http.Header{}
 	header.Add("Content-Type", "application/json")
@@ -1697,20 +1765,20 @@ func getMachineSuccess(req *http.Request) (*http.Response, error) {
   "state": "running",
   "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
   "ips": [
-    "10.88.88.26",
-    "192.168.128.5"
+	"10.88.88.26",
+	"192.168.128.5"
   ],
   "memory": 128,
   "disk": 12288,
   "metadata": {
-    "root_authorized_keys": "..."
+	"root_authorized_keys": "..."
   },
   "tags": {},
   "created": "2016-01-04T12:55:50.539Z",
   "updated": "2016-01-21T08:56:59.000Z",
   "networks": [
-    "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
-    "45607081-4cd2-45c8-baf7-79da760fffaa"
+	"a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+	"45607081-4cd2-45c8-baf7-79da760fffaa"
   ],
   "primaryIp": "10.88.88.26",
   "firewall_enabled": false,
@@ -1738,20 +1806,20 @@ func getMachineBadDecode(req *http.Request) (*http.Response, error) {
   "state": "running",
   "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
   "ips": [
-    "10.88.88.26",
-    "192.168.128.5"
+	"10.88.88.26",
+	"192.168.128.5"
   ],
   "memory": 128,
   "disk": 12288,
   "metadata": {
-    "root_authorized_keys": "...",
+	"root_authorized_keys": "...",
   },
   "tags": {},
   "created": "2016-01-04T12:55:50.539Z",
   "updated": "2016-01-21T08:56:59.000Z",
   "networks": [
-    "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
-    "45607081-4cd2-45c8-baf7-79da760fffaa"
+	"a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+	"45607081-4cd2-45c8-baf7-79da760fffaa"
   ],
   "primaryIp": "10.88.88.26",
   "firewall_enabled": false,
@@ -1787,32 +1855,32 @@ func listMachinesSuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`[
 	{
-    "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
-    "name": "test",
-    "type": "smartmachine",
-    "brand": "joyent",
-    "state": "running",
-    "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-    "ips": [
-      "10.88.88.26",
-      "192.168.128.5"
-    ],
-    "memory": 128,
-    "disk": 12288,
-    "metadata": {
-      "root_authorized_keys": "..."
-    },
-    "tags": {},
-    "created": "2016-01-04T12:55:50.539Z",
-    "updated": "2016-01-21T08:56:59.000Z",
-    "networks": [
-      "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
-      "45607081-4cd2-45c8-baf7-79da760fffaa"
-    ],
-    "primaryIp": "10.88.88.26",
-    "firewall_enabled": false,
-    "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
-    "package": "sdc_128"
+	"id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+	"name": "test",
+	"type": "smartmachine",
+	"brand": "joyent",
+	"state": "running",
+	"image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+	"ips": [
+	  "10.88.88.26",
+	  "192.168.128.5"
+	],
+	"memory": 128,
+	"disk": 12288,
+	"metadata": {
+	  "root_authorized_keys": "..."
+	},
+	"tags": {},
+	"created": "2016-01-04T12:55:50.539Z",
+	"updated": "2016-01-21T08:56:59.000Z",
+	"networks": [
+	  "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+	  "45607081-4cd2-45c8-baf7-79da760fffaa"
+	],
+	"primaryIp": "10.88.88.26",
+	"firewall_enabled": false,
+	"compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+	"package": "sdc_128"
   }
 ]`)
 
@@ -1839,32 +1907,32 @@ func listMachinesBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`[{
-    "id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
-    "name": "test",
-    "type": "smartmachine",
-    "brand": "joyent",
-    "state": "running",
-    "image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-    "ips": [
-      "10.88.88.26",
-      "192.168.128.5"
-    ],
-    "memory": 128,
-    "disk": 12288,
-    "metadata": {
-      "root_authorized_keys": "..."
-    },
-    "tags": {},
-    "created": "2016-01-04T12:55:50.539Z",
-    "updated": "2016-01-21T08:56:59.000Z",
-    "networks": [
-      "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
-      "45607081-4cd2-45c8-baf7-79da760fffaa"
-    ],
-    "primaryIp": "10.88.88.26",
-    "firewall_enabled": false,
-    "compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
-    "package": "sdc_128",
+	"id": "b6979942-7d5d-4fe6-a2ec-b812e950625a",
+	"name": "test",
+	"type": "smartmachine",
+	"brand": "joyent",
+	"state": "running",
+	"image": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+	"ips": [
+	  "10.88.88.26",
+	  "192.168.128.5"
+	],
+	"memory": 128,
+	"disk": 12288,
+	"metadata": {
+	  "root_authorized_keys": "..."
+	},
+	"tags": {},
+	"created": "2016-01-04T12:55:50.539Z",
+	"updated": "2016-01-21T08:56:59.000Z",
+	"networks": [
+	  "a9c130da-e3ba-40e9-8b18-112aba2d3ba7",
+	  "45607081-4cd2-45c8-baf7-79da760fffaa"
+	],
+	"primaryIp": "10.88.88.26",
+	"firewall_enabled": false,
+	"compute_node": "564d0b8e-6099-7648-351e-877faf6c56f6",
+	"package": "sdc_128",
   }]`)
 
 	return &http.Response{
@@ -2122,14 +2190,14 @@ func listMachineNICsSuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`[
 	{
-        "mac": "90:b8:d0:2f:b8:f9",
-        "primary": true,
-        "ip": "10.88.88.137",
-        "netmask": "255.255.255.0",
-        "gateway": "10.88.88.2",
-        "state": "running",
-        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
-    }
+		"mac": "90:b8:d0:2f:b8:f9",
+		"primary": true,
+		"ip": "10.88.88.137",
+		"netmask": "255.255.255.0",
+		"gateway": "10.88.88.2",
+		"state": "running",
+		"network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
+	}
 ]`)
 
 	return &http.Response{
@@ -2155,14 +2223,14 @@ func listMachineNICsBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`[{
-        "mac": "90:b8:d0:2f:b8:f9",
-        "primary": true,
-        "ip": "10.88.88.137",
-        "netmask": "255.255.255.0",
-        "gateway": "10.88.88.2",
-        "state": "running",
-        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
-    }]`)
+		"mac": "90:b8:d0:2f:b8:f9",
+		"primary": true,
+		"ip": "10.88.88.137",
+		"netmask": "255.255.255.0",
+		"gateway": "10.88.88.2",
+		"state": "running",
+		"network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
+	}]`)
 
 	return &http.Response{
 		StatusCode: http.StatusOK,
@@ -2180,14 +2248,14 @@ func getMachineNICSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-        "mac": "90:b8:d0:2f:b8:f9",
-        "primary": true,
-        "ip": "10.88.88.137",
-        "netmask": "255.255.255.0",
-        "gateway": "10.88.88.2",
-        "state": "running",
-        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
-    }
+		"mac": "90:b8:d0:2f:b8:f9",
+		"primary": true,
+		"ip": "10.88.88.137",
+		"netmask": "255.255.255.0",
+		"gateway": "10.88.88.2",
+		"state": "running",
+		"network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35"
+	}
 `)
 
 	return &http.Response{
@@ -2202,14 +2270,14 @@ func getMachineNICBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-        "mac": "90:b8:d0:2f:b8:f9",
-        "primary": true,
-        "ip": "10.88.88.137",
-        "netmask": "255.255.255.0",
-        "gateway": "10.88.88.2",
-        "state": "running",
-        "network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
-    }`)
+		"mac": "90:b8:d0:2f:b8:f9",
+		"primary": true,
+		"ip": "10.88.88.137",
+		"netmask": "255.255.255.0",
+		"gateway": "10.88.88.2",
+		"state": "running",
+		"network": "6b3229b6-c535-11e5-8cf9-c3a24fa96e35",
+	}`)
 
 	return &http.Response{
 		StatusCode: http.StatusOK,
@@ -2252,7 +2320,7 @@ func createMachineNICSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-    "network": "7007b198-f6aa-48f0-9843-78a3149de3d7"
+	"network": "7007b198-f6aa-48f0-9843-78a3149de3d7"
 }
 `)
 
@@ -2282,7 +2350,7 @@ func createMachineSuccess(req *http.Request) (*http.Response, error) {
   "memory": 128,
   "disk": 12288,
   "metadata": {
-    "root_authorized_keys": "..."
+	"root_authorized_keys": "..."
   },
   "tags": {},
   "created": "2016-01-21T12:57:52.759Z",
@@ -2368,4 +2436,32 @@ func updateMachineMetaDataSuccess(req *http.Request) (*http.Response, error) {
 
 func updateMachineMetaDataError(req *http.Request) (*http.Response, error) {
 	return nil, errors.New("unable to update machine metadata")
+}
+
+func enableDeletionProtectionSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func enableDeletionProtectionError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to enable deletion protection")
+}
+
+func disableDeletionProtectionSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusNoContent,
+		Header:     header,
+	}, nil
+}
+
+func disableDeletionProtectionError(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("unable to disable deletion protection")
 }

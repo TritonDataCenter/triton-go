@@ -10,8 +10,11 @@ package compute
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -52,27 +55,28 @@ type InstanceVolume struct {
 }
 
 type Instance struct {
-	ID              string                 `json:"id"`
-	Name            string                 `json:"name"`
-	Type            string                 `json:"type"`
-	Brand           string                 `json:"brand"`
-	State           string                 `json:"state"`
-	Image           string                 `json:"image"`
-	Memory          int                    `json:"memory"`
-	Disk            int                    `json:"disk"`
-	Metadata        map[string]string      `json:"metadata"`
-	Tags            map[string]interface{} `json:"tags"`
-	Created         time.Time              `json:"created"`
-	Updated         time.Time              `json:"updated"`
-	Docker          bool                   `json:"docker"`
-	IPs             []string               `json:"ips"`
-	Networks        []string               `json:"networks"`
-	PrimaryIP       string                 `json:"primaryIp"`
-	FirewallEnabled bool                   `json:"firewall_enabled"`
-	ComputeNode     string                 `json:"compute_node"`
-	Package         string                 `json:"package"`
-	DomainNames     []string               `json:"dns_names"`
-	CNS             InstanceCNS
+	ID                 string                 `json:"id"`
+	Name               string                 `json:"name"`
+	Type               string                 `json:"type"`
+	Brand              string                 `json:"brand"`
+	State              string                 `json:"state"`
+	Image              string                 `json:"image"`
+	Memory             int                    `json:"memory"`
+	Disk               int                    `json:"disk"`
+	Metadata           map[string]string      `json:"metadata"`
+	Tags               map[string]interface{} `json:"tags"`
+	Created            time.Time              `json:"created"`
+	Updated            time.Time              `json:"updated"`
+	Docker             bool                   `json:"docker"`
+	IPs                []string               `json:"ips"`
+	Networks           []string               `json:"networks"`
+	PrimaryIP          string                 `json:"primaryIp"`
+	FirewallEnabled    bool                   `json:"firewall_enabled"`
+	ComputeNode        string                 `json:"compute_node"`
+	Package            string                 `json:"package"`
+	DomainNames        []string               `json:"dns_names"`
+	DeletionProtection bool                   `json:"deletion_protection"`
+	CNS                InstanceCNS
 }
 
 // _Instance is a private facade over Instance that handles the necessary API
@@ -242,6 +246,9 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 		Query:  buildQueryFilter(input),
 	}
 	respReader, err := c.client.ExecuteRequest(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to list machines")
 	}
@@ -265,11 +272,12 @@ func (c *InstancesClient) List(ctx context.Context, input *ListInstancesInput) (
 }
 
 type CreateInstanceInput struct {
-	Name            string   //
-	Package         string   //
-	Image           string   //
-	Networks        []string //
-	Affinity        []string //
+	Name            string
+	NamePrefix      string
+	Package         string
+	Image           string
+	Networks        []string
+	Affinity        []string
 	LocalityStrict  bool
 	LocalityNear    []string
 	LocalityFar     []string
@@ -280,6 +288,12 @@ type CreateInstanceInput struct {
 	Volumes         []InstanceVolume
 }
 
+func buildInstanceName(namePrefix string) string {
+	h := sha1.New()
+	io.WriteString(h, namePrefix+time.Now().UTC().String())
+	return fmt.Sprintf("%s%s", namePrefix, hex.EncodeToString(h.Sum(nil))[:8])
+}
+
 func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 	const numExtraParams = 8
 	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
@@ -288,6 +302,8 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 
 	if input.Name != "" {
 		result["name"] = input.Name
+	} else if input.NamePrefix != "" {
+		result["name"] = buildInstanceName(input.NamePrefix)
 	}
 
 	if input.Package != "" {
@@ -1047,6 +1063,58 @@ func (c *InstancesClient) Reboot(ctx context.Context, input *RebootInstanceInput
 	}
 	if err != nil {
 		return pkgerrors.Wrap(err, "unable to reboot machine")
+	}
+
+	return nil
+}
+
+type EnableDeletionProtectionInput struct {
+	InstanceID string
+}
+
+func (c *InstancesClient) EnableDeletionProtection(ctx context.Context, input *EnableDeletionProtectionInput) error {
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
+
+	params := &url.Values{}
+	params.Set("action", "enable_deletion_protection")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   fullPath,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return pkgerrors.Wrap(err, "unable to enable deletion protection")
+	}
+
+	return nil
+}
+
+type DisableDeletionProtectionInput struct {
+	InstanceID string
+}
+
+func (c *InstancesClient) DisableDeletionProtection(ctx context.Context, input *DisableDeletionProtectionInput) error {
+	fullPath := path.Join("/", c.client.AccountName, "machines", input.InstanceID)
+
+	params := &url.Values{}
+	params.Set("action", "disable_deletion_protection")
+
+	reqInputs := client.RequestInput{
+		Method: http.MethodPost,
+		Path:   fullPath,
+		Query:  params,
+	}
+	respReader, err := c.client.ExecuteRequestURIParams(ctx, reqInputs)
+	if respReader != nil {
+		defer respReader.Close()
+	}
+	if err != nil {
+		return pkgerrors.Wrap(err, "unable to disable deletion protection")
 	}
 
 	return nil
