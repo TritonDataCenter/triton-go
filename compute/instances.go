@@ -282,8 +282,8 @@ type CreateInstanceInput struct {
 	LocalityNear    []string
 	LocalityFar     []string
 	Metadata        map[string]string
-	Tags            map[string]string
-	FirewallEnabled bool
+	Tags            map[string]string //
+	FirewallEnabled bool              //
 	CNS             InstanceCNS
 	Volumes         []InstanceVolume
 }
