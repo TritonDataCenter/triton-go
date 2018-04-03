@@ -181,7 +181,7 @@ func (c *Client) overrideHeader(req *http.Request) {
 	if c.RequestHeader != nil {
 		for k, vs := range *c.RequestHeader {
 			for _, v := range vs {
-				req.Header.Add(k, v)
+				req.Header.Set(k, v)
 			}
 		}
 	}
