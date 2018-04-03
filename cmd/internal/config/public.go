@@ -9,10 +9,15 @@
 package config
 
 const (
-	KeyAccount        = "general.account"
-	KeyUrl            = "general.url"
-	KeySshKeyMaterial = "general.key-material"
-	KeySshKeyID       = "general.key-id"
+	KeyTritonAccount        = "general.triton.account"
+	KeyTritonURL            = "general.triton.url"
+	KeyTritonSSHKeyMaterial = "general.triton.key-material"
+	KeyTritonSSHKeyID       = "general.triton.key-id"
+
+	KeyMantaAccount        = "general.manta.account"
+	KeyMantaURL            = "general.manta.url"
+	KeyMantaSSHKeyMaterial = "general.manta.key-material"
+	KeyMantaSSHKeyID       = "general.manta.key-id"
 
 	DefaultManDir = "./docs/man"
 	ManSect       = 8

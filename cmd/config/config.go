@@ -19,7 +19,57 @@ type TritonClientConfig struct {
 	Config *triton.ClientConfig
 }
 
-func New() (*TritonClientConfig, error) {
+func buildSSHAgentSigner(keyID string, accountName string) (*authentication.SSHAgentSigner, error) {
+	signer, err := authentication.NewSSHAgentSigner(authentication.SSHAgentSignerInput{
+		KeyID:       keyID,
+		AccountName: accountName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return signer, nil
+}
+
+func buildPrivateKeySigner(keyID string, accountName string, keyMaterial []byte) (*authentication.PrivateKeySigner, error) {
+	signer, err := authentication.NewPrivateKeySigner(authentication.PrivateKeySignerInput{
+		KeyID:              keyID,
+		PrivateKeyMaterial: keyMaterial,
+		AccountName:        accountName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return signer, nil
+}
+
+func getKeyMaterialContents(keyMaterial string) ([]byte, error) {
+	var keyBytes []byte
+	if _, err := os.Stat(keyMaterial); err == nil {
+		keyBytes, err = ioutil.ReadFile(keyMaterial)
+		if err != nil {
+			return nil, fmt.Errorf("error reading key material from %s: %s",
+				keyMaterial, err)
+		}
+		block, _ := pem.Decode(keyBytes)
+		if block == nil {
+			return nil, fmt.Errorf(
+				"failed to read key material '%s': no key found", keyMaterial)
+		}
+
+		if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
+			return nil, fmt.Errorf(
+				"failed to read key '%s': password protected keys are\n"+
+					"not currently supported. Please decrypt the key prior to use.", keyMaterial)
+		}
+
+	} else {
+		keyBytes = []byte(keyMaterial)
+	}
+
+	return keyBytes, nil
+}
+
+func NewTritonConfig() (*TritonClientConfig, error) {
 	viper.AutomaticEnv()
 
 	var signer authentication.Signer
@@ -27,50 +77,25 @@ func New() (*TritonClientConfig, error) {
 
 	keyMaterial := GetTritonKeyMaterial()
 	if keyMaterial == "" {
-		signer, err = authentication.NewSSHAgentSigner(authentication.SSHAgentSignerInput{
-			KeyID:       GetTritonKeyID(),
-			AccountName: GetTritonAccount(),
-		})
+		signer, err = buildSSHAgentSigner(GetTritonKeyID(), GetTritonAccount())
 		if err != nil {
-			log.Fatal().Str("func", "initConfig").Msg("Error Creating SSH Agent Signer")
+			log.Fatal().Str("func", "initConfig").Msg("Error Creating Triton SSH Agent Signer")
 			return nil, err
 		}
 	} else {
-		var keyBytes []byte
-		if _, err = os.Stat(keyMaterial); err == nil {
-			keyBytes, err = ioutil.ReadFile(keyMaterial)
-			if err != nil {
-				return nil, fmt.Errorf("error reading key material from %s: %s",
-					keyMaterial, err)
-			}
-			block, _ := pem.Decode(keyBytes)
-			if block == nil {
-				return nil, fmt.Errorf(
-					"failed to read key material '%s': no key found", keyMaterial)
-			}
-
-			if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
-				return nil, fmt.Errorf(
-					"failed to read key '%s': password protected keys are\n"+
-						"not currently supported. Please decrypt the key prior to use.", keyMaterial)
-			}
-
-		} else {
-			keyBytes = []byte(keyMaterial)
+		keyMaterial, err := getKeyMaterialContents(keyMaterial)
+		if err != nil {
+			return nil, err
 		}
 
-		signer, err = authentication.NewPrivateKeySigner(authentication.PrivateKeySignerInput{
-			KeyID:              GetTritonKeyID(),
-			PrivateKeyMaterial: keyBytes,
-			AccountName:        GetTritonAccount(),
-		})
+		signer, err = buildPrivateKeySigner(GetTritonKeyID(), GetTritonAccount(), keyMaterial)
 		if err != nil {
-			return nil, errors.Wrap(err, "Error Creating SSH Private Key Signer")
+			return nil, errors.Wrap(err, "Error Creating Triton SSH Private Key Signer")
 		}
 	}
 
 	config := &triton.ClientConfig{
-		TritonURL:   GetTritonUrl(),
+		TritonURL:   GetTritonURL(),
 		AccountName: GetTritonAccount(),
 		Signers:     []authentication.Signer{signer},
 	}
@@ -80,10 +105,47 @@ func New() (*TritonClientConfig, error) {
 	}, nil
 }
 
-var envPrefixes = []string{"TRITON", "SDC"}
+func NewMantaConfig() (*TritonClientConfig, error) {
+	viper.AutomaticEnv()
 
-func getEnvVar(name string) string {
-	for _, prefix := range envPrefixes {
+	var signer authentication.Signer
+	var err error
+
+	keyMaterial := GetMantaKeyMaterial()
+	if keyMaterial == "" {
+		signer, err = buildSSHAgentSigner(GetMantaKeyID(), GetMantaAccount())
+		if err != nil {
+			log.Fatal().Str("func", "initConfig").Msg("Error Creating Manta SSH Agent Signer")
+			return nil, err
+		}
+	} else {
+		keyMaterial, err := getKeyMaterialContents(keyMaterial)
+		if err != nil {
+			return nil, err
+		}
+
+		signer, err = buildPrivateKeySigner(GetMantaKeyID(), GetMantaAccount(), keyMaterial)
+		if err != nil {
+			return nil, errors.Wrap(err, "Error Creating Manta SSH Private Key Signer")
+		}
+	}
+
+	config := &triton.ClientConfig{
+		MantaURL:    GetMantaURL(),
+		AccountName: GetMantaAccount(),
+		Signers:     []authentication.Signer{signer},
+	}
+
+	return &TritonClientConfig{
+		Config: config,
+	}, nil
+}
+
+var tritonEnvPrefixes = []string{"TRITON", "SDC"}
+var mantaEnvPrefixes = []string{"MANTA", "TRITON", "SDC"}
+
+func getTritonEnvVar(name string) string {
+	for _, prefix := range tritonEnvPrefixes {
 		if val := viper.GetString(prefix + "_" + name); val != "" {
 			return val
 		}
@@ -92,37 +154,83 @@ func getEnvVar(name string) string {
 	return ""
 }
 
-func GetTritonUrl() string {
-	url := viper.GetString(config.KeyUrl)
+func getMantaEnvVar(name string) string {
+	for _, prefix := range mantaEnvPrefixes {
+		if val := viper.GetString(prefix + "_" + name); val != "" {
+			return val
+		}
+	}
+
+	return ""
+}
+
+func GetTritonURL() string {
+	url := viper.GetString(config.KeyTritonURL)
 	if url == "" {
-		url = getEnvVar("URL")
+		url = getTritonEnvVar("URL")
 	}
 
 	return url
 }
 
 func GetTritonKeyMaterial() string {
-	url := viper.GetString(config.KeySshKeyMaterial)
+	url := viper.GetString(config.KeyTritonSSHKeyMaterial)
 	if url == "" {
-		url = getEnvVar("KEY_MATERIAL")
+		url = getTritonEnvVar("KEY_MATERIAL")
 	}
 
 	return url
 }
 
 func GetTritonAccount() string {
-	account := viper.GetString(config.KeyAccount)
+	account := viper.GetString(config.KeyTritonAccount)
 	if account == "" {
-		account = getEnvVar("ACCOUNT")
+		account = getTritonEnvVar("ACCOUNT")
 	}
 
 	return account
 }
 
 func GetTritonKeyID() string {
-	keyID := viper.GetString(config.KeySshKeyID)
+	keyID := viper.GetString(config.KeyTritonSSHKeyID)
 	if keyID == "" {
-		keyID = getEnvVar("KEY_ID")
+		keyID = getTritonEnvVar("KEY_ID")
+	}
+
+	return keyID
+}
+
+func GetMantaURL() string {
+	url := viper.GetString(config.KeyMantaURL)
+	if url == "" {
+		url = getMantaEnvVar("URL")
+	}
+
+	return url
+}
+
+func GetMantaKeyMaterial() string {
+	url := viper.GetString(config.KeyMantaSSHKeyMaterial)
+	if url == "" {
+		url = getMantaEnvVar("KEY_MATERIAL")
+	}
+
+	return url
+}
+
+func GetMantaAccount() string {
+	account := viper.GetString(config.KeyMantaAccount)
+	if account == "" {
+		account = getMantaEnvVar("USER")
+	}
+
+	return account
+}
+
+func GetMantaKeyID() string {
+	keyID := viper.GetString(config.KeyMantaSSHKeyID)
+	if keyID == "" {
+		keyID = getMantaEnvVar("KEY_ID")
 	}
 
 	return keyID

@@ -1,9 +1,9 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright (c) 2018, Joyent, Inc. All rights reserved.
 //
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
 package cmd
@@ -14,10 +14,10 @@ import (
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/internal/logger"
-	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
-	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
-	"github.com/joyent/triton-go/cmd/triton/cmd/version"
+	"github.com/joyent/triton-go/cmd/manta/cmd/docs"
+	"github.com/joyent/triton-go/cmd/manta/cmd/list"
+	"github.com/joyent/triton-go/cmd/manta/cmd/shell"
+	"github.com/joyent/triton-go/cmd/manta/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
@@ -25,16 +25,16 @@ import (
 )
 
 var subCommands = []*command.Command{
-	instances.Cmd,
+	version.Cmd,
+	list.Cmd,
 	docs.Cmd,
 	shell.Cmd,
-	version.Cmd,
 }
 
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
-		Use:   "triton",
-		Short: "Joyent Triton CLI and client (https://www.joyent.com/triton)",
+		Use:   "manta",
+		Short: "Joyent Manta CLI and client (https://www.joyent.com/triton)",
 	},
 	Setup: func(parent *command.Command) error {
 		{
@@ -120,11 +120,11 @@ var rootCmd = &command.Command{
 
 		{
 			const (
-				key          = config.KeyTritonAccount
+				key          = config.KeyMantaAccount
 				longName     = "account"
 				shortName    = "A"
 				defaultValue = ""
-				description  = "Account (login name). If not specified, the environment variable TRITON_ACCOUNT or SDC_ACCOUNT will be used"
+				description  = "Account (login name). If not specified, the environment variable MANTA_USER will be used"
 			)
 
 			flags := parent.Cobra.PersistentFlags()
@@ -134,11 +134,11 @@ var rootCmd = &command.Command{
 
 		{
 			const (
-				key          = config.KeyTritonURL
+				key          = config.KeyMantaURL
 				longName     = "url"
 				shortName    = "U"
 				defaultValue = ""
-				description  = "CloudAPI URL. If not specified, the environment variable TRITON_URL or SDC_URL will be used"
+				description  = "Manta URL. If not specified, the environment variable MANTA_URL will be used"
 			)
 
 			flags := parent.Cobra.PersistentFlags()
@@ -195,6 +195,11 @@ func Execute() error {
 	if err := rootCmd.Cobra.Execute(); err != nil {
 		return err
 	}
+
+	//switch argv[0] {
+	//case "mls":
+	//	return list.Cmd
+	//}
 
 	return nil
 }

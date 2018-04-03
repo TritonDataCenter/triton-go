@@ -26,7 +26,7 @@ type AgentComputeClient struct {
 	client *tcc.ComputeClient
 }
 
-func NewGetComputeClient(cfg *config.TritonClientConfig) (*AgentComputeClient, error) {
+func NewComputeClient(cfg *config.TritonClientConfig) (*AgentComputeClient, error) {
 	computeClient, err := tcc.NewClient(cfg.Config)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error Creating Triton Compute Client")
