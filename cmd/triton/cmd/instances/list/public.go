@@ -35,7 +35,7 @@ var Cmd = &command.Command{
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cons := conswriter.GetTerminal()
 
-			c, err := cfg.New()
+			c, err := cfg.NewTritonConfig()
 			if err != nil {
 				return err
 			}
