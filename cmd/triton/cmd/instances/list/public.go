@@ -9,9 +9,7 @@
 package list
 
 import (
-	"fmt"
 	"strings"
-	"time"
 
 	"github.com/joyent/triton-go/cmd/agent/compute"
 	cfg "github.com/joyent/triton-go/cmd/config"
@@ -70,7 +68,7 @@ var Cmd = &command.Command{
 
 			var numInstances uint
 			for _, instance := range instances {
-				table.Append([]string{string(instance.ID[:8]), instance.Name, a.FormatImageName(images, instance.Image), instance.State, formatInstanceFlags(instance), formatInstanceAge(instance.Created)})
+				table.Append([]string{string(instance.ID[:8]), instance.Name, a.FormatImageName(images, instance.Image), instance.State, formatInstanceFlags(instance), cfg.FormatTime(instance.Created)})
 				numInstances++
 			}
 
@@ -82,50 +80,6 @@ var Cmd = &command.Command{
 	Setup: func(parent *command.Command) error {
 		return nil
 	},
-}
-
-func formatInstanceAge(t time.Time) string {
-	d := time.Since(t)
-
-	timeSegs := make([]string, 0, 6)
-
-	years := int64(float64(d/(24*time.Hour)) / 365.25)
-	if years > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2dy", years))
-	}
-
-	months := int64(float64(d/(24*time.Hour)%365) / 30.25)
-	if months > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2dmo", months))
-	}
-
-	days := int64(d/(24*time.Hour)) % 365 % 7
-	if days > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2dd", days))
-	}
-
-	hours := int64(d.Hours()) % 24
-	if hours > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2dh", hours))
-	}
-
-	minutes := int64(d.Minutes()) % 60
-	if minutes > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2dm", minutes))
-	}
-
-	seconds := int64(d.Seconds()) % 60
-	if seconds > 0 {
-		timeSegs = append(timeSegs, fmt.Sprintf("%2ds", seconds))
-	}
-
-	maxSegs := len(timeSegs)
-	if maxSegs > 3 {
-		maxSegs = 3
-	}
-	timeSegs = timeSegs[0:maxSegs]
-
-	return strings.Join(timeSegs, " ")
 }
 
 func formatInstanceFlags(instance *tc.Instance) string {

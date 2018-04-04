@@ -81,7 +81,7 @@ type UpdateInput struct {
 func (c AccountClient) Update(ctx context.Context, input *UpdateInput) (*Account, error) {
 	fullPath := path.Join("/", c.Client.AccountName)
 	reqInputs := client.RequestInput{
-		Method: http.MethodPut,
+		Method: http.MethodPost,
 		Path:   fullPath,
 		Body:   input,
 	}

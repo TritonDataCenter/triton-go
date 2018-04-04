@@ -151,7 +151,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", path.Join("/", accountUrl), updateAccountSuccess)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl), updateAccountSuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -160,7 +160,7 @@ func TestUpdateAccount(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", path.Join("/", accountUrl), updateAccountError)
+		testutils.RegisterResponder("POST", path.Join("/", accountUrl), updateAccountError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {
