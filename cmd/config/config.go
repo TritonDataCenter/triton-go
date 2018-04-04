@@ -408,6 +408,17 @@ func GetAccountCNSEnabled() string {
 	return viper.GetString(config.KeyAccountTritonCNSEnabled)
 }
 
+func GetSSHKeyName() string {
+	return viper.GetString(config.KeySSHKeyName)
+}
+func GetSSHKeyFingerprint() string {
+	return viper.GetString(config.KeySSHKeyFingerprint)
+}
+
+func GetSSHKey() string {
+	return viper.GetString(config.KeySSHKey)
+}
+
 func IsBlockingAction() bool {
 	return viper.GetBool(config.KeyInstanceWait)
 }

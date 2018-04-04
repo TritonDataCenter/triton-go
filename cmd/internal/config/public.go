@@ -63,6 +63,10 @@ const (
 	KeyImageName = "compute.image.name"
 	KeyImageId   = "compute.image.id"
 
+	KeySSHKeyFingerprint = "keys.fingerprint"
+	KeySSHKeyName        = "keys.name"
+	KeySSHKey            = "keys.publickey"
+
 	KeyAccountEmail            = "account.email"
 	KeyAccountCompanyName      = "account.companyname"
 	KeyAccountFirstName        = "account.firstname"
