@@ -15,11 +15,9 @@ import (
 	"github.com/joyent/triton-go/cmd/agent/compute"
 	cfg "github.com/joyent/triton-go/cmd/config"
 	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var Cmd = &command.Command{
@@ -84,19 +82,6 @@ var Cmd = &command.Command{
 	},
 
 	Setup: func(parent *command.Command) error {
-		{
-			const (
-				key          = config.KeyInstanceID
-				longName     = "id"
-				defaultValue = ""
-				description  = "Instance ID"
-			)
-
-			flags := parent.Cobra.Flags()
-			flags.String(longName, defaultValue, description)
-			viper.BindPFlag(key, flags.Lookup(longName))
-		}
-
 		return nil
 	},
 }

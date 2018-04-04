@@ -15,7 +15,11 @@ import (
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/create"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/delete"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/get"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances/ip"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances/list"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances/reboot"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances/start"
+	"github.com/joyent/triton-go/cmd/triton/cmd/instances/stop"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -36,11 +40,28 @@ var Cmd = &command.Command{
 			delete.Cmd,
 			get.Cmd,
 			count.Cmd,
+			reboot.Cmd,
+			start.Cmd,
+			stop.Cmd,
+			ip.Cmd,
 		}
 
 		for _, cmd := range cmds {
 			cmd.Setup(cmd)
 			parent.Cobra.AddCommand(cmd.Cobra)
+		}
+
+		{
+			const (
+				key          = config.KeyInstanceID
+				longName     = "id"
+				defaultValue = ""
+				description  = "Instance ID"
+			)
+
+			flags := parent.Cobra.Flags()
+			flags.String(longName, defaultValue, description)
+			viper.BindPFlag(key, flags.Lookup(longName))
 		}
 
 		{

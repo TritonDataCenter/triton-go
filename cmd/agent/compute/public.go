@@ -87,6 +87,105 @@ func (c *AgentComputeClient) DeleteInstance() (*tcc.Instance, error) {
 	return machine, nil
 }
 
+func (c *AgentComputeClient) RebootInstance() (*tcc.Instance, error) {
+	var machine *tcc.Instance
+
+	id := config.GetMachineID()
+	if id != "" {
+		instance, err := c.getInstanceByID(id)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	name := config.GetMachineName()
+	if name != "" {
+		instance, err := c.getInstanceByName(name)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	err := c.client.Instances().Reboot(context.Background(), &tcc.RebootInstanceInput{
+		InstanceID: machine.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return machine, nil
+}
+
+func (c *AgentComputeClient) StartInstance() (*tcc.Instance, error) {
+	var machine *tcc.Instance
+
+	id := config.GetMachineID()
+	if id != "" {
+		instance, err := c.getInstanceByID(id)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	name := config.GetMachineName()
+	if name != "" {
+		instance, err := c.getInstanceByName(name)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	err := c.client.Instances().Start(context.Background(), &tcc.StartInstanceInput{
+		InstanceID: machine.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return machine, nil
+}
+
+func (c *AgentComputeClient) StopInstance() (*tcc.Instance, error) {
+	var machine *tcc.Instance
+
+	id := config.GetMachineID()
+	if id != "" {
+		instance, err := c.getInstanceByID(id)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	name := config.GetMachineName()
+	if name != "" {
+		instance, err := c.getInstanceByName(name)
+		if err != nil {
+			return nil, err
+		}
+
+		machine = instance
+	}
+
+	err := c.client.Instances().Stop(context.Background(), &tcc.StopInstanceInput{
+		InstanceID: machine.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return machine, nil
+}
+
 func (c *AgentComputeClient) GetInstanceList() ([]*tcc.Instance, error) {
 	params := &tcc.ListInstancesInput{}
 
