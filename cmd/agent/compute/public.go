@@ -54,6 +54,28 @@ func (c *AgentComputeClient) GetImagesList() ([]*tcc.Image, error) {
 	return sortImages(images), nil
 }
 
+func (c *AgentComputeClient) GetDataCenterList() ([]*tcc.DataCenter, error) {
+	params := &tcc.ListDataCentersInput{}
+
+	dcs, err := c.client.Datacenters().List(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+
+	return dcs, nil
+}
+
+func (c *AgentComputeClient) GetServiceList() ([]*tcc.Service, error) {
+	params := &tcc.ListServicesInput{}
+
+	services, err := c.client.Services().List(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+
+	return services, nil
+}
+
 func (c *AgentComputeClient) DeleteInstance() (*tcc.Instance, error) {
 	var machine *tcc.Instance
 
