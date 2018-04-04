@@ -1,17 +1,15 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright (c) 2018, Joyent, Inc. All rights reserved.
 //
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-package delete
+package ip
 
 import (
 	"errors"
-
-	"fmt"
 
 	"github.com/joyent/triton-go/cmd/agent/compute"
 	cfg "github.com/joyent/triton-go/cmd/config"
@@ -23,8 +21,8 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Args:         cobra.NoArgs,
-		Use:          "delete",
-		Short:        "delete instance",
+		Use:          "ip",
+		Short:        "get the ip a triton instance",
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if cfg.GetMachineID() == "" && cfg.GetMachineName() == "" {
@@ -50,16 +48,17 @@ var Cmd = &command.Command{
 				return err
 			}
 
-			instance, err := a.DeleteInstance()
+			instance, err := a.GetInstance()
 			if err != nil {
 				return err
 			}
 
-			cons.Write([]byte(fmt.Sprintf("Deleted instance (async) %q", instance.Name)))
+			cons.Write([]byte(instance.PrimaryIP))
 
 			return nil
 		},
 	},
+
 	Setup: func(parent *command.Command) error {
 		return nil
 	},

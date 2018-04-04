@@ -1,16 +1,15 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright (c) 2018, Joyent, Inc. All rights reserved.
 //
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-package delete
+package start
 
 import (
 	"errors"
-
 	"fmt"
 
 	"github.com/joyent/triton-go/cmd/agent/compute"
@@ -23,8 +22,8 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Args:         cobra.NoArgs,
-		Use:          "delete",
-		Short:        "delete instance",
+		Use:          "start",
+		Short:        "start instance",
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if cfg.GetMachineID() == "" && cfg.GetMachineName() == "" {
@@ -50,12 +49,12 @@ var Cmd = &command.Command{
 				return err
 			}
 
-			instance, err := a.DeleteInstance()
+			instance, err := a.StartInstance()
 			if err != nil {
 				return err
 			}
 
-			cons.Write([]byte(fmt.Sprintf("Deleted instance (async) %q", instance.Name)))
+			cons.Write([]byte(fmt.Sprintf("Started instance %q", instance.Name)))
 
 			return nil
 		},
