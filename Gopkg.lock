@@ -14,10 +14,10 @@
   version = "v1.0.8"
 
 [[projects]]
-  name = "github.com/davecgh/go-spew"
-  packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -225,6 +225,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1e5756eee925e9bc63d19b14be6d7059c934382404941eb756bef93883306bbd"
+  inputs-digest = "ce907ec6468492ed7ad937a82043195756a7fd37dc2f62a26cf77dbb1368ac55"
   solver-name = "gps-cdcl"
   solver-version = 1

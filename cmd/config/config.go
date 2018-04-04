@@ -238,11 +238,27 @@ func GetMantaKeyID() string {
 }
 
 func GetPkgID() string {
-	return viper.GetString(config.KeyPackageId)
+	return viper.GetString(config.KeyPackageID)
 }
 
 func GetPkgName() string {
 	return viper.GetString(config.KeyPackageName)
+}
+
+func GetPkgMemory() int {
+	return viper.GetInt(config.KeyPackageMemory)
+}
+
+func GetPkgDisk() int {
+	return viper.GetInt(config.KeyPackageDisk)
+}
+
+func GetPkgSwap() int {
+	return viper.GetInt(config.KeyPackageSwap)
+}
+
+func GetPkgVPCUs() int {
+	return viper.GetInt(config.KeyPackageVPCUs)
 }
 
 func GetImgID() string {

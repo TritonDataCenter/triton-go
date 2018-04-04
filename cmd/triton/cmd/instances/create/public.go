@@ -83,7 +83,7 @@ var Cmd = &command.Command{
 
 		{
 			const (
-				key          = config.KeyPackageId
+				key          = config.KeyPackageID
 				longName     = "pkg-id"
 				defaultValue = ""
 				description  = "Package id (defaults to ''). This takes precedence over 'pkg-name'"
