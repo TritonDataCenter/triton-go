@@ -15,8 +15,10 @@ import (
 	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/internal/logger"
 	"github.com/joyent/triton-go/cmd/triton/cmd/account"
+	"github.com/joyent/triton-go/cmd/triton/cmd/datacenters"
 	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
+	"github.com/joyent/triton-go/cmd/triton/cmd/services"
 	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
 	"github.com/joyent/triton-go/cmd/triton/cmd/version"
 	isatty "github.com/mattn/go-isatty"
@@ -31,6 +33,8 @@ var subCommands = []*command.Command{
 	shell.Cmd,
 	version.Cmd,
 	account.Cmd,
+	datacenters.Cmd,
+	services.Cmd,
 }
 
 var rootCmd = &command.Command{
