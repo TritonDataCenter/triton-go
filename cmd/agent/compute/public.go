@@ -37,12 +37,63 @@ func NewComputeClient(cfg *config.TritonClientConfig) (*AgentComputeClient, erro
 }
 
 func (c *AgentComputeClient) GetPackagesList() ([]*tcc.Package, error) {
-	packages, err := c.client.Packages().List(context.Background(), &tcc.ListPackagesInput{})
+	params := &tcc.ListPackagesInput{}
+
+	name := config.GetPkgName()
+	if name != "" {
+		params.Name = name
+	}
+
+	memory := config.GetPkgMemory()
+	if memory > 0 {
+		params.Memory = int64(memory)
+	}
+
+	disk := config.GetPkgDisk()
+	if disk > 0 {
+		params.Disk = int64(disk)
+	}
+
+	swap := config.GetPkgSwap()
+	if swap > 0 {
+		params.Swap = int64(swap)
+	}
+
+	vpcus := config.GetPkgVPCUs()
+	if vpcus > 0 {
+		params.VCPUs = int64(vpcus)
+	}
+
+	packages, err := c.client.Packages().List(context.Background(), params)
 	if err != nil {
 		return nil, err
 	}
 
 	return packages, nil
+}
+
+func (c *AgentComputeClient) GetPackage() (*tcc.Package, error) {
+	id := config.GetPkgID()
+	if id != "" {
+		pkg, err := c.getPackageByID(id)
+		if err != nil {
+			return nil, err
+		}
+
+		return pkg, nil
+	}
+
+	name := config.GetPkgName()
+	if name != "" {
+		pkg, err := c.getPackageByName(name)
+		if err != nil {
+			return nil, err
+		}
+
+		return pkg, nil
+	}
+
+	return nil, nil
 }
 
 func (c *AgentComputeClient) GetImagesList() ([]*tcc.Image, error) {
@@ -422,6 +473,38 @@ func (c *AgentComputeClient) getInstanceByID(instanceID string) (*tcc.Instance, 
 	}
 
 	return instance, nil
+}
+
+func (c *AgentComputeClient) getPackageByName(packageName string) (*tcc.Package, error) {
+	pkgs, err := c.client.Packages().List(context.Background(), &tcc.ListPackagesInput{
+		Name: packageName,
+	})
+	if err != nil {
+		if terrors.IsSpecificStatusCode(err, http.StatusNotFound) || terrors.IsSpecificStatusCode(err, http.StatusGone) {
+			return nil, errors.New("Package not found")
+		}
+		return nil, err
+	}
+
+	if len(pkgs) == 0 {
+		return nil, errors.New("No package(s) found")
+	}
+
+	return pkgs[0], nil
+}
+
+func (c *AgentComputeClient) getPackageByID(packageID string) (*tcc.Package, error) {
+	pkg, err := c.client.Packages().Get(context.Background(), &tcc.GetPackageInput{
+		ID: packageID,
+	})
+	if err != nil {
+		if terrors.IsSpecificStatusCode(err, http.StatusNotFound) || terrors.IsSpecificStatusCode(err, http.StatusGone) {
+			return nil, errors.New("Package not found")
+		}
+		return nil, err
+	}
+
+	return pkg, nil
 }
 
 func (c *AgentComputeClient) FormatImageName(images []*tcc.Image, imgID string) string {

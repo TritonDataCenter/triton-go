@@ -53,8 +53,12 @@ const (
 	KeyInstanceUserdata     = "compute.instance.userdata"
 	KeyInstanceNamePrefix   = "compute.instance.name-prefix"
 
-	KeyPackageName = "compute.package.name"
-	KeyPackageId   = "compute.package.id"
+	KeyPackageName   = "compute.package.name"
+	KeyPackageID     = "compute.package.id"
+	KeyPackageMemory = "compute.package.memory"
+	KeyPackageDisk   = "compute.package.disk"
+	KeyPackageSwap   = "compute.package.swap"
+	KeyPackageVPCUs  = "compute.package.vcpu"
 
 	KeyImageName = "compute.image.name"
 	KeyImageId   = "compute.image.id"
