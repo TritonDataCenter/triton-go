@@ -58,4 +58,16 @@ const (
 
 	KeyImageName = "compute.image.name"
 	KeyImageId   = "compute.image.id"
+
+	KeyAccountEmail            = "account.email"
+	KeyAccountCompanyName      = "account.companyname"
+	KeyAccountFirstName        = "account.firstname"
+	KeyAccountLastName         = "account.lastname"
+	KeyAccountAddress          = "account.address"
+	KeyAccountPostcode         = "account.postcode"
+	KeyAccountCity             = "account.city"
+	KeyAccountState            = "account.state"
+	KeyAccountCountry          = "account.country"
+	KeyAccountPhone            = "account.phone"
+	KeyAccountTritonCNSEnabled = "account.triton_cns_enabled"
 )

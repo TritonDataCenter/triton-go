@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
@@ -347,6 +348,95 @@ func GetMachineUserdata() string {
 	return viper.GetString(config.KeyInstanceUserdata)
 }
 
+func GetAccountEmail() string {
+	return viper.GetString(config.KeyAccountEmail)
+}
+
+func GetAccountCompanyName() string {
+	return viper.GetString(config.KeyAccountCompanyName)
+}
+
+func GetAccountFirstName() string {
+	return viper.GetString(config.KeyAccountFirstName)
+}
+
+func GetAccountLastName() string {
+	return viper.GetString(config.KeyAccountLastName)
+}
+
+func GetAccountAddress() string {
+	return viper.GetString(config.KeyAccountAddress)
+}
+
+func GetAccountPostalCode() string {
+	return viper.GetString(config.KeyAccountPostcode)
+}
+
+func GetAccountCity() string {
+	return viper.GetString(config.KeyAccountCity)
+}
+
+func GetAccountState() string {
+	return viper.GetString(config.KeyAccountState)
+}
+
+func GetAccountCountry() string {
+	return viper.GetString(config.KeyAccountCountry)
+}
+
+func GetAccountPhone() string {
+	return viper.GetString(config.KeyAccountPhone)
+}
+
+func GetAccountCNSEnabled() string {
+	return viper.GetString(config.KeyAccountTritonCNSEnabled)
+}
+
 func IsBlockingAction() bool {
 	return viper.GetBool(config.KeyInstanceWait)
+}
+
+func FormatTime(t time.Time) string {
+	d := time.Since(t)
+
+	timeSegs := make([]string, 0, 6)
+
+	years := int64(float64(d/(24*time.Hour)) / 365.25)
+	if years > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dy", years))
+	}
+
+	months := int64(float64(d/(24*time.Hour)%365) / 30.25)
+	if months > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dmo", months))
+	}
+
+	days := int64(d/(24*time.Hour)) % 365 % 7
+	if days > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dd", days))
+	}
+
+	hours := int64(d.Hours()) % 24
+	if hours > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dh", hours))
+	}
+
+	minutes := int64(d.Minutes()) % 60
+	if minutes > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2dm", minutes))
+	}
+
+	seconds := int64(d.Seconds()) % 60
+	if seconds > 0 {
+		timeSegs = append(timeSegs, fmt.Sprintf("%2ds", seconds))
+	}
+
+	maxSegs := len(timeSegs)
+	if maxSegs > 1 {
+		maxSegs = 1
+	}
+
+	timeSegs = timeSegs[0:maxSegs]
+
+	return strings.Join(timeSegs, " ")
 }
