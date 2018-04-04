@@ -14,7 +14,9 @@ import (
 	"github.com/joyent/triton-go/cmd/internal/command"
 	"github.com/joyent/triton-go/cmd/internal/config"
 	"github.com/joyent/triton-go/cmd/internal/logger"
+	"github.com/joyent/triton-go/cmd/manta/cmd/docs"
 	"github.com/joyent/triton-go/cmd/manta/cmd/list"
+	"github.com/joyent/triton-go/cmd/manta/cmd/shell"
 	"github.com/joyent/triton-go/cmd/manta/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
@@ -25,6 +27,8 @@ import (
 var subCommands = []*command.Command{
 	version.Cmd,
 	list.Cmd,
+	docs.Cmd,
+	shell.Cmd,
 }
 
 var rootCmd = &command.Command{

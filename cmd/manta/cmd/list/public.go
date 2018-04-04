@@ -24,6 +24,10 @@ var Cmd = &command.Command{
 		Use:          "ls",
 		Short:        "list directory contents",
 		SilenceUsage: true,
+		Example: `
+$ manta ls
+$ manta ls /stor
+`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
@@ -35,7 +39,7 @@ var Cmd = &command.Command{
 				return err
 			}
 
-			s, err := storage.NewGetStorageClient(c)
+			s, err := storage.NewStorageClient(c)
 			if err != nil {
 				return err
 			}

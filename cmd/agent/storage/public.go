@@ -20,7 +20,7 @@ type AgentStorageClient struct {
 	client *tsc.StorageClient
 }
 
-func NewGetStorageClient(cfg *config.TritonClientConfig) (*AgentStorageClient, error) {
+func NewStorageClient(cfg *config.TritonClientConfig) (*AgentStorageClient, error) {
 	storageClient, err := tsc.NewClient(cfg.Config)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error Creating Triton Storage Client")

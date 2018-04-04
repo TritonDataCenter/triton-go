@@ -35,7 +35,7 @@ var Cmd = &command.Command{
 				return err
 			}
 
-			a, err := compute.NewGetComputeClient(c)
+			a, err := compute.NewComputeClient(c)
 			if err != nil {
 				return err
 			}
