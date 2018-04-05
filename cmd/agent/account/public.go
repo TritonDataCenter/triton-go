@@ -110,3 +110,101 @@ func (c *AgentAccountClient) UpdateAccount() (*tac.Account, error) {
 
 	return account, nil
 }
+
+func (c *AgentAccountClient) ListKeys() ([]*tac.Key, error) {
+	keys, err := c.client.Keys().List(context.Background(), &tac.ListKeysInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return keys, nil
+}
+
+func (c *AgentAccountClient) CreateKey() (*tac.Key, error) {
+	params := &tac.CreateKeyInput{
+		Key: config.GetSSHKey(),
+	}
+
+	name := config.GetSSHKeyName()
+	if name != "" {
+		params.Name = name
+	}
+
+	key, err := c.client.Keys().Create(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
+func (c *AgentAccountClient) DeleteKey() (*tac.Key, error) {
+	var key *tac.Key
+
+	name := config.GetSSHKeyName()
+	if name != "" {
+		k, err := c.client.Keys().Get(context.Background(), &tac.GetKeyInput{
+			KeyName: name,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		key = k
+	}
+
+	fingerprint := config.GetSSHKeyFingerprint()
+	if fingerprint != "" {
+		keys, err := c.client.Keys().List(context.Background(), &tac.ListKeysInput{})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, k := range keys {
+			if k.Fingerprint == fingerprint {
+				key = k
+				break
+			}
+		}
+	}
+
+	err := c.client.Keys().Delete(context.Background(), &tac.DeleteKeyInput{
+		KeyName: name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
+func (c *AgentAccountClient) GetKey() (*tac.Key, error) {
+
+	name := config.GetSSHKeyName()
+	if name != "" {
+		key, err := c.client.Keys().Get(context.Background(), &tac.GetKeyInput{
+			KeyName: name,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return key, nil
+	}
+
+	fingerprint := config.GetSSHKeyFingerprint()
+	if fingerprint != "" {
+		keys, err := c.client.Keys().List(context.Background(), &tac.ListKeysInput{})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, key := range keys {
+			if key.Fingerprint == fingerprint {
+				return key, nil
+			}
+		}
+	}
+
+	return nil, nil
+}

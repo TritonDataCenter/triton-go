@@ -18,6 +18,7 @@ import (
 	"github.com/joyent/triton-go/cmd/triton/cmd/datacenters"
 	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
 	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
+	"github.com/joyent/triton-go/cmd/triton/cmd/keys"
 	"github.com/joyent/triton-go/cmd/triton/cmd/packages"
 	"github.com/joyent/triton-go/cmd/triton/cmd/services"
 	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
@@ -37,6 +38,7 @@ var subCommands = []*command.Command{
 	datacenters.Cmd,
 	services.Cmd,
 	packages.Cmd,
+	keys.Cmd,
 }
 
 var rootCmd = &command.Command{
