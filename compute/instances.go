@@ -1126,7 +1126,7 @@ var reservedInstanceCNSTags = map[string]struct{}{
 	CNSTagServices:   {},
 }
 
-// TagsExtractMeta() extracts all of the misc parameters from Tags and returns a
+// TagsExtractMeta extracts all of the misc parameters from Tags and returns a
 // clean CNS and Tags struct.
 func TagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]interface{}) {
 	nativeCNS := InstanceCNS{}
