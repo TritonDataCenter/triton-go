@@ -27,12 +27,11 @@ type GroupsClient struct {
 }
 
 type ServiceGroup struct {
-	ID                  string `json:"id"`
-	GroupName           string `json:"group_name"`
-	TemplateID          string `json:"template_id"`
-	AccountID           string `json:"account_id"`
-	Capacity            int    `json:"capacity"`
-	HealthCheckInterval int    `json:"health_check_interval"`
+	ID         string `json:"id"`
+	GroupName  string `json:"group_name"`
+	TemplateID string `json:"template_id"`
+	AccountID  string `json:"account_id"`
+	Capacity   int    `json:"capacity"`
 }
 
 type ListGroupsInput struct{}
@@ -160,10 +159,9 @@ func (c *GroupsClient) Get(ctx context.Context, input *GetGroupInput) (*ServiceG
 }
 
 type CreateGroupInput struct {
-	GroupName           string `json:"group_name"`
-	TemplateID          string `json:"template_id"`
-	Capacity            int    `json:"capacity"`
-	HealthCheckInterval int    `json:"health_check_interval"`
+	GroupName  string `json:"group_name"`
+	TemplateID string `json:"template_id"`
+	Capacity   int    `json:"capacity"`
 }
 
 func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
@@ -179,7 +177,6 @@ func (input *CreateGroupInput) toAPI() (map[string]interface{}, error) {
 	result["template_id"] = input.TemplateID
 
 	result["capacity"] = input.Capacity
-	result["health_check_interval"] = input.HealthCheckInterval
 
 	return result, nil
 }
@@ -213,11 +210,10 @@ func (c *GroupsClient) Create(ctx context.Context, input *CreateGroupInput) (*Se
 }
 
 type UpdateGroupInput struct {
-	ID                  string `json:"id"`
-	GroupName           string `json:"group_name"`
-	TemplateID          string `json:"template_id"`
-	Capacity            int    `json:"capacity"`
-	HealthCheckInterval int    `json:"health_check_interval"`
+	ID         string `json:"id"`
+	GroupName  string `json:"group_name"`
+	TemplateID string `json:"template_id"`
+	Capacity   int    `json:"capacity"`
 }
 
 func (input *UpdateGroupInput) updateToAPI() (map[string]interface{}, error) {
@@ -237,10 +233,6 @@ func (input *UpdateGroupInput) updateToAPI() (map[string]interface{}, error) {
 
 	if input.Capacity != 0 {
 		result["capacity"] = input.Capacity
-	}
-
-	if input.HealthCheckInterval != 0 {
-		result["health_check_interval"] = input.HealthCheckInterval
 	}
 
 	return result, nil
