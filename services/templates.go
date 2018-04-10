@@ -26,17 +26,16 @@ type TemplatesClient struct {
 }
 
 type InstanceTemplate struct {
-	ID                 string            `json:"id"`
-	TemplateName       string            `json:"template_name"`
-	AccountID          string            `json:"account_id"`
-	Package            string            `json:"package"`
-	ImageID            string            `json:"image_id"`
-	InstanceNamePrefix string            `json:"instance_name_prefix"`
-	FirewallEnabled    bool              `json:"firewall_enabled"`
-	Networks           []string          `json:"networks"`
-	Userdata           string            `json:"userdata"`
-	Metadata           map[string]string `json:"metadata"`
-	Tags               map[string]string `json:"tags"`
+	ID              string            `json:"id"`
+	TemplateName    string            `json:"template_name"`
+	AccountID       string            `json:"account_id"`
+	Package         string            `json:"package"`
+	ImageID         string            `json:"image_id"`
+	FirewallEnabled bool              `json:"firewall_enabled"`
+	Networks        []string          `json:"networks"`
+	Userdata        string            `json:"userdata"`
+	Metadata        map[string]string `json:"metadata"`
+	Tags            map[string]string `json:"tags"`
 }
 
 type ListTemplatesInput struct{}
@@ -102,15 +101,14 @@ func (c *TemplatesClient) Get(ctx context.Context, input *GetTemplateInput) (*In
 }
 
 type CreateTemplateInput struct {
-	TemplateName       string            `json:"template_name"`
-	Package            string            `json:"package"`
-	ImageID            string            `json:"image_id"`
-	InstanceNamePrefix string            `json:"instance_name_prefix"`
-	FirewallEnabled    bool              `json:"firewall_enabled"`
-	Networks           []string          `json:"networks"`
-	Userdata           string            `json:"userdata"`
-	Metadata           map[string]string `json:"metadata"`
-	Tags               map[string]string `json:"tags"`
+	TemplateName    string            `json:"template_name"`
+	Package         string            `json:"package"`
+	ImageID         string            `json:"image_id"`
+	FirewallEnabled bool              `json:"firewall_enabled"`
+	Networks        []string          `json:"networks"`
+	Userdata        string            `json:"userdata"`
+	Metadata        map[string]string `json:"metadata"`
+	Tags            map[string]string `json:"tags"`
 }
 
 func (input *CreateTemplateInput) toAPI() map[string]interface{} {
@@ -126,10 +124,6 @@ func (input *CreateTemplateInput) toAPI() map[string]interface{} {
 
 	if input.ImageID != "" {
 		result["image_id"] = input.ImageID
-	}
-
-	if input.InstanceNamePrefix != "" {
-		result["instance_name_prefix"] = input.InstanceNamePrefix
 	}
 
 	result["firewall_enabled"] = input.FirewallEnabled
