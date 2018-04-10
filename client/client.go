@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/joyent/triton-go"
@@ -43,7 +44,8 @@ var (
 		`https?://(.*).api.samsungcloud.io`,
 	}
 
-	tsgFormatURL = "https://tsg.%s.svc.joyent.zone"
+	jpcFormatURL = "https://tsg.%s.svc.joyent.zone"
+	spcFormatURL = "https://tsg.%s.svc.samsungcloud.zone"
 )
 
 // Client represents a connection to the Triton Compute or Object Storage APIs.
@@ -61,16 +63,21 @@ type Client struct {
 // parseDC parses out the data center commonly found in Triton URLs. Returns an
 // error if the Triton URL does not include a known data center name, in which
 // case a URL override (TRITON_TSG_URL) must be provided.
-func parseDC(url string) (string, error) {
+func parseDC(url string) (string, bool, error) {
+	isSamsung := false
+	if strings.Contains(url, "samsung") {
+		isSamsung = true
+	}
+
 	for _, pattern := range knownDCFormats {
 		re := regexp.MustCompile(pattern)
 		matches := re.FindStringSubmatch(url)
 		if len(matches) > 1 {
-			return matches[1], nil
+			return matches[1], isSamsung, nil
 		}
 	}
 
-	return "", fmt.Errorf("failed to parse datacenter from '%s'", url)
+	return "", isSamsung, fmt.Errorf("failed to parse datacenter from '%s'", url)
 }
 
 // New is used to construct a Client in order to make API
@@ -97,13 +104,20 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		return nil, pkgerrors.Wrapf(err, InvalidMantaURL)
 	}
 
+	// Generate the Services URL (TSG) based on the current datacenter used in
+	// the Triton URL (if TritonURL is available). If TRITON_TSG_URL environment
+	// variable is available than override using that value instead.
 	tsgURL := triton.GetEnv("TSG_URL")
-	if tsgURL == "" {
-		currentDC, err := parseDC(tritonURL)
+	if tsgURL == "" && tritonURL != "" {
+		currentDC, isSamsung, err := parseDC(tritonURL)
 		if err != nil {
 			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
 		}
-		tsgURL = fmt.Sprintf(tsgFormatURL, currentDC)
+
+		tsgURL = fmt.Sprintf(jpcFormatURL, currentDC)
+		if isSamsung {
+			tsgURL = fmt.Sprintf(spcFormatURL, currentDC)
+		}
 	}
 
 	servicesURL, err := url.Parse(tsgURL)
