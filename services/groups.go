@@ -20,7 +20,7 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
-const groupsPath = "/v1/tsg"
+const groupsPath = "/v1/tsg/groups"
 
 type GroupsClient struct {
 	client *client.Client

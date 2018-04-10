@@ -17,7 +17,7 @@ import (
 const (
 	accountURL  = "testing"
 	fakeGroupID = "8b81157f-28c2-4258-85b1-31b36df9c953"
-	groupPath   = "/v1/tsg"
+	groupPath   = "/v1/tsg/groups"
 
 	updatedName       = "new-name-1"
 	updatedTemplateID = "8de73edb-3436-4d52-b0be-24b1916fabd4"
