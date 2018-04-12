@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/joyent/triton-go/client"
 	"github.com/joyent/triton-go/compute"
@@ -27,11 +28,13 @@ type GroupsClient struct {
 }
 
 type ServiceGroup struct {
-	ID         string `json:"id"`
-	GroupName  string `json:"group_name"`
-	TemplateID string `json:"template_id"`
-	AccountID  string `json:"account_id"`
-	Capacity   int    `json:"capacity"`
+	ID         string    `json:"id"`
+	GroupName  string    `json:"group_name"`
+	TemplateID string    `json:"template_id"`
+	AccountID  string    `json:"account_id"`
+	Capacity   int       `json:"capacity"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 type ListGroupsInput struct{}

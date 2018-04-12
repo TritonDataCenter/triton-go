@@ -99,7 +99,6 @@ func main() {
 		fmt.Printf("Group TemplateID: %v\n", grp.TemplateID)
 		fmt.Printf("Group AccountID: %v\n", grp.AccountID)
 		fmt.Printf("Group Capacity: %v\n", grp.Capacity)
-		fmt.Printf("Group HealthCheckInterval: %v\n", grp.HealthCheckInterval)
 		fmt.Println("")
 	}
 
@@ -116,10 +115,9 @@ func main() {
 	}
 
 	createInput := &services.CreateGroupInput{
-		GroupName:           "custom-group-1",
-		TemplateID:          tmpl.ID,
-		Capacity:            2,
-		HealthCheckInterval: 300,
+		GroupName:  "custom-group-1",
+		TemplateID: tmpl.ID,
+		Capacity:   2,
 	}
 	grp, err := svc.Groups().Create(context.Background(), createInput)
 	if err != nil {

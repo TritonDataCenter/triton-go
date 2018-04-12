@@ -96,7 +96,6 @@ func main() {
 		fmt.Printf("AccountID: %v\n", template.AccountID)
 		fmt.Printf("Package: %v\n", template.Package)
 		fmt.Printf("ImageID: %v\n", template.ImageID)
-		fmt.Printf("InstanceNamePrefix: %v\n", template.InstanceNamePrefix)
 		fmt.Printf("FirewallEnabled: %v\n", template.FirewallEnabled)
 		fmt.Printf("Networks: %v\n", template.Networks)
 		fmt.Printf("Userdata: %v\n", template.Userdata)
@@ -126,15 +125,14 @@ func main() {
 	customTemplateName := "custom-template-2"
 
 	createInput := &services.CreateTemplateInput{
-		TemplateName:       customTemplateName,
-		Package:            "test-package",
-		ImageID:            "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-		InstanceNamePrefix: "sample-",
-		FirewallEnabled:    false,
-		Networks:           []string{"f7ed95d3-faaf-43ef-9346-15644403b963"},
-		Userdata:           "bash script here",
-		Metadata:           map[string]string{"metadata": "test"},
-		Tags:               map[string]string{"tag": "test"},
+		TemplateName:    customTemplateName,
+		Package:         "test-package",
+		ImageID:         "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+		FirewallEnabled: false,
+		Networks:        []string{"f7ed95d3-faaf-43ef-9346-15644403b963"},
+		Userdata:        "bash script here",
+		Metadata:        map[string]string{"metadata": "test"},
+		Tags:            map[string]string{"tag": "test"},
 	}
 	newTmpl, err := svc.Templates().Create(context.Background(), createInput)
 	if err != nil {

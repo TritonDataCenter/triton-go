@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/joyent/triton-go/client"
 	pkgerrors "github.com/pkg/errors"
@@ -36,6 +37,7 @@ type InstanceTemplate struct {
 	Userdata        string            `json:"userdata"`
 	Metadata        map[string]string `json:"metadata"`
 	Tags            map[string]string `json:"tags"`
+	CreatedAt       time.Time         `json:"created_at"`
 }
 
 type ListTemplatesInput struct{}
