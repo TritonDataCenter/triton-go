@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go"
+	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-go/errors"
 	pkgerrors "github.com/pkg/errors"
@@ -235,7 +235,7 @@ func (c *Client) DecodeError(resp *http.Response, requestMethod string) error {
 // overrideHeader overrides the header of the passed in HTTP request
 func (c *Client) overrideHeader(req *http.Request) {
 	if c.RequestHeader != nil {
-		for k, _ := range *c.RequestHeader {
+		for k := range *c.RequestHeader {
 			req.Header.Set(k, c.RequestHeader.Get(k))
 		}
 	}
