@@ -75,9 +75,9 @@ func main() {
 
 	config := &triton.ClientConfig{
 		AccountName: accountName,
+		TritonURL:   tritonURL,
 		Username:    userName,
 		Signers:     []authentication.Signer{signer},
-		TritonURL:   tritonURL,
 	}
 
 	svc, err := services.NewClient(config)
@@ -85,56 +85,72 @@ func main() {
 		log.Fatalf("failed to create new services client: %v", err)
 	}
 
-	fmt.Println("---")
-
-	listInput := &services.ListGroupsInput{}
-	groups, err := svc.Groups().List(context.Background(), listInput)
+	listInput := &services.ListTemplatesInput{}
+	templates, err := svc.Templates().List(context.Background(), listInput)
 	if err != nil {
-		log.Fatalf("failed to list service groups: %v", err)
+		log.Fatalf("failed to list instance templates: %v", err)
 	}
-
-	for _, grp := range groups {
-		fmt.Printf("Group ID: %v\n", grp.ID)
-		fmt.Printf("Group Name: %v\n", grp.GroupName)
-		fmt.Printf("Group TemplateID: %v\n", grp.TemplateID)
-		fmt.Printf("Group AccountID: %v\n", grp.AccountID)
-		fmt.Printf("Group Capacity: %v\n", grp.Capacity)
+	for _, template := range templates {
+		fmt.Printf("Template Name: %s\n", template.TemplateName)
+		fmt.Printf("ID: %v\n", template.ID)
+		fmt.Printf("Package: %v\n", template.Package)
+		fmt.Printf("ImageID: %v\n", template.ImageID)
+		fmt.Printf("FirewallEnabled: %v\n", template.FirewallEnabled)
+		fmt.Printf("Networks: %v\n", template.Networks)
+		fmt.Printf("Userdata: %v\n", template.Userdata)
+		fmt.Printf("Metadata: %v\n", template.Metadata)
+		fmt.Printf("Tags: %v\n", template.Tags)
 		fmt.Println("")
 	}
 
 	fmt.Println("---")
 
-	createTmplInput := &services.CreateTemplateInput{
-		TemplateName: "custom-template-1",
-		Package:      "test-package",
-		ImageID:      "test-image-id",
-	}
-	tmpl, err := svc.Templates().Create(context.Background(), createTmplInput)
-	if err != nil {
-		log.Fatalf("failed to create template")
-	}
+	if len(templates) > 0 {
+		if tmpl := templates[0]; tmpl != nil {
+			getInput := &services.GetTemplateInput{
+				ID: tmpl.ID,
+			}
+			template, err := svc.Templates().Get(context.Background(), getInput)
+			if err != nil {
+				log.Fatalf("failed to get instance template: %v", err)
+			}
 
-	createInput := &services.CreateGroupInput{
-		GroupName:  "custom-group-1",
-		TemplateID: tmpl.ID,
-		Capacity:   2,
+			fmt.Printf("Got Template: %s\n", template.TemplateName)
+		}
 	}
-	grp, err := svc.Groups().Create(context.Background(), createInput)
-	if err != nil {
-		log.Fatalf("failed to create service group: %v", err)
-	}
-
-	fmt.Printf("Created Group ID: %s\n", grp.ID)
 
 	fmt.Println("---")
 
-	deleteInput := &services.DeleteGroupInput{
-		ID: grp.ID,
+	customTemplateName := "custom-template-2"
+
+	createInput := &services.CreateTemplateInput{
+		TemplateName:    customTemplateName,
+		Package:         "test-package",
+		ImageID:         "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+		FirewallEnabled: false,
+		Networks:        []string{"f7ed95d3-faaf-43ef-9346-15644403b963"},
+		Userdata:        "bash script here",
+		Metadata:        map[string]string{"metadata": "test"},
+		Tags:            map[string]string{"tag": "test"},
 	}
-	err = svc.Groups().Delete(context.Background(), deleteInput)
+	newTmpl, err := svc.Templates().Create(context.Background(), createInput)
 	if err != nil {
-		log.Fatalf("failed to delete service group: %v", err)
+		log.Fatalf("failed to create instance template: %v", err)
 	}
 
-	fmt.Printf("Delete Group: %s\n", grp.GroupName)
+	fmt.Printf("Created ID: %s\n", newTmpl.ID)
+	fmt.Printf("Created TemplateName: %s\n", newTmpl.TemplateName)
+
+	fmt.Println("---")
+
+	deleteInput := &services.DeleteTemplateInput{
+		ID: newTmpl.ID,
+	}
+	err = svc.Templates().Delete(context.Background(), deleteInput)
+	if err != nil {
+		log.Fatalf("failed to delete instance template: %v", err)
+	}
+
+	fmt.Printf("Delete Template: %s\n", customTemplateName)
+
 }
