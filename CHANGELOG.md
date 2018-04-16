@@ -1,6 +1,7 @@
-## Unreleased
+## 1.3.0 (April 17 2018)
 
 - identity/roles: Add support for SetRoleTags [#112]
+- Add support for Triton Service Groups endpoint [#148]
 
 ## 1.2.0 (March 20 2018)
 
