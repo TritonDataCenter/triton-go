@@ -613,7 +613,7 @@ func (c *InstancesClient) ListTags(ctx context.Context, input *ListTagsInput) (m
 		return nil, pkgerrors.Wrap(err, "unable decode list machine tags response")
 	}
 
-	_, tags := tagsExtractMeta(result)
+	_, tags := TagsExtractMeta(result)
 	return tags, nil
 }
 
@@ -1126,9 +1126,9 @@ var reservedInstanceCNSTags = map[string]struct{}{
 	CNSTagServices:   {},
 }
 
-// tagsExtractMeta() extracts all of the misc parameters from Tags and returns a
+// TagsExtractMeta extracts all of the misc parameters from Tags and returns a
 // clean CNS and Tags struct.
-func tagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]interface{}) {
+func TagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]interface{}) {
 	nativeCNS := InstanceCNS{}
 	nativeTags := make(map[string]interface{}, len(tags))
 	for k, raw := range tags {
@@ -1157,7 +1157,7 @@ func tagsExtractMeta(tags map[string]interface{}) (InstanceCNS, map[string]inter
 // format.
 func (api *_Instance) toNative() (*Instance, error) {
 	m := Instance(api.Instance)
-	m.CNS, m.Tags = tagsExtractMeta(api.Tags)
+	m.CNS, m.Tags = TagsExtractMeta(api.Tags)
 	return &m, nil
 }
 

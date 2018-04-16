@@ -19,8 +19,13 @@ import (
 const BadURL = "**ftp://man($$"
 
 func TestNew(t *testing.T) {
-	tritonURL := "http://triton.test.org"
-	mantaURL := "http://manta.test.org"
+	mantaURL := "https://us-east.manta.joyent.com"
+	tsgEnv := "http://tsg.test.org"
+	jpcTritonURL := "https://us-east-1.api.joyent.com"
+	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
+	jpcServiceURL := "https://tsg.us-east-1.svc.joyent.zone"
+	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
+
 	accountName := "test.user"
 	signer, _ := auth.NewTestSigner()
 
@@ -28,31 +33,51 @@ func TestNew(t *testing.T) {
 		name        string
 		tritonURL   string
 		mantaURL    string
+		tsgEnv      string
+		servicesURL string
 		accountName string
 		signer      auth.Signer
 		err         interface{}
 	}{
-		{"default", tritonURL, mantaURL, accountName, signer, nil},
-		{"missing url", "", "", accountName, signer, ErrMissingURL},
-		{"bad tritonURL", BadURL, mantaURL, accountName, signer, InvalidTritonURL},
-		{"bad mantaURL", tritonURL, BadURL, accountName, signer, InvalidMantaURL},
-		{"missing accountName", tritonURL, mantaURL, "", signer, ErrAccountName},
-		{"missing signer", tritonURL, mantaURL, accountName, nil, ErrDefaultAuth},
+		{"default", jpcTritonURL, mantaURL, "", jpcServiceURL, accountName, signer, nil},
+		{"in samsung", spcTritonURL, mantaURL, "", spcServiceURL, accountName, signer, nil},
+		{"env TSG", jpcTritonURL, mantaURL, tsgEnv, tsgEnv, accountName, signer, nil},
+		{"missing url", "", "", "", "", accountName, signer, ErrMissingURL},
+		{"bad tritonURL", BadURL, mantaURL, "", "", accountName, signer, InvalidTritonURL},
+		{"bad mantaURL", jpcTritonURL, BadURL, "", jpcServiceURL, accountName, signer, InvalidMantaURL},
+		{"bad TSG", jpcTritonURL, mantaURL, BadURL, "", accountName, signer, InvalidServicesURL},
+		{"missing accountName", jpcTritonURL, mantaURL, "", jpcServiceURL, "", signer, ErrAccountName},
+		{"missing signer", jpcTritonURL, mantaURL, "", jpcServiceURL, accountName, nil, ErrDefaultAuth},
 	}
 
 	for _, test := range tests {
-		os.Unsetenv("TRITON_KEY_ID")
-		os.Unsetenv("SDC_KEY_ID")
-		os.Unsetenv("MANTA_KEY_ID")
-		os.Unsetenv("SSH_AUTH_SOCK")
-
 		t.Run(test.name, func(t *testing.T) {
-			_, err := New(
+			os.Unsetenv("TRITON_KEY_ID")
+			os.Unsetenv("SDC_KEY_ID")
+			os.Unsetenv("MANTA_KEY_ID")
+			os.Unsetenv("SSH_AUTH_SOCK")
+			os.Unsetenv("TRITON_TSG_URL")
+
+			if test.tsgEnv != "" {
+				os.Setenv("TRITON_TSG_URL", test.tsgEnv)
+			}
+
+			c, err := New(
 				test.tritonURL,
 				test.mantaURL,
 				test.accountName,
 				test.signer,
 			)
+
+			// test generation of TSG URL for all non-error cases
+			if err == nil {
+				if c.ServicesURL.String() != test.servicesURL {
+					t.Errorf("expected ServicesURL to be set to %q: got %q (%s)",
+						test.servicesURL, c.ServicesURL.String(), test.name)
+					return
+				}
+			}
+
 			if test.err != nil {
 				if err == nil {
 					t.Error("expected error not to be nil")
@@ -88,7 +113,7 @@ func TestNew(t *testing.T) {
 		}
 
 		_, err = New(
-			tritonURL,
+			jpcTritonURL,
 			mantaURL,
 			accountName,
 			nil,
