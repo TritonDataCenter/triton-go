@@ -60,19 +60,13 @@ func overrideHeaderTest(t *testing.T) func(req *http.Request) (*http.Response, e
 		if req.Header.Get(testHeaderName) == "" {
 			t.Errorf("request header should contain '%s'", testHeaderName)
 		}
-
 		testHeader := strings.Join(req.Header[testHeaderName], ",")
-
-		// test length of headers
-		if size := len(req.Header[testHeaderName]); size != 1 {
-			t.Errorf("request header length is not one: got %q", testHeader)
-		}
 		// test override of initial header
-		if strings.Contains(testHeader, testHeaderVal1) {
+		if !strings.Contains(testHeader, testHeaderVal1) {
 			t.Errorf("request header should not contain %q: got %q", testHeaderVal1, testHeader)
 		}
 		if strings.Contains(testHeader, testHeaderVal2) {
-			t.Errorf("Request header should contain '%s': got '%s'", testHeaderVal2, testHeader)
+			t.Errorf("request header should contain '%s': got '%s'", testHeaderVal2, testHeader)
 		}
 
 		header := http.Header{}
