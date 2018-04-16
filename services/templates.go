@@ -29,7 +29,6 @@ type TemplatesClient struct {
 type InstanceTemplate struct {
 	ID              string            `json:"id"`
 	TemplateName    string            `json:"template_name"`
-	AccountID       string            `json:"account_id"`
 	Package         string            `json:"package"`
 	ImageID         string            `json:"image_id"`
 	FirewallEnabled bool              `json:"firewall_enabled"`

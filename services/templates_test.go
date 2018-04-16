@@ -338,7 +338,6 @@ func getTemplateBadDecode(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
@@ -373,14 +372,14 @@ func getTemplateSuccess(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
   "networks":["346f321b-df77-44df-9d44-5b2bda4d5405"],
   "userdata":"bash script here",
   "metadata":{"hello":"again"},
-  "tags":{"admin":"cheap","foo":"bar"}
+  "tags":{"admin":"cheap","foo":"bar"},
+  "created_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{
@@ -397,7 +396,6 @@ func listTemplatesBadDecode(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`[{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
@@ -408,7 +406,6 @@ func listTemplatesBadDecode(req *http.Request) (*http.Response, error) {
 }, {
   "id":"cb2d0434-e4c4-4ba0-966e-ff5c17d3378a",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
@@ -432,25 +429,25 @@ func listTemplatesSuccess(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`[{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
   "networks":["346f321b-df77-44df-9d44-5b2bda4d5405"],
   "userdata":"bash script here",
   "metadata":{"hello":"again"},
-  "tags":{"admin":"cheap","foo":"bar"}
+  "tags":{"admin":"cheap","foo":"bar"},
+  "created_at": "2018-04-14T15:24:20.205784Z"
 }, {
   "id":"cb2d0434-e4c4-4ba0-966e-ff5c17d3378a",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
   "networks":["346f321b-df77-44df-9d44-5b2bda4d5405"],
   "userdata":"bash script here",
   "metadata":{"hello":"again"},
-  "tags":{"admin":"cheap","foo":"bar"}
+  "tags":{"admin":"cheap","foo":"bar"},
+  "created_at": "2018-04-14T15:24:20.205784Z"
 }]`)
 
 	return &http.Response{
@@ -467,14 +464,14 @@ func createTemplateSuccess(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
   "networks":["346f321b-df77-44df-9d44-5b2bda4d5405"],
   "userdata":"bash script here",
   "metadata":{"hello":"again"},
-  "tags":{"admin":"cheap","foo":"bar"}
+  "tags":{"admin":"cheap","foo":"bar"},
+  "created_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{
@@ -491,14 +488,14 @@ func updateTemplateSuccess(req *http.Request) (*http.Response, error) {
 	body := strings.NewReader(`{
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "template_name":"test-template-1",
-  "account_id":"10a5173e-9041-45ad-acf1-87f03d1f101a",
   "package":"g4-highcpu-1G",
   "image_id":"c10a0bc4-ffe0-4ca9-a469-62b7e37990bb",
   "firewall_enabled":true,
   "networks":["346f321b-df77-44df-9d44-5b2bda4d5405"],
   "userdata":"bash script here",
   "metadata":{"hello":"again"},
-  "tags":{"admin":"cheap","foo":"bar"}
+  "tags":{"admin":"cheap","foo":"bar"},
+  "created_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{

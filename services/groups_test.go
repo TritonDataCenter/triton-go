@@ -517,7 +517,6 @@ func getGroupBadDecode(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"test-group-1",
   "template_id":"c012d81e-a6d2-4179-ae2d-be6fa8f13a60",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
   "capacity":3,
 }`)
 
@@ -547,8 +546,9 @@ func getGroupSuccess(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"test-group-1",
   "template_id":"c012d81e-a6d2-4179-ae2d-be6fa8f13a60",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
-  "capacity":3
+  "capacity":3,
+  "created_at": "2018-04-14T15:24:20.205784Z",
+  "updated_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{
@@ -566,13 +566,11 @@ func listGroupsBadDecode(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"test-group-1",
   "template_id":"c012d81e-a6d2-4179-ae2d-be6fa8f13a60",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
   "capacity":3
 }, {
   "id":"a981d5d1-a105-4ff7-a201-e535eed1d295",
   "group_name":"test-group-1",
   "template_id":"bfdf52c2-67ac-4066-a7a1-73ed13966b22",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
   "capacity":3,
 }]`)
 
@@ -591,14 +589,16 @@ func listGroupsSuccess(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"test-group-1",
   "template_id":"c012d81e-a6d2-4179-ae2d-be6fa8f13a60",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
-  "capacity":3
+  "capacity":3,
+  "created_at": "2018-04-14T15:24:20.205784Z",
+  "updated_at": "2018-04-14T15:24:20.205784Z"
 }, {
   "id":"a981d5d1-a105-4ff7-a201-e535eed1d295",
   "group_name":"test-group-1",
   "template_id":"bfdf52c2-67ac-4066-a7a1-73ed13966b22",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
-  "capacity":3
+  "capacity":3,
+  "created_at": "2018-04-14T15:24:20.205784Z",
+  "updated_at": "2018-04-14T15:24:20.205784Z"
 }]`)
 
 	return &http.Response{
@@ -754,8 +754,9 @@ func createGroupSuccess(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"created-group-1",
   "template_id":"288758c2-a4d7-4785-9dda-f4a7c41f0e3b",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
-  "capacity":2
+  "capacity":2,
+  "created_at": "2018-04-14T15:24:20.205784Z",
+  "updated_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{
@@ -773,8 +774,9 @@ func updateGroupSuccess(req *http.Request) (*http.Response, error) {
   "id":"8b81157f-28c2-4258-85b1-31b36df9c953",
   "group_name":"new-name-1",
   "template_id":"8de73edb-3436-4d52-b0be-24b1916fabd4",
-  "account_id":"d52a68b7-e909-488f-b7c3-181d59d85f2a",
-  "capacity":3
+  "capacity":3,
+  "created_at": "2018-04-14T15:24:20.205784Z",
+  "updated_at": "2018-04-14T15:24:20.205784Z"
 }`)
 
 	return &http.Response{
