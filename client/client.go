@@ -60,6 +60,18 @@ type Client struct {
 	Username      string
 }
 
+func isPrivateInstall(url string) bool {
+	for _, pattern := range knownDCFormats {
+		re := regexp.MustCompile(pattern)
+		matches := re.FindStringSubmatch(url)
+		if len(matches) > 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
 // parseDC parses out the data center commonly found in Triton URLs. Returns an
 // error if the Triton URL does not include a known data center name, in which
 // case a URL override (TRITON_TSG_URL) must be provided.
@@ -108,7 +120,7 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	// the Triton URL (if TritonURL is available). If TRITON_TSG_URL environment
 	// variable is available than override using that value instead.
 	tsgURL := triton.GetEnv("TSG_URL")
-	if tsgURL == "" && tritonURL != "" {
+	if tsgURL == "" && tritonURL != "" && !isPrivateInstall(tritonURL) {
 		currentDC, isSamsung, err := parseDC(tritonURL)
 		if err != nil {
 			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
