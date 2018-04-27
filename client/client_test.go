@@ -25,6 +25,7 @@ func TestNew(t *testing.T) {
 	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
 	jpcServiceURL := "https://tsg.us-east-1.svc.joyent.zone"
 	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
+	privateInstallUrl := "https://myinstall.mycompany.com"
 
 	accountName := "test.user"
 	signer, _ := auth.NewTestSigner()
@@ -48,6 +49,7 @@ func TestNew(t *testing.T) {
 		{"bad TSG", jpcTritonURL, mantaURL, BadURL, "", accountName, signer, InvalidServicesURL},
 		{"missing accountName", jpcTritonURL, mantaURL, "", jpcServiceURL, "", signer, ErrAccountName},
 		{"missing signer", jpcTritonURL, mantaURL, "", jpcServiceURL, accountName, nil, ErrDefaultAuth},
+		{"private install", privateInstallUrl, mantaURL, "", "", accountName, signer, nil},
 	}
 
 	for _, test := range tests {
