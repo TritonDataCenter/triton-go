@@ -1,5 +1,6 @@
 ## Unreleased
 
+- client: Fixing an issue where private Triton installations were marked as invalid DC [#152]
 
 ## 1.3.0 (April 17 2018)
 
