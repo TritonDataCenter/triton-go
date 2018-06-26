@@ -24,9 +24,9 @@ import (
 )
 
 var (
-	listDirErrorType = errors.New("unable to list dir")
-	dirPath          = "/stor/foobar.json"
-	brokenDirPath    = "/missingfolder/foo.json"
+	errListDir     = errors.New("unable to list dir")
+	dirPath        = "/stor/foobar.json"
+	brokenDirPath  = "/missingfolder/foo.json"
 	dirListingFull = `{"name":"subdirectory0","type":"directory","mtime":"2018-01-01T00:00:00.000Z"}
 {"name":"subdirectory1","type":"directory","mtime":"2018-01-01T00:00:00.000Z"}
 `
@@ -83,14 +83,13 @@ func TestList(t *testing.T) {
 
 	})
 
-
 	t.Run("successfulWithMarker", func(t *testing.T) {
 		v := url.Values{}
 		v.Set("marker", dirLastEntry)
 
 		testutils.RegisterResponder(
 			"GET",
-			path.Join("/", accountUrl, dirPath) + "?" + v.Encode(),
+			path.Join("/", accountUrl, dirPath)+"?"+v.Encode(),
 			listDirSuccess)
 
 		expectedPartialResultSetSize := 1
@@ -139,7 +138,7 @@ func listDirSuccess(req *http.Request) (*http.Response, error) {
 
 	var body *strings.Reader
 
-	if (req.URL.Query().Get("marker") == "subdirectory1") {
+	if req.URL.Query().Get("marker") == "subdirectory1" {
 		header.Add("Result-Set-Size", "1")
 		body = strings.NewReader(dirListingPartial)
 	} else {
@@ -157,4 +156,3 @@ func listDirSuccess(req *http.Request) (*http.Response, error) {
 func listDirError(req *http.Request) (*http.Response, error) {
 	return nil, listDirErrorType
 }
-
