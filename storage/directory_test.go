@@ -38,7 +38,7 @@ var (
 func TestList(t *testing.T) {
 	storageClient := &storage.StorageClient{
 		Client: testutils.NewMockClient(testutils.MockClientInput{
-			AccountName: accountUrl,
+			AccountName: accountURL,
 		}),
 	}
 
@@ -59,7 +59,7 @@ func TestList(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, dirPath), listDirSuccess)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, dirPath), listDirSuccess)
 		expectedResultSetSize := 2
 
 		output, err := do(context.Background(), storageClient, "")
@@ -84,13 +84,14 @@ func TestList(t *testing.T) {
 	})
 
 	t.Run("successfulWithMarker", func(t *testing.T) {
-		v := url.Values{}
-		v.Set("marker", dirLastEntry)
+		q := url.Values{}
+		q.Set("marker", dirLastEntry)
 
-		testutils.RegisterResponder(
-			"GET",
-			path.Join("/", accountUrl, dirPath)+"?"+v.Encode(),
-			listDirSuccess)
+		u := url.URL{}
+		u.Path = path.Join("/", accountURL, dirPath)
+		u.RawQuery = q.Encode()
+
+		testutils.RegisterResponder("GET", u.String(), listDirSuccess)
 
 		expectedPartialResultSetSize := 1
 
@@ -115,7 +116,7 @@ func TestList(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("GET", path.Join("/", accountUrl, brokenDirPath), listDirError)
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, brokenDirPath), listDirError)
 
 		output, err := do(context.Background(), storageClient, "")
 		if err == nil {
