@@ -154,5 +154,5 @@ func listDirSuccess(req *http.Request) (*http.Response, error) {
 }
 
 func listDirError(req *http.Request) (*http.Response, error) {
-	return nil, listDirErrorType
+	return nil, errListDir
 }
