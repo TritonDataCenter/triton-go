@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const accountUrl = "testing"
+const accountURL = "testing"
 
 var (
 	putSnapLinkErrorType = errors.New("unable to put snaplink")
@@ -32,7 +32,7 @@ var (
 func MockStorageClient() *storage.StorageClient {
 	return &storage.StorageClient{
 		Client: testutils.NewMockClient(testutils.MockClientInput{
-			AccountName: accountUrl,
+			AccountName: accountURL,
 		}),
 	}
 }
@@ -50,7 +50,7 @@ func TestPutSnaplink(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, linkPath), putSnapLinkSuccess)
+		testutils.RegisterResponder("PUT", path.Join("/", accountURL, linkPath), putSnapLinkSuccess)
 
 		err := do(context.Background(), storageClient)
 		if err != nil {
@@ -59,7 +59,7 @@ func TestPutSnaplink(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, brokenLinkPath), putSnapLinkError)
+		testutils.RegisterResponder("PUT", path.Join("/", accountURL, brokenLinkPath), putSnapLinkError)
 
 		err := do(context.Background(), storageClient)
 		if err == nil {
