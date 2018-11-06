@@ -201,9 +201,9 @@ func TestAccImagesGet(t *testing.T) {
 			&testutils.StepAssert{
 				StateBagKey: stateKey,
 				Assertions: seq.Map{
-					"name":    "ws2012std",
-					"version": "1.0.1",
-					"os":      "windows",
+					"name":                    "ws2012std",
+					"version":                 "1.0.1",
+					"os":                      "windows",
 					"requirements.min_memory": 3840,
 					"requirements.min_ram":    3840,
 					"type":                    "zvol",
