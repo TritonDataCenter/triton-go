@@ -54,6 +54,11 @@ type InstanceVolume struct {
 	Mountpoint string `json:"mountpoint,omitempty"`
 }
 
+type NetworkObject struct {
+	IPv4_uuid string   `json:"ipv4_uuid"`
+	IPv4_ips  []string `json:"ipv4_ips"`
+}
+
 type Instance struct {
 	ID                 string                 `json:"id"`
 	Name               string                 `json:"name"`
@@ -277,6 +282,7 @@ type CreateInstanceInput struct {
 	Package         string
 	Image           string
 	Networks        []string
+	NetworkObjects  []NetworkObject
 	Affinity        []string
 	LocalityStrict  bool
 	LocalityNear    []string
@@ -314,8 +320,12 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 		result["image"] = input.Image
 	}
 
-	if len(input.Networks) > 0 {
-		result["networks"] = input.Networks
+	if len(input.NetworkObjects) > 0 {
+		result["networks"] = input.NetworkObjects
+	} else {
+		if len(input.Networks) > 0 {
+			result["networks"] = input.Networks
+		}
 	}
 
 	if len(input.Volumes) > 0 {
