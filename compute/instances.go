@@ -54,6 +54,11 @@ type InstanceVolume struct {
 	Mountpoint string `json:"mountpoint,omitempty"`
 }
 
+type NetworkObject struct {
+	IPv4UUID string   `json:"ipv4_uuid"`
+	IPv4IPs  []string `json:"ipv4_ips,omitempty"`
+}
+
 type Instance struct {
 	ID                 string                 `json:"id"`
 	Name               string                 `json:"name"`
@@ -278,6 +283,7 @@ type CreateInstanceInput struct {
 	Package         string
 	Image           string
 	Networks        []string
+	NetworkObjects  []NetworkObject
 	Affinity        []string
 	LocalityStrict  bool
 	LocalityNear    []string
@@ -315,8 +321,31 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 		result["image"] = input.Image
 	}
 
-	if len(input.Networks) > 0 {
-		result["networks"] = input.Networks
+	// If we are passed []string from input.Networks that do not conflict with networks provided by NetworkObjects, add them to the request sent to CloudAPI
+	var networks []NetworkObject
+
+	if len(input.NetworkObjects) > 0 {
+		networks = append(networks, input.NetworkObjects...)
+	}
+
+	for _, netuuid := range input.Networks {
+		found := false
+
+		for _, net := range networks {
+			if net.IPv4UUID == netuuid {
+				found = true
+			}
+		}
+
+		if !found {
+			networks = append(networks, NetworkObject{
+				IPv4UUID: netuuid,
+			})
+		}
+	}
+
+	if len(networks) > 0 {
+		result["networks"] = networks
 	}
 
 	if len(input.Volumes) > 0 {
