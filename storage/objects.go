@@ -704,7 +704,7 @@ func uploadPart(c ObjectsClient, ctx context.Context, input *UploadPartInput) (*
 func checkDirectoryTreeExists(c ObjectsClient, ctx context.Context, absPath _AbsCleanPath) (bool, error) {
 	exists, err := c.IsDir(ctx, string(absPath))
 	if err != nil {
-		if tt.IsResourceNotFoundError(err) {
+		if tt.IsResourceNotFoundError(err) || tt.IsStatusNotFoundCode(err) {
 			return false, nil
 		}
 		return false, err
