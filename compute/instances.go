@@ -157,7 +157,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
+	if response.StatusCode == http.StatusNotFound {
 		return nil, &errors.APIError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
