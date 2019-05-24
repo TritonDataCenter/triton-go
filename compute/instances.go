@@ -141,6 +141,8 @@ func (c *InstancesClient) Count(ctx context.Context, input *ListInstancesInput) 
 }
 
 func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*Instance, error) {
+	var httpError error
+
 	if err := input.Validate(); err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
@@ -163,6 +165,12 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 			Code:       "ResourceNotFound",
 		}
 	}
+	if response.StatusCode == http.StatusGone {
+		httpError = &errors.APIError{
+			StatusCode: response.StatusCode,
+			Code:       "unable to get machine",
+		}
+	}
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
@@ -178,7 +186,7 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		return nil, pkgerrors.Wrap(err, "unable to decode get machine response")
 	}
 
-	return native, nil
+	return native, httpError
 }
 
 type ListInstancesInput struct {

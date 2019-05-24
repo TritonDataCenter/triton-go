@@ -397,14 +397,8 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
-	// Handle Deleted Instances,  This wil return a 410 triton-go will consider this behavior not an error and return nil.
-	// If the user wants to handle deleted instances they can do so by querying the State of the instance.
+	// GetMachine returns a HTTP 410 response for deleted instances, but the body of the response is still a valid machine object with a State value of "deleted". Return the object to the caller instead of an error.
 	if resp.StatusCode == http.StatusGone {
-		return resp, nil
-	}
-
-	if resp.StatusCode >= http.StatusOK &&
-		resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
 
