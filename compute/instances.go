@@ -327,21 +327,19 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 		networks = append(networks, input.NetworkObjects...)
 	}
 
-	if len(input.Networks) > 0 {
-		for _, v := range input.Networks {
-			if len(networks) > 0 {
-				for _, n := range networks {
-					if n.IPv4UUID != v {
-						networks = append(networks, NetworkObject{
-							IPv4UUID: v,
-						})
-					}
-				}
-			} else {
-				networks = append(networks, NetworkObject{
-					IPv4UUID: v,
-				})
+	for _, netuuid := range input.Networks {
+		found := false
+
+		for _, net := range networks {
+			if net.IPv4UUID == netuuid {
+				found = true
 			}
+		}
+
+		if !found {
+			networks = append(networks, NetworkObject{
+				IPv4UUID: netuuid,
+			})
 		}
 	}
 
