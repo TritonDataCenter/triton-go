@@ -147,30 +147,30 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 
 	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID)
 	reqInputs := client.RequestInput{
-		Method: http.MethodGet,
-		Path:   fullPath,
+		Method:       http.MethodGet,
+		Path:         fullPath,
+		PreserveGone: true,
 	}
-	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
+	response, reqErr := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if response == nil {
-		return nil, pkgerrors.Wrap(err, "unable to get machine")
+		return nil, pkgerrors.Wrap(reqErr, "unable to get machine")
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
 	}
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
-		return nil, &errors.APIError{
-			StatusCode: response.StatusCode,
-			Code:       "ResourceNotFound",
+	if reqErr != nil {
+		reqErr = pkgerrors.Wrap(reqErr, "unable to get machine")
+
+		// If this is not a HTTP 410 Gone error, return it immediately to the caller.  Otherwise, we'll return it alongside the instance below.
+		if response.StatusCode != http.StatusGone {
+			return nil, reqErr
 		}
-	}
-	if err != nil {
-		return nil, pkgerrors.Wrap(err, "unable to get machine")
 	}
 
 	var result *_Instance
 	decoder := json.NewDecoder(response.Body)
-	if err = decoder.Decode(&result); err != nil {
-		return nil, pkgerrors.Wrap(err, "unable to decode get machine response")
+	if err := decoder.Decode(&result); err != nil {
+		return nil, pkgerrors.Wrap(err, "unable to parse JSON in get machine response")
 	}
 
 	native, err := result.toNative()
@@ -178,7 +178,8 @@ func (c *InstancesClient) Get(ctx context.Context, input *GetInstanceInput) (*In
 		return nil, pkgerrors.Wrap(err, "unable to decode get machine response")
 	}
 
-	return native, nil
+	// To remain compatible with the existing interface, we'll return both an error and an instance object in some cases; e.g., for HTTP 410 Gone responses for deleted instances.
+	return native, reqErr
 }
 
 type ListInstancesInput struct {
