@@ -947,7 +947,9 @@ type AddNICInput struct {
 	NetworkObject NetworkObject
 }
 
-// toAPI is used to build up the JSON Object to send to the API gateway.  IT also will resolve the scenario where a user provides both a NetworkObject and a Network. If both are provided, NetworkObject wins.
+// toAPI is used to build up the JSON Object to send to the API gateway.  It 
+// also will resolve the scenario where a user provides both a NetworkObject
+// and a Network. If both are provided, NetworkObject wins.
 func (input AddNICInput) toAPI() map[string]interface{} {
 	result := map[string]interface{}{}
 
