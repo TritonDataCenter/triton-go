@@ -942,8 +942,28 @@ func (c *InstancesClient) GetNIC(ctx context.Context, input *GetNICInput) (*NIC,
 }
 
 type AddNICInput struct {
-	InstanceID string `json:"-"`
-	Network    string `json:"network"`
+	InstanceID    string
+	Network       string
+	NetworkObject NetworkObject
+}
+
+// toAPI is used to build up the JSON Object to send to the API gateway.  IT also will resolve the scenario where a user provides both a NetworkObject and a Network. If both are provided, NetworkObject wins.
+func (input AddNICInput) toAPI() map[string]interface{} {
+	result := map[string]interface{}{}
+
+	var network NetworkObject
+
+	if input.NetworkObject.IPv4UUID != "" {
+		network = input.NetworkObject
+	} else {
+		network = NetworkObject{
+			IPv4UUID: input.Network,
+		}
+	}
+
+	result["network"] = network
+
+	return result
 }
 
 // AddNIC asynchronously adds a NIC to a given instance.  If a NIC for a given
@@ -956,7 +976,7 @@ func (c *InstancesClient) AddNIC(ctx context.Context, input *AddNICInput) (*NIC,
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
 		Path:   fullPath,
-		Body:   input,
+		Body:   input.toAPI(),
 	}
 	response, err := c.client.ExecuteRequestRaw(ctx, reqInputs)
 	if err != nil {
