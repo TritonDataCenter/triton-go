@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.6.1 (June 26 2019)
+
+- compute/networks: support network objects for AddNIC [#169]
+
 ## 1.6.0 (June 24 2019)
 
 - compute/networks: added support for network objects [#158]
