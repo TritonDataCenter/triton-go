@@ -1,3 +1,4 @@
+// +build ignore
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
 //
