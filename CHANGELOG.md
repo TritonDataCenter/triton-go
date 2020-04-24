@@ -1,5 +1,13 @@
 ## Unreleased
 
+## 1.7.1 (April 24 2020)
+
+- Add support for volume tags [#175]
+
+## 1.7.0 (June 26 2019)
+
+- Expected instance to have Tags
+
 ## 1.6.1 (June 26 2019)
 
 - compute/networks: support network objects for AddNIC [#169]
