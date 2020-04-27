@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@ package compute_test
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -138,6 +139,9 @@ func TestCreateVolume(t *testing.T) {
 			Name:     "my-test-volume-1",
 			Type:     "tritonnfs",
 			Networks: []string{"d251d640-a02e-47b5-8ae6-8b45d859528e"},
+			Tags: map[string]string{
+				"tag1": "value1",
+			},
 		})
 		if err != nil {
 			return nil, err
@@ -148,10 +152,22 @@ func TestCreateVolume(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
 		testutils.RegisterResponder("POST", path.Join("/", accountURL, "volumes"), createVolumeSuccess)
 
-		_, err := do(context.Background(), computeClient)
+		volume, err := do(context.Background(), computeClient)
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		tagVal, tagOk := volume.Tags["tag1"]
+		if !tagOk {
+			t.Fatal(fmt.Errorf("Expected instance to have Tags: found \"%v\"",
+				volume.Tags))
+		}
+		if tagVal != "value1" {
+			t.Fatal(fmt.Errorf(
+				"Expected instance Tag \"tag1\" to equal \"value1\": found \"%s\"",
+				tagVal))
+		}
+
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -360,6 +376,9 @@ func createVolumeSuccess(req *http.Request) (*http.Response, error) {
 	"create_timestamp": "2018-01-12T21:09:09.788Z",
 	"state": "creating",
 	"networks": ["d251d640-a02e-47b5-8ae6-8b45d859528e"],
+	"tags": {
+		"tag1": "value1"
+	},
 	"id": "1edcc6ad-7987-4372-b13a-d21e678ba1e9"
 }
 `)
