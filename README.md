@@ -106,6 +106,8 @@ set:
 - `TRITON_URL` - the base endpoint for the Triton API
 - `TRITON_ACCOUNT` - the account name for the Triton API
 - `TRITON_KEY_ID` - the fingerprint of the SSH key identifying the key
+- `TRITON_SKIP_TLS_VERIFY` - skips the checking of the server's TLS certificate.
+  This is insecure and should only be used for internal/testing.
 
 Additionally, you may set `TRITON_KEY_MATERIAL` to the contents of an unencrypted
 private key. If this is set, the PrivateKeySigner (see above) will be used - if
