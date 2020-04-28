@@ -1,5 +1,10 @@
 ## Unreleased
 
+## 1.7.2 (April 27 2020)
+
+- Unable to connect to CloudAPI using wildcard certificates [#117]. You can now
+  set the TRITON_SKIP_TLS_VERIFY environment variable to skip TLS checking.
+
 ## 1.7.1 (April 24 2020)
 
 - Add support for volume tags [#175]

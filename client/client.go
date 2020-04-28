@@ -1,5 +1,5 @@
 //
-// Copyright 2019 Joyent, Inc.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -144,9 +144,11 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 		}
 	}
 
+	skipTLSVerify := triton.GetEnv("SKIP_TLS_VERIFY") != ""
+
 	newClient := &Client{
 		HTTPClient: &http.Client{
-			Transport:     httpTransport(false),
+			Transport:     httpTransport(skipTLSVerify),
 			CheckRedirect: doNotFollowRedirects,
 		},
 		Authorizers: authorizers,
