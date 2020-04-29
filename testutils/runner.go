@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,12 +33,6 @@ func AccTest(t *testing.T, c TestCase) {
 		t.Skip(fmt.Sprintf(
 			"Acceptance tests skipped unless env '%s' set",
 			TestEnvVar))
-		return
-	}
-
-	// We require verbose mode so that the user knows what is going on.
-	if !testing.Verbose() {
-		t.Fatal("Acceptance tests must be run with the -v flag on tests")
 		return
 	}
 

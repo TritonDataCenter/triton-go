@@ -24,49 +24,9 @@ import (
 	"github.com/joyent/triton-go/testutils"
 )
 
-const dataCenterName = "us-east-1"
+var localDataCenterName = ""
+var localDataCenterURL = ""
 
-// Note that this is specific to Joyent Public Cloud and will not pass on
-// private installations of Triton.
-func TestAccDataCenters_Get(t *testing.T) {
-	const dataCenterName = "us-east-1"
-	const dataCenterURL = "https://us-east-1.api.joyentcloud.com"
-
-	testutils.AccTest(t, testutils.TestCase{
-		Steps: []testutils.Step{
-
-			&testutils.StepClient{
-				StateBagKey: "datacenter",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "datacenter",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-					ctx := context.Background()
-					input := &compute.GetDataCenterInput{
-						Name: dataCenterName,
-					}
-					return c.Datacenters().Get(ctx, input)
-				},
-			},
-
-			&testutils.StepAssert{
-				StateBagKey: "datacenter",
-				Assertions: seq.Map{
-					"name": dataCenterName,
-					"url":  dataCenterURL,
-				},
-			},
-		},
-	})
-}
-
-// Note that this is specific to Joyent Public Cloud and will not pass on
-// private installations of Triton.
 func TestAccDataCenters_List(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
@@ -95,23 +55,49 @@ func TestAccDataCenters_List(t *testing.T) {
 						return fmt.Errorf("State key %q not found", "datacenters")
 					}
 
-					toFind := []string{"us-east-1", "eu-ams-1"}
-					for _, dcName := range toFind {
-						found := false
-						for _, dc := range dcs.([]*compute.DataCenter) {
-							if dc.Name == dcName {
-								found = true
-								if dc.URL == "" {
-									return fmt.Errorf("%q has no URL", dc.Name)
-								}
-							}
-						}
-						if !found {
-							return fmt.Errorf("Did not find DC %q", dcName)
-						}
+					if len(dcs.([]*compute.DataCenter)) == 0 {
+						return fmt.Errorf("No datacenters returned")
 					}
 
+					dc := dcs.([]*compute.DataCenter)[0]
+					localDataCenterName = dc.Name
+					localDataCenterURL = dc.URL
+
 					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAccDataCenters_Get(t *testing.T) {
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepClient{
+				StateBagKey: "datacenter",
+				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
+					return compute.NewClient(config)
+				},
+			},
+
+			&testutils.StepAPICall{
+				StateBagKey: "datacenter",
+				CallFunc: func(client interface{}) (interface{}, error) {
+					c := client.(*compute.ComputeClient)
+					ctx := context.Background()
+					input := &compute.GetDataCenterInput{
+						Name: localDataCenterName,
+					}
+					return c.Datacenters().Get(ctx, input)
+				},
+			},
+
+			&testutils.StepAssert{
+				StateBagKey: "datacenter",
+				Assertions: seq.Map{
+					"name": localDataCenterName,
+					"url":  localDataCenterURL,
 				},
 			},
 		},
@@ -189,6 +175,8 @@ func TestListDataCenters(t *testing.T) {
 }
 
 func TestGetDataCenter(t *testing.T) {
+	const dataCenterName = "us-east-1"
+
 	computeClient := MockComputeClient()
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.DataCenter, error) {

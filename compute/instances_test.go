@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,6 @@ import (
 
 	"path"
 
-	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
@@ -38,25 +37,8 @@ var (
 	fakeMachineMetaDataID = "foo"
 	fakeMacID             = "90b8d02fb8f9"
 	fakeNetworkID         = "7007b198-f6aa-48f0-9843-78a3149de3d7"
+	testInstanceID        = ""
 )
-
-func getAnyInstanceID(t *testing.T, client *compute.ComputeClient) (string, error) {
-	ctx := context.Background()
-	input := &compute.ListInstancesInput{}
-	instances, err := client.Instances().List(ctx, input)
-	if err != nil {
-		return "", err
-	}
-
-	for _, m := range instances {
-		if len(m.ID) > 0 {
-			return m.ID, nil
-		}
-	}
-
-	t.Skip()
-	return "", errors.New("no machines configured")
-}
 
 func RandInt() int {
 	reseed()
@@ -72,64 +54,33 @@ func reseed() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-func TestAccInstances_Create(t *testing.T) {
+func InstanceCreate(t *testing.T) {
 	testInstanceName := RandWithPrefix("acctest")
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
-				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					computeClient, err := compute.NewClient(config)
-					if err != nil {
-						return nil, err
-					}
-
-					networkClient, err := network.NewClient(config)
-					if err != nil {
-						return nil, err
-					}
-
-					return []interface{}{
-						computeClient,
-						networkClient,
-					}, nil
-				},
+			&testutils.StepGetImage{
+				StateBagKey: "image",
 			},
 
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					clients := client.([]interface{})
-					c := clients[0].(*compute.ComputeClient)
-					n := clients[1].(*network.NetworkClient)
+			&testutils.StepGetExternalNetwork{
+				StateBagKey: "network",
+			},
 
-					images, err := c.Images().List(context.Background(), &compute.ListImagesInput{
-						Name:    "ubuntu-16.04",
-						Version: "20170403",
-					})
-					if err != nil {
-						return nil, err
-					}
+			&testutils.StepGetPackage{
+				StateBagKey: "package",
+			},
 
-					img := images[0]
-
-					var net *network.Network
-					networkName := "Joyent-SDC-Private"
-					nets, err := n.List(context.Background(), &network.ListInput{})
-					if err != nil {
-						return nil, err
-					}
-					for _, found := range nets {
-						if found.Name == networkName {
-							net = found
-						}
-					}
-
+			&testutils.StepComputeClient{
+				StateBagKey: "instance",
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
+					img := state.Get("image").(*compute.Image)
+					net := state.Get("network").(*network.Network)
+					pkg := state.Get("package").(*compute.Package)
 					input := &compute.CreateInstanceInput{
 						Name:     testInstanceName,
-						Package:  "g4-highcpu-128M",
+						Package:  pkg.ID,
 						Image:    img.ID,
 						Networks: []string{net.Id},
 						Metadata: map[string]string{
@@ -147,108 +98,84 @@ func TestAccInstances_Create(t *testing.T) {
 						return nil, err
 					}
 
-					state := make(chan *compute.Instance, 1)
+					instanceCreated := make(chan *compute.Instance, 1)
 					go func(createdID string, c *compute.ComputeClient) {
 						for {
-							time.Sleep(1 * time.Second)
+							time.Sleep(2 * time.Second)
 							instance, err := c.Instances().Get(context.Background(), &compute.GetInstanceInput{
 								ID: createdID,
 							})
 							if err != nil {
 								log.Fatalf("Get(): %v", err)
 							}
-							if instance.State == "running" {
-								state <- instance
+							if instance.State == "running" || instance.State == "failed" {
+								instanceCreated <- instance
+								return
 							}
 						}
 					}(created.ID, c)
 
 					select {
-					case instance := <-state:
+					case instance := <-instanceCreated:
+						testInstanceID = instance.ID
 						return instance, nil
 					case <-time.After(5 * time.Minute):
 						return nil, fmt.Errorf("Timed out waiting for instance to provision")
 					}
 				},
-				CleanupFunc: func(client interface{}, stateBag interface{}) {
-					instance, instOk := stateBag.(*compute.Instance)
-					if !instOk {
-						log.Println("Expected instance to be Instance")
-						return
-					}
-
-					if instance.Name != testInstanceName {
-						log.Printf("Expected instance to be named %s: found %s\n",
-							testInstanceName, instance.Name)
-						return
-					}
-
-					clients := client.([]interface{})
-					c, clientOk := clients[0].(*compute.ComputeClient)
-					if !clientOk {
-						log.Println("Expected client to be ComputeClient")
-						return
-					}
-
-					err := c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
-						ID: instance.ID,
-					})
-					if err != nil {
-						log.Printf("Could not delete instance %s\n", instance.Name)
-					}
-					return
-				},
 			},
 
 			&testutils.StepAssertFunc{
 				AssertFunc: func(state testutils.TritonStateBag) error {
-					instanceRaw, found := state.GetOk("instances")
-					if !found {
-						return fmt.Errorf("State key %q not found", "instances")
-					}
-					instance, ok := instanceRaw.(*compute.Instance)
-					if !ok {
-						return errors.New("Expected state to include instance")
-					}
+					instance := state.Get("instance").(*compute.Instance)
+					pkg := state.Get("package").(*compute.Package)
+					img := state.Get("image").(*compute.Image)
+
+					// log.Printf("[DEBUG] Created instance %+v", instance)
 
 					if instance.State != "running" {
-						return fmt.Errorf("Expected instance state to be \"running\": found %s",
+						t.Fatalf("Expected instance state to be \"running\": found %s",
 							instance.State)
 					}
 					if instance.ID == "" {
-						return fmt.Errorf("Expected instance ID: found \"\"")
+						t.Fatalf("Expected instance ID: found \"\"")
 					}
-					if instance.Name == "" {
-						return fmt.Errorf("Expected instance Name: found \"\"")
+					if instance.Name != testInstanceName {
+						t.Fatalf("Expected instance to be named %s: found %s\n",
+							testInstanceName, instance.Name)
 					}
-					if instance.Memory != 128 {
-						return fmt.Errorf("Expected instance Memory to be 128: found \"%d\"",
-							instance.Memory)
+					if instance.Image != img.ID {
+						t.Fatalf("Expected instance image to be %s: found \"%s\"",
+							img.ID, instance.Image)
+					}
+					if instance.Memory != int(pkg.Memory) {
+						t.Fatalf("Expected instance Memory to be %d: found \"%d\"",
+							pkg.Memory, instance.Memory)
 					}
 
 					metadataVal, metaOk := instance.Metadata["metadata1"]
 					if !metaOk {
-						return fmt.Errorf("Expected instance to have Metadata: found \"%v\"",
+						t.Fatalf("Expected instance to have Metadata: found \"%+v\"",
 							instance.Metadata)
 					}
 					if metadataVal != "value1" {
-						return fmt.Errorf("Expected instance Metadata \"metadata1\" to equal \"value1\": found \"%s\"",
+						t.Fatalf("Expected instance Metadata \"metadata1\" to equal \"value1\": found \"%s\"",
 							metadataVal)
 					}
 
 					tagVal, tagOk := instance.Tags["tag1"]
 					if !tagOk {
-						return fmt.Errorf("Expected instance to have Tags: found \"%v\"",
+						t.Fatalf("Expected instance to have Tags: found \"%v\"",
 							instance.Tags)
 					}
 					if tagVal != "value1" {
-						return fmt.Errorf("Expected instance Tag \"tag1\" to equal \"value1\": found \"%s\"",
+						t.Fatalf("Expected instance Tag \"tag1\" to equal \"value1\": found \"%s\"",
 							tagVal)
 					}
 
 					services := []string{"testapp", "testweb"}
 					if !reflect.DeepEqual(instance.CNS.Services, services) {
-						return fmt.Errorf("Expected instance CNS Services \"%s\", to equal \"%v\"",
+						t.Fatalf("Expected instance CNS Services \"%s\", to equal \"%v\"",
 							instance.CNS.Services, services)
 					}
 					return nil
@@ -258,30 +185,18 @@ func TestAccInstances_Create(t *testing.T) {
 	})
 }
 
-func TestAccInstances_Get(t *testing.T) {
+func InstanceGet(t *testing.T) {
+	t.Parallel()
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
+			&testutils.StepComputeClient{
 				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-
-					instanceID, err := getAnyInstanceID(t, c)
-					if err != nil {
-						return nil, err
-					}
-
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &compute.GetInstanceInput{
-						ID: instanceID,
+						ID: testInstanceID,
 					}
 					return c.Instances().Get(ctx, input)
 				},
@@ -295,32 +210,18 @@ func TestAccInstances_Get(t *testing.T) {
 	})
 }
 
-// FIXME(seanc@): TestAccMachine_ListMachineTags assumes that any machine ID
-// returned from getAnyInstanceID will have at least one tag.
-func TestAccInstances_ListTags(t *testing.T) {
+func InstanceListTags(t *testing.T) {
+	t.Parallel()
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
+			&testutils.StepComputeClient{
 				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-
-					instanceID, err := getAnyInstanceID(t, c)
-					if err != nil {
-						return nil, err
-					}
-
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &compute.ListTagsInput{
-						ID: instanceID,
+						ID: testInstanceID,
 					}
 					return c.Instances().ListTags(ctx, input)
 				},
@@ -344,30 +245,18 @@ func TestAccInstances_ListTags(t *testing.T) {
 	})
 }
 
-func TestAccInstances_UpdateMetadata(t *testing.T) {
+func InstanceUpdateMetadata(t *testing.T) {
+	t.Parallel()
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
+			&testutils.StepComputeClient{
 				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-
-					instanceID, err := getAnyInstanceID(t, c)
-					if err != nil {
-						return nil, err
-					}
-
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &compute.UpdateMetadataInput{
-						ID: instanceID,
+						ID: testInstanceID,
 						Metadata: map[string]string{
 							"tester": os.Getenv("USER"),
 						},
@@ -398,30 +287,18 @@ func TestAccInstances_UpdateMetadata(t *testing.T) {
 	})
 }
 
-func TestAccInstances_ListMetadata(t *testing.T) {
+func InstanceListMetadata(t *testing.T) {
+	t.Parallel()
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
+			&testutils.StepComputeClient{
 				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-
-					instanceID, err := getAnyInstanceID(t, c)
-					if err != nil {
-						return nil, err
-					}
-
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &compute.ListMetadataInput{
-						ID: instanceID,
+						ID: testInstanceID,
 					}
 					return c.Instances().ListMetadata(ctx, input)
 				},
@@ -449,60 +326,74 @@ func TestAccInstances_ListMetadata(t *testing.T) {
 	})
 }
 
-func TestAccInstances_GetMetadata(t *testing.T) {
+func InstanceGetMetadata(t *testing.T) {
+	t.Parallel()
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
+			&testutils.StepComputeClient{
 				StateBagKey: "instances",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return compute.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
-				StateBagKey: "instances",
-				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*compute.ComputeClient)
-
-					instanceID, err := getAnyInstanceID(t, c)
-					if err != nil {
-						return nil, err
-					}
-
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
-					input := &compute.UpdateMetadataInput{
-						ID: instanceID,
-						Metadata: map[string]string{
-							"testkey": os.Getenv("USER"),
-						},
+					input := &compute.GetMetadataInput{
+						ID:  testInstanceID,
+						Key: "metadata1",
 					}
-					_, err = c.Instances().UpdateMetadata(ctx, input)
+					value, err := c.Instances().GetMetadata(ctx, input)
 					if err != nil {
-						return nil, err
+						t.Fatalf("Error getting instance metadata value: %s", err)
 					}
 
-					ctx2 := context.Background()
-					input2 := &compute.GetMetadataInput{
-						ID:  instanceID,
-						Key: "testkey",
+					if value != "value1" {
+						t.Fatalf("Expecteted metadata1 value to be value1, got %s",
+							value)
 					}
-					return c.Instances().GetMetadata(ctx2, input2)
-				},
-			},
 
-			&testutils.StepAssertFunc{
-				AssertFunc: func(state testutils.TritonStateBag) error {
-					mdataValue := state.Get("instances")
-					retValue := fmt.Sprintf("\"%s\"", os.Getenv("USER"))
-					if mdataValue != retValue {
-						return errors.New("Expected test metadata to equal environ \"$USER\"")
-					}
-					return nil
+					return value, nil
 				},
 			},
 		},
 	})
+}
+
+func InstanceDelete(t *testing.T) {
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+			&testutils.StepComputeClient{
+				StateBagKey: "instance",
+				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
+					if testInstanceID == "" {
+						t.Skip()
+						return nil, nil
+					}
+
+					err := c.Instances().Delete(context.Background(), &compute.DeleteInstanceInput{
+						ID: testInstanceID,
+					})
+					if err != nil {
+						log.Printf("[WARN] Could not delete instance %s\n", testInstanceID)
+						return nil, err
+					}
+
+					return nil, nil
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Instance(t *testing.T) {
+	InstanceCreate(t)
+
+	// These tests are run in parallel.
+	t.Run("InstanceGet", InstanceGet)
+	t.Run("InstanceListTags", InstanceListTags)
+	t.Run("InstanceListMetadata", InstanceListMetadata)
+	t.Run("InstanceGetMetadata", InstanceGetMetadata)
+	t.Run("InstanceUpdateMetadata", InstanceUpdateMetadata)
+
+	InstanceDelete(t)
 }
 
 func TestValidateInstanceInput(t *testing.T) {

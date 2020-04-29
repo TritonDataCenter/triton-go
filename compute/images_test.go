@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,6 @@ import (
 	"path"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
@@ -27,12 +26,11 @@ import (
 
 var (
 	fakeImageID = "2b683a82-a066-11e3-97ab-2faa44701c5a"
+	localImage  *compute.Image
 )
 
 func TestAccImagesList(t *testing.T) {
 	const stateKey = "images"
-	const image1Id = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
-	const image2Id = "70e3ae72-96b6-11e6-9056-9737fd4d0764"
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
@@ -61,41 +59,21 @@ func TestAccImagesList(t *testing.T) {
 						return fmt.Errorf("State key %q not found", stateKey)
 					}
 
-					toFind := []string{image1Id, image2Id}
-					for _, imageID := range toFind {
-						found := false
-						for _, image := range images.([]*compute.Image) {
-							if image.ID == imageID {
-								found = true
-								state.Put(imageID, image)
-							}
-						}
-						if !found {
-							return fmt.Errorf("Did not find Image %q", imageID)
-						}
+					if len(images.([]*compute.Image)) == 0 {
+						return fmt.Errorf("No images returned by list images")
+					}
+
+					localImage = images.([]*compute.Image)[0]
+
+					if localImage.Name == "" {
+						return fmt.Errorf("Returned image should have a name")
+					}
+
+					if localImage.Owner == "" {
+						return fmt.Errorf("Returned image should have an owner")
 					}
 
 					return nil
-				},
-			},
-
-			&testutils.StepAssert{
-				StateBagKey: image1Id,
-				Assertions: seq.Map{
-					"name":                    "ws2012std",
-					"owner":                   "9dce1460-0c4c-4417-ab8b-25ca478c5a78",
-					"requirements.min_memory": 3840,
-					"requirements.min_ram":    3840,
-				},
-			},
-
-			&testutils.StepAssert{
-				StateBagKey: image2Id,
-				Assertions: seq.Map{
-					"name":       "base-64",
-					"owner":      "9dce1460-0c4c-4417-ab8b-25ca478c5a78",
-					"tags.role":  "os",
-					"tags.group": "base-64",
 				},
 			},
 		},
@@ -104,7 +82,7 @@ func TestAccImagesList(t *testing.T) {
 
 func TestAccImagesListInput(t *testing.T) {
 	const stateKey = "images"
-	const image1Id = "5cdc6dde-d6ad-11e5-8b11-8337e6f86725"
+	const imageKey = "image"
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
@@ -122,9 +100,9 @@ func TestAccImagesListInput(t *testing.T) {
 					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
 					input := &compute.ListImagesInput{
-						Name:    "ubuntu-14.04",
-						Type:    "lx-dataset",
-						Version: "20160219",
+						Name:    localImage.Name,
+						Type:    localImage.Type,
+						Version: localImage.Version,
 					}
 					return c.Images().List(ctx, input)
 				},
@@ -137,31 +115,25 @@ func TestAccImagesListInput(t *testing.T) {
 						return fmt.Errorf("State key %q not found", stateKey)
 					}
 
-					toFind := []string{image1Id}
-					for _, imageID := range toFind {
-						found := false
-						for _, image := range images.([]*compute.Image) {
-							if image.ID == imageID {
-								found = true
-								state.Put(imageID, image)
-							}
-						}
-						if !found {
-							return fmt.Errorf("Did not find Image %q", imageID)
+					for _, image := range images.([]*compute.Image) {
+						if image.ID == localImage.ID {
+							state.Put(imageKey, image)
+							return nil
 						}
 					}
 
-					return nil
+					return fmt.Errorf("Did not find image %q", localImage.ID)
 				},
 			},
 
 			&testutils.StepAssert{
-				StateBagKey: image1Id,
+				StateBagKey: imageKey,
 				Assertions: seq.Map{
-					"id":                  "5cdc6dde-d6ad-11e5-8b11-8337e6f86725",
-					"name":                "ubuntu-14.04",
-					"owner":               "9dce1460-0c4c-4417-ab8b-25ca478c5a78",
-					"tags.kernel_version": "3.13.0",
+					"id":      localImage.ID,
+					"name":    localImage.Name,
+					"owner":   localImage.Owner,
+					"type":    localImage.Type,
+					"version": localImage.Version,
 				},
 			},
 		},
@@ -170,11 +142,6 @@ func TestAccImagesListInput(t *testing.T) {
 
 func TestAccImagesGet(t *testing.T) {
 	const stateKey = "image"
-	const imageId = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
-	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:05:28Z")
-	if err != nil {
-		t.Fatal("Reference time does not parse as RFC3339")
-	}
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
@@ -192,7 +159,7 @@ func TestAccImagesGet(t *testing.T) {
 					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
 					input := &compute.GetImageInput{
-						ImageID: imageId,
+						ImageID: localImage.ID,
 					}
 					return c.Images().Get(ctx, input)
 				},
@@ -201,21 +168,11 @@ func TestAccImagesGet(t *testing.T) {
 			&testutils.StepAssert{
 				StateBagKey: stateKey,
 				Assertions: seq.Map{
-					"name":                    "ws2012std",
-					"version":                 "1.0.1",
-					"os":                      "windows",
-					"requirements.min_memory": 3840,
-					"requirements.min_ram":    3840,
-					"type":                    "zvol",
-					"description":             "Windows Server 2012 Standard 64-bit image.",
-					"files[0].compression":    "gzip",
-					"files[0].sha1":           "fe35a3b70f0a6f8e5252b05a35ee397d37d15185",
-					"files[0].size":           3985823590,
-					"tags.role":               "os",
-					"published_at":            publishedAt,
-					"owner":                   "9dce1460-0c4c-4417-ab8b-25ca478c5a78",
-					"public":                  true,
-					"state":                   "active",
+					"id":      localImage.ID,
+					"name":    localImage.Name,
+					"owner":   localImage.Owner,
+					"type":    localImage.Type,
+					"version": localImage.Version,
 				},
 			},
 		},
