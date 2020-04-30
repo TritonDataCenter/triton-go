@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.0 (April 27 2020)
+
+- Update Triton acceptance tests to work with any Triton [#178]
+
 ## 1.7.2 (April 27 2020)
 
 - Unable to connect to CloudAPI using wildcard certificates [#117]. You can now

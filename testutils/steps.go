@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,14 +9,16 @@
 package testutils
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"os"
 	"reflect"
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/errors"
+	"github.com/joyent/triton-go/network"
 	pkgerrors "github.com/pkg/errors"
 )
 
@@ -44,6 +46,214 @@ func (s *StepClient) Run(state TritonStateBag) StepAction {
 }
 
 func (s *StepClient) Cleanup(state TritonStateBag) {
+	return
+}
+
+type StepComputeClient struct {
+	StateBagKey string
+	ErrorKey    string
+	CallFunc    func(state TritonStateBag, config *compute.ComputeClient) (interface{}, error)
+	CleanupFunc func(state TritonStateBag, config *compute.ComputeClient)
+}
+
+func (s *StepComputeClient) Run(state TritonStateBag) StepAction {
+	computeClient, err := compute.NewClient(state.Config())
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+	state.Put("computeClient", computeClient)
+
+	result, err := s.CallFunc(state, computeClient)
+	if err != nil {
+		if s.ErrorKey == "" {
+			state.AppendError(err)
+			return Halt
+		}
+
+		state.Put(s.ErrorKey, err)
+		return Continue
+	}
+
+	state.Put(s.StateBagKey, result)
+	return Continue
+}
+
+func (s *StepComputeClient) Cleanup(state TritonStateBag) {
+	if s.CleanupFunc == nil {
+		return
+	}
+
+	computeClient := state.Get("computeClient").(*compute.ComputeClient)
+	s.CleanupFunc(state, computeClient)
+}
+
+type StepNetworkClient struct {
+	StateBagKey string
+	ErrorKey    string
+	CallFunc    func(state TritonStateBag, config *network.NetworkClient) (interface{}, error)
+	CleanupFunc func(client interface{}, callState interface{})
+}
+
+func (s *StepNetworkClient) Run(state TritonStateBag) StepAction {
+	networkClient, err := network.NewClient(state.Config())
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+	state.Put("networkClient", networkClient)
+
+	result, err := s.CallFunc(state, networkClient)
+	if err != nil {
+		if s.ErrorKey == "" {
+			state.AppendError(err)
+			return Halt
+		}
+
+		state.Put(s.ErrorKey, err)
+		return Continue
+	}
+
+	state.Put(s.StateBagKey, result)
+	return Continue
+}
+
+func (s *StepNetworkClient) Cleanup(state TritonStateBag) {
+	if s.CleanupFunc == nil {
+		return
+	}
+
+	if callState, ok := state.GetOk(s.StateBagKey); ok {
+		s.CleanupFunc(state.Client(), callState)
+	} else {
+		log.Print("[INFO] No state for API call, calling cleanup with nil call state")
+		s.CleanupFunc(state.Client(), nil)
+	}
+}
+
+type StepGetImage struct {
+	StateBagKey string
+}
+
+func (s *StepGetImage) Run(state TritonStateBag) StepAction {
+	const imageName = "ubuntu-16.04"
+
+	computeClient, err := compute.NewClient(state.Config())
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	images, err := computeClient.Images().List(context.Background(), &compute.ListImagesInput{
+		Name: imageName,
+	})
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	if len(images) == 0 {
+		state.AppendError(pkgerrors.Errorf("No images matching image name %s",
+			imageName))
+		return Halt
+	}
+
+	// Images will be sorted by creation date - so we want the
+	// most recent (the last) one.
+	img := images[len(images)-1]
+
+	// log.Printf("[DEBUG] Test img %+v", img)
+
+	state.Put(s.StateBagKey, img)
+	return Continue
+}
+
+func (s *StepGetImage) Cleanup(state TritonStateBag) {
+	return
+}
+
+type StepGetExternalNetwork struct {
+	StateBagKey string
+}
+
+func (s *StepGetExternalNetwork) Run(state TritonStateBag) StepAction {
+	networkClient, err := network.NewClient(state.Config())
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	nets, err := networkClient.List(context.Background(), &network.ListInput{})
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	var net *network.Network
+	// Take the first public network.
+	for _, found := range nets {
+		if found.Public == true {
+			net = found
+			break
+		}
+	}
+
+	if net == nil {
+		state.AppendError(pkgerrors.New("Unable to find external network"))
+		return Halt
+	}
+
+	state.Put(s.StateBagKey, net)
+	return Continue
+}
+
+func (s *StepGetExternalNetwork) Cleanup(state TritonStateBag) {
+	return
+}
+
+type StepGetPackage struct {
+	StateBagKey string
+}
+
+func (s *StepGetPackage) Run(state TritonStateBag) StepAction {
+	computeClient, err := compute.NewClient(state.Config())
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	pkgs, err := computeClient.Packages().List(context.Background(), &compute.ListPackagesInput{})
+	if err != nil {
+		state.AppendError(err)
+		return Halt
+	}
+
+	var pkg *compute.Package
+	var minMem int64 = 128
+	var maxMem int64 = 1024
+	// Take the smallest generic package that is in the range 128MB-1024MB memory.
+	for _, found := range pkgs {
+		// log.Printf("[INFO] Pkg %+v", found)
+		if minMem <= found.Memory && found.Memory <= maxMem {
+			if pkg == nil || pkg.Memory > found.Memory {
+				pkg = found
+			}
+		}
+	}
+
+	if pkg == nil {
+		state.AppendError(pkgerrors.Errorf(
+			"Unable to find a package with %d to %d MB memory", minMem, maxMem))
+		return Halt
+	}
+
+	// log.Printf("[DEBUG] Test pkg %+v", pkg)
+
+	state.Put(s.StateBagKey, pkg)
+	return Continue
+}
+
+func (s *StepGetPackage) Cleanup(state TritonStateBag) {
 	return
 }
 
@@ -121,15 +331,7 @@ func (s *StepAssert) Run(state TritonStateBag) StepAction {
 
 	for k, v := range s.Assertions {
 		path := fmt.Sprintf("%s.%s", s.StateBagKey, k)
-		if os.Getenv("TRITON_VERBOSE_TESTS") != "" {
-			log.Printf("[INFO] Asserting %q has value \"%v\"", path, v)
-		} else {
-			vPrefix := fmt.Sprintf("%v", v)
-			if len(vPrefix) > 15 {
-				vPrefix = fmt.Sprintf("%s...", vPrefix[:15])
-			}
-			log.Printf("[INFO] Asserting %q has value \"%s\"", path, vPrefix)
-		}
+		log.Printf("[INFO] Asserting %q has value \"%v\"", path, v)
 	}
 
 	result := s.Assertions.Test(actual)

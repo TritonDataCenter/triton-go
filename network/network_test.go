@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,14 +10,13 @@ package network_test
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 	"strings"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/network"
 	"github.com/joyent/triton-go/testutils"
 	"github.com/pkg/errors"
@@ -27,6 +26,7 @@ var (
 	fakeNetworkID        = "daeb93a2-532e-4bd4-8788-b6b30f10ac17"
 	getNetworkErrorType  = errors.New("unable to get network")
 	listNetworkErrorType = errors.New("unable to list networks")
+	testNetworkID        = ""
 )
 
 // Note that this is specific to Joyent Public Cloud and will not pass on
@@ -35,49 +35,57 @@ func TestAccNetworks_List(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
-			&testutils.StepClient{
-				StateBagKey: "datacenter",
-				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return network.NewClient(config)
-				},
-			},
-
-			&testutils.StepAPICall{
+			&testutils.StepNetworkClient{
 				StateBagKey: "networks",
-				CallFunc: func(client interface{}) (interface{}, error) {
+				CallFunc: func(state testutils.TritonStateBag, c *network.NetworkClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &network.ListInput{}
-					if c, ok := client.(*network.NetworkClient); ok {
-						return c.List(ctx, input)
+
+					networks, err := c.List(ctx, input)
+					if err != nil {
+						log.Fatalf("Networks.List(): %v", err)
 					}
-					return nil, fmt.Errorf("Bad client initialization")
+
+					if len(networks) == 0 {
+						t.Fatal("No networks returned from network list")
+					}
+
+					testNetworkID = networks[0].Id
+
+					return networks, nil
 				},
 			},
+		},
+	})
+}
 
-			&testutils.StepAssertFunc{
-				AssertFunc: func(state testutils.TritonStateBag) error {
-					dcs, ok := state.GetOk("networks")
-					if !ok {
-						return fmt.Errorf("State key %q not found", "networks")
+func TestAccNetworks_Get(t *testing.T) {
+	testutils.AccTest(t, testutils.TestCase{
+		Steps: []testutils.Step{
+
+			&testutils.StepNetworkClient{
+				StateBagKey: "networks",
+				CallFunc: func(state testutils.TritonStateBag, c *network.NetworkClient) (interface{}, error) {
+					if testNetworkID == "" {
+						t.Skip("No network id")
 					}
 
-					toFind := []string{"Joyent-SDC-Private", "Joyent-SDC-Public"}
-					for _, dcName := range toFind {
-						found := false
-						for _, dc := range dcs.([]*network.Network) {
-							if dc.Name == dcName {
-								found = true
-								if dc.Id == "" {
-									return fmt.Errorf("%q has no ID", dc.Name)
-								}
-							}
-						}
-						if !found {
-							return fmt.Errorf("Did not find Network %q", dcName)
-						}
+					ctx := context.Background()
+					input := &network.GetInput{
+						ID: testNetworkID,
 					}
 
-					return nil
+					network, err := c.Get(ctx, input)
+					if err != nil {
+						log.Fatalf("Networks.List(): %v", err)
+					}
+
+					if network.Id != testNetworkID {
+						t.Fatalf("Expected package id %s, got %s",
+							testNetworkID, network.Id)
+					}
+
+					return nil, nil
 				},
 			},
 		},
