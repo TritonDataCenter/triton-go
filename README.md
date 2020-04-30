@@ -114,10 +114,13 @@ set:
 - `TRITON_SKIP_TLS_VERIFY` - skips the checking of the server's TLS certificate.
   This is insecure and should only be used for internal/testing.
 
-Additionally, you may set `TRITON_KEY_MATERIAL` to the contents of an unencrypted
-private key. If this is set, the PrivateKeySigner (see above) will be used - if
-not the SSHAgentSigner will be used. You can also set `TRITON_USER` to run the tests
-against an account other than the main Triton account.
+Additionally, you may set these optional environment variables:
+
+- `TRITON_KEY_MATERIAL` to the contents of an unencrypted private key. If this
+    is set, the PrivateKeySigner (see above) will be used - if not the
+    SSHAgentSigner will be used. You can also set `TRITON_USER` to run the tests
+    against an account other than the main Triton account.
+- `TRITON_VERBOSE_TESTS` - turns on extra logging for test runs
 
 ### Example Run
 

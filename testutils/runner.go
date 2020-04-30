@@ -11,6 +11,7 @@ package testutils
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -34,6 +35,11 @@ func AccTest(t *testing.T, c TestCase) {
 			"Acceptance tests skipped unless env '%s' set",
 			TestEnvVar))
 		return
+	}
+
+	// Disable extra logging output unless TRITON_VERBOSE_TESTS is set.
+	if triton.GetEnv("VERBOSE_TESTS") == "" {
+		log.SetOutput(ioutil.Discard)
 	}
 
 	tritonURL := triton.GetEnv("URL")
