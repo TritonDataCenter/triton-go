@@ -91,7 +91,7 @@ Acceptance Tests run directly against the Triton API (e.g. CloudAPI), so you
 will need an installation of Triton in order to run them, or
 [COAL](https://github.com/joyent/triton/blob/master/docs/developer-guide/coal-setup.md)
 (Cloud On A Laptop). The tests create real resources and thus could cost real
-money if your using a paid Triton account! It is also possible that the
+money if you are using a paid Triton account! It is also possible that the
 acceptance tests will leave behind resources, so extra attention will be needed
 to clean up these test resources.
 
