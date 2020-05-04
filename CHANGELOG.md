@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 1.8.1 (May 4 2020)
+
+- Add ability to trace CloudAPI HTTP requests [#180]. You can set the
+  TRITON_TRACE_HTTP environment variable to have the CloudAPI HTTP requests and
+  responses be printed to stderr.
+
 ## 1.8.0 (April 27 2020)
 
 - Update Triton acceptance tests to work with any Triton [#178]
