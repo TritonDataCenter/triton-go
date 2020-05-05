@@ -120,6 +120,8 @@ Additionally, you may set these optional environment variables:
     is set, the PrivateKeySigner (see above) will be used - if not the
     SSHAgentSigner will be used. You can also set `TRITON_USER` to run the tests
     against an account other than the main Triton account.
+- `TRITON_TRACE_HTTP` - when set this will print the HTTP requests and responses
+  to stderr.
 - `TRITON_VERBOSE_TESTS` - turns on extra logging for test runs
 
 ### Example Run
