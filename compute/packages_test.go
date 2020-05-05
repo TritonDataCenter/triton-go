@@ -50,7 +50,29 @@ func TestAccPackagesList(t *testing.T) {
 
 					testPackageID = pkgs[0].ID
 					testPackageName = pkgs[0].Name
-
+					for _, pkg := range pkgs {
+						if len(pkg.Disks) != 0 {
+							if pkg.Brand != "bhyve" {
+								t.Fatalf("Package with disks does not have brand \"bhyve\": %+v", pkg.Disks)
+							}
+							for i := 0; i < len(pkg.Disks); i++ {
+								dsk := (*pkg).Disks[i]
+								if dsk.OSDiskSize {
+									if dsk.Remaining {
+										t.Errorf("OS Disk should not have Remaining set: %+v", dsk)
+									}
+								} else if dsk.Remaining {
+									if dsk.SizeInMiB != 0 {
+										t.Errorf("Disk with Remaining size should not have SizeInMiB: %+v", dsk)
+									}
+								} else {
+									if dsk.SizeInMiB < 0 {
+										t.Errorf("Disk SizeInMiB must be greater than zero: %+v", dsk)
+									}
+								}
+							}
+						}
+					}
 					if testPackageID == "" {
 						t.Fatalf("Package does not have an ID %+v", pkgs[0])
 					}
