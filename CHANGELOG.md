@@ -3,6 +3,8 @@
 ## 1.8.4 (May 11 2020)
 
 - Fix panic when testing images without TRITON_TEST set [#186]
+- Fix List Instances type error due to Instance Metadata including boolean
+or numeric values [#166].
 
 ## 1.8.3 (May 6 2020)
 
