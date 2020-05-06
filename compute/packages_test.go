@@ -329,16 +329,71 @@ func TestGetPackage(t *testing.T) {
 			t.Fatalf("Expected an output but got nil")
 		}
 
-		if resp.Disks == nil {
-			t.Fatalf("Expected package to have disks but got nil")
-		}
-
 		if resp.Brand != "bhyve" {
 			t.Fatalf("Expected package brand to be bhyve")
 		}
 
 		if !resp.FlexibleDisk {
 			t.Fatalf("Expected package to have FlexibleDisk")
+		}
+
+		if resp.Disks == nil {
+			t.Fatalf("Expected package to have disks but got nil")
+		}
+
+		if len(resp.Disks) != 3 {
+			t.Fatalf("Expected package to have 3 disks, but got %d",
+				len(resp.Disks))
+		}
+
+		// Test disks are as expected.
+
+		disk0 := resp.Disks[0]
+		if disk0.Size != nil {
+			t.Fatalf("Expected disk[0].Size to be nil, got %v",
+				disk0.Size)
+		}
+		if disk0.SizeInMiB != 0 {
+			t.Fatalf("Expected disk[0].SizeInMB to be 0, got %d",
+				disk0.SizeInMiB)
+		}
+		if disk0.Remaining != false {
+			t.Fatalf("Expected disk[0].Remaining to be false")
+		}
+		if disk0.OSDiskSize != true {
+			t.Fatalf("Expected disk[0].OSDiskSize to be true")
+		}
+
+		disk1 := resp.Disks[1]
+		if disk1.Size.(float64) != 6144 {
+			t.Fatalf("Expected disk[0].Size to be 6144, got %v",
+				disk1.Size)
+		}
+		if disk1.SizeInMiB != 6144 {
+			t.Fatalf("Expected disk[0].SizeInMB to be 6144, got %d",
+				disk1.SizeInMiB)
+		}
+		if disk1.Remaining != false {
+			t.Fatalf("Expected disk[0].Remaining to be false")
+		}
+		if disk1.OSDiskSize != false {
+			t.Fatalf("Expected disk[0].OSDiskSize to be false")
+		}
+
+		disk2 := resp.Disks[2]
+		if disk2.Size != "remaining" {
+			t.Fatalf("Expected disk[0].Size to be remaining, got %v",
+				disk2.Size)
+		}
+		if disk2.SizeInMiB != 0 {
+			t.Fatalf("Expected disk[0].SizeInMB to be 0, got %d",
+				disk2.SizeInMiB)
+		}
+		if disk2.Remaining != true {
+			t.Fatalf("Expected disk[0].Remaining to be true")
+		}
+		if disk2.OSDiskSize != false {
+			t.Fatalf("Expected disk[0].OSDiskSize to be false")
 		}
 	})
 }
