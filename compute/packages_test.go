@@ -55,8 +55,7 @@ func TestAccPackagesList(t *testing.T) {
 							if pkg.Brand != "bhyve" {
 								t.Fatalf("Package with disks does not have brand \"bhyve\": %+v", pkg.Disks)
 							}
-							for i := 0; i < len(pkg.Disks); i++ {
-								dsk := pkg.Disks[i]
+							for _, dsk := range pkg.Disks {
 								if dsk.OSDiskSize {
 									if dsk.Remaining {
 										t.Errorf("OS Disk should not have Remaining set: %+v", dsk)

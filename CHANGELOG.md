@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.3 (May 6 2020)
+
+- Add support for `brand`, `flexible_disk` and `disks` for packages [#182].
+
 ## 1.8.1 (May 4 2020)
 
 - Add ability to trace CloudAPI HTTP requests [#180]. You can set the
