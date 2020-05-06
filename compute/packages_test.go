@@ -316,6 +316,31 @@ func TestGetPackage(t *testing.T) {
 			t.Errorf("expected error to equal testError: found %s", err)
 		}
 	})
+
+	t.Run("bhyve_disks", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "packages", fakePackageId), getPackageWithDisks)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+
+		if resp.Disks == nil {
+			t.Fatalf("Expected package to have disks but got nil")
+		}
+
+		if resp.Brand != "bhyve" {
+			t.Fatalf("Expected package brand to be bhyve")
+		}
+
+		if !resp.FlexibleDisk {
+			t.Fatalf("Expected package to have FlexibleDisk")
+		}
+	})
 }
 
 func listPackagesFiltered(req *http.Request) (*http.Response, error) {
@@ -466,4 +491,38 @@ func getPackageEmpty(req *http.Request) (*http.Response, error) {
 
 func getPackageError(req *http.Request) (*http.Response, error) {
 	return nil, errors.New("unable to get package")
+}
+
+func getPackageWithDisks(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+    "brand": "bhyve",
+    "default": true,
+    "disk": 24576,
+    "id": "7b17343c-94af-6266-e0e8-893a3b9993d0",
+    "lwps": 4000,
+    "memory": 1024,
+    "name": "sample-bhyve-three-disks",
+    "swap": 4096,
+    "vcpus": 1,
+    "version": "1.0.0",
+    "flexible_disk": true,
+    "disks": [
+        {},
+        {
+            "size": 6144
+        },
+        {
+            "size": "remaining"
+        }
+    ]
+}`)
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
 }
