@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.3 (May 6 2020)
+
+- Add support for `brand`, `flexible_disk` and `disks` for packages [#182].
+
 ## 1.8.2 (May 5 2020)
 
 - Fix panic when TRITON_TRACE_HTTP is set and resp is nil [#180].
