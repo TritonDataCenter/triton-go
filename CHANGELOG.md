@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.2 (May 5 2020)
+
+- Fix panic when TRITON_TRACE_HTTP is set and resp is nil [#180].
+
 ## 1.8.1 (May 4 2020)
 
 - Add ability to trace CloudAPI HTTP requests [#180]. You can set the
