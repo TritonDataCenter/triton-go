@@ -167,10 +167,10 @@ var Cmd = &command.Command{
 				longName    = "metadata"
 				shortName   = "m"
 				description = `Add metadata when creating the instance. Metadata are key/value
-			       pairs available on the instance API object as the "metadata"
-			       field, and inside the instance via the "mdata-*" commands. DATA
-			       is one of: a "key=value" string (bool and numeric "value" are
-				   converted to that type). This option can be used multiple times.`
+pairs available on the instance API object as the "metadata"
+field, and inside the instance via the "mdata-*" commands. DATA
+is one of: a "key=value" string (bool and numeric "value" are
+converted to that type). This option can be used multiple times.`
 			)
 
 			flags := parent.Cobra.Flags()

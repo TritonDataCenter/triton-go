@@ -1,5 +1,5 @@
 //
-//  Copyright (tcc) 2018, Joyent, Inc. All rights reserved.
+//  Copyright (tcc) 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -354,7 +354,7 @@ func (c *AgentComputeClient) CreateInstance() (*tcc.Instance, error) {
 		FirewallEnabled: config.GetMachineFirewall(),
 	}
 
-	md := make(map[string]string, 0)
+	md := make(map[string]interface{}, 0)
 
 	userdata := config.GetMachineUserdata()
 	if userdata != "" {

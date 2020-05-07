@@ -345,9 +345,9 @@ func GetSearchTags() map[string]interface{} {
 	return nil
 }
 
-func GetMachineMetadata() map[string]string {
+func GetMachineMetadata() map[string]interface{} {
 	if viper.IsSet(config.KeyInstanceMetadata) {
-		metadata := make(map[string]string, 0)
+		metadata := make(map[string]interface{}, 0)
 		cfg := viper.GetStringSlice(config.KeyInstanceMetadata)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")

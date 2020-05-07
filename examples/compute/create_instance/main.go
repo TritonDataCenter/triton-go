@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -127,6 +127,8 @@ func main() {
 		}
 	}
 
+	mdataInput := make(map[string]interface{}, 1)
+	mdataInput["user-script"] = "<your script here>"
 	// Create a new instance using our input attributes...
 	// https://github.com/joyent/triton-go/blob/master/compute/instances.go#L206
 	createInput := &compute.CreateInstanceInput{
@@ -134,9 +136,7 @@ func main() {
 		Package:  PackageName,
 		Image:    img.ID,
 		Networks: []string{net.Id},
-		Metadata: map[string]string{
-			"user-script": "<your script here>",
-		},
+		Metadata: mdataInput,
 		Tags: map[string]string{
 			"tag1": "value1",
 		},
