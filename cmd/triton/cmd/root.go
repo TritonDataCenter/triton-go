@@ -1,5 +1,5 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,18 +11,18 @@ package cmd
 import (
 	"os"
 
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/internal/logger"
-	"github.com/joyent/triton-go/cmd/triton/cmd/account"
-	"github.com/joyent/triton-go/cmd/triton/cmd/datacenters"
-	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys"
-	"github.com/joyent/triton-go/cmd/triton/cmd/packages"
-	"github.com/joyent/triton-go/cmd/triton/cmd/services"
-	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
-	"github.com/joyent/triton-go/cmd/triton/cmd/version"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/internal/logger"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/account"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/datacenters"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/docs"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/keys"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/packages"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/services"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/shell"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"

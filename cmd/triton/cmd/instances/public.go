@@ -1,5 +1,5 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,17 +9,17 @@
 package instances
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/count"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/create"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/delete"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/get"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/ip"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/list"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/reboot"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/start"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances/stop"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/count"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/create"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/delete"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/get"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/ip"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/list"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/reboot"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/start"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/instances/stop"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"

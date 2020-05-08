@@ -1,5 +1,14 @@
 ## Unreleased
 
+## 2.0.0-pre1 (May 11 2020)
+
+**NOTE:** This is a precursor release of triton v2.0.0, including backwards
+incompatible changes, like the modification of Instance's Metadata and Tags
+fields from `map[string][string]` and optionally `map[string]interface{}` to
+`map[string]interface{}` everywhere. This change suits better with the possible
+types of Metadata and Tags as defined by Triton's VMAPI: valid strings,
+booleans or numeric JSON values.
+
 ## 1.8.4 (May 11 2020)
 
 - Fix panic when testing images without TRITON_TEST set [#186]

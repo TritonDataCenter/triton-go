@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,13 +11,13 @@ package cmd
 import (
 	"os"
 
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/internal/logger"
-	"github.com/joyent/triton-go/cmd/manta/cmd/docs"
-	"github.com/joyent/triton-go/cmd/manta/cmd/list"
-	"github.com/joyent/triton-go/cmd/manta/cmd/shell"
-	"github.com/joyent/triton-go/cmd/manta/cmd/version"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/internal/logger"
+	"github.com/joyent/triton-go/v2/cmd/manta/cmd/docs"
+	"github.com/joyent/triton-go/v2/cmd/manta/cmd/list"
+	"github.com/joyent/triton-go/v2/cmd/manta/cmd/shell"
+	"github.com/joyent/triton-go/v2/cmd/manta/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"

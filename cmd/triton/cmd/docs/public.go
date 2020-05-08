@@ -1,5 +1,5 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +9,9 @@
 package docs
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/triton/cmd/docs/man"
-	"github.com/joyent/triton-go/cmd/triton/cmd/docs/md"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/docs/man"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/docs/md"
 	"github.com/spf13/cobra"
 )
 

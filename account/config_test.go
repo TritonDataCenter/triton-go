@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,9 +16,9 @@ import (
 	"strings"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/account"
-	"github.com/joyent/triton-go/testutils"
+	triton "github.com/joyent/triton-go/v2"
+	"github.com/joyent/triton-go/v2/account"
+	"github.com/joyent/triton-go/v2/testutils"
 	"github.com/pkg/errors"
 )
 

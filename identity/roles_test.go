@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/identity"
-	"github.com/joyent/triton-go/testutils"
+	triton "github.com/joyent/triton-go/v2"
+	"github.com/joyent/triton-go/v2/identity"
+	"github.com/joyent/triton-go/v2/testutils"
 )
 
 const fakeRoleID = "e53b8fec-e661-4ded-a21e-959c9ba08cb2"

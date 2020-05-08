@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/client"
-	"github.com/joyent/triton-go/errors"
+	"github.com/joyent/triton-go/v2/client"
+	"github.com/joyent/triton-go/v2/errors"
 	pkgerrors "github.com/pkg/errors"
 )
 

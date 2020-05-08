@@ -1,5 +1,5 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
