@@ -60,6 +60,9 @@ func InstanceCreate(t *testing.T) {
 	testInstMetadata["metadata1"] = "value1"
 	testInstMetadata["metadata_bool"] = true
 	testInstMetadata["metadata_int"] = 64
+	testInstTags := make(map[string]interface{}, 1)
+	testInstTags["tag1"] = "value1"
+
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
@@ -87,9 +90,7 @@ func InstanceCreate(t *testing.T) {
 						Image:    img.ID,
 						Networks: []string{net.Id},
 						Metadata: testInstMetadata,
-						Tags: map[string]string{
-							"tag1": "value1",
-						},
+						Tags:     testInstTags,
 						CNS: compute.InstanceCNS{
 							Services: []string{"testapp", "testweb"},
 						},
@@ -1025,13 +1026,12 @@ func TestReplaceInstanceTags(t *testing.T) {
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
-
+		testTagsInput := make(map[string]interface{}, 2)
+		testTagsInput["foo"] = "bar"
+		testTagsInput["group"] = "test"
 		return cc.Instances().ReplaceTags(ctx, &compute.ReplaceTagsInput{
-			ID: fakeMachineID,
-			Tags: map[string]string{
-				"foo":   "bar",
-				"group": "test",
-			},
+			ID:   fakeMachineID,
+			Tags: testTagsInput,
 		})
 	}
 
@@ -1064,12 +1064,12 @@ func TestAddInstanceTags(t *testing.T) {
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
 
+		testTagsInput := make(map[string]interface{})
+		testTagsInput["foo"] = "bar"
+		testTagsInput["group"] = "test"
 		return cc.Instances().AddTags(ctx, &compute.AddTagsInput{
-			ID: fakeMachineID,
-			Tags: map[string]string{
-				"foo":   "bar",
-				"group": "test",
-			},
+			ID:   fakeMachineID,
+			Tags: testTagsInput,
 		})
 	}
 

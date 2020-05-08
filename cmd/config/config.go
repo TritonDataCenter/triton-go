@@ -315,9 +315,9 @@ func GetMachineAffinityRules() []string {
 	return nil
 }
 
-func GetMachineTags() map[string]string {
+func GetMachineTags() map[string]interface{} {
 	if viper.IsSet(config.KeyInstanceTag) {
-		tags := make(map[string]string, 0)
+		tags := make(map[string]interface{}, 0)
 		cfg := viper.GetStringSlice(config.KeyInstanceTag)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")

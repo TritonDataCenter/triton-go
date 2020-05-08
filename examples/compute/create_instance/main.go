@@ -129,6 +129,8 @@ func main() {
 
 	mdataInput := make(map[string]interface{}, 1)
 	mdataInput["user-script"] = "<your script here>"
+	tagsInput := make(map[string]interface{}, 1)
+	tagsInput["tag1"] = "value1"
 	// Create a new instance using our input attributes...
 	// https://github.com/joyent/triton-go/blob/master/compute/instances.go#L206
 	createInput := &compute.CreateInstanceInput{
@@ -137,9 +139,7 @@ func main() {
 		Image:    img.ID,
 		Networks: []string{net.Id},
 		Metadata: mdataInput,
-		Tags: map[string]string{
-			"tag1": "value1",
-		},
+		Tags:     tagsInput,
 		CNS: compute.InstanceCNS{
 			Services: []string{"frontend", "web"},
 		},

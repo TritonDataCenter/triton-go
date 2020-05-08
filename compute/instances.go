@@ -288,8 +288,8 @@ type CreateInstanceInput struct {
 	LocalityNear    []string
 	LocalityFar     []string
 	Metadata        map[string]interface{}
-	Tags            map[string]string //
-	FirewallEnabled bool              //
+	Tags            map[string]interface{} //
+	FirewallEnabled bool                   //
 	CNS             InstanceCNS
 	Volumes         []InstanceVolume
 }
@@ -534,7 +534,7 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 
 type ReplaceTagsInput struct {
 	ID   string
-	Tags map[string]string
+	Tags map[string]interface{}
 	CNS  InstanceCNS
 }
 
@@ -569,7 +569,7 @@ func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInp
 
 type AddTagsInput struct {
 	ID   string
-	Tags map[string]string
+	Tags map[string]interface{}
 }
 
 func (c *InstancesClient) AddTags(ctx context.Context, input *AddTagsInput) error {
