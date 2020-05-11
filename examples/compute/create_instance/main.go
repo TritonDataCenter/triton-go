@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,11 +17,11 @@ import (
 	"os"
 	"time"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/compute"
-	"github.com/joyent/triton-go/network"
-	"github.com/joyent/triton-go/testutils"
+	triton "github.com/joyent/triton-go/v2"
+	"github.com/joyent/triton-go/v2/authentication"
+	"github.com/joyent/triton-go/v2/compute"
+	"github.com/joyent/triton-go/v2/network"
+	"github.com/joyent/triton-go/v2/testutils"
 )
 
 const (
@@ -127,19 +127,19 @@ func main() {
 		}
 	}
 
+	mdataInput := make(map[string]interface{}, 1)
+	mdataInput["user-script"] = "<your script here>"
+	tagsInput := make(map[string]interface{}, 1)
+	tagsInput["tag1"] = "value1"
 	// Create a new instance using our input attributes...
-	// https://github.com/joyent/triton-go/blob/master/compute/instances.go#L206
+	// https://github.com/joyent/triton-go/v2/blob/master/compute/instances.go#L206
 	createInput := &compute.CreateInstanceInput{
 		Name:     testutils.RandString(10),
 		Package:  PackageName,
 		Image:    img.ID,
 		Networks: []string{net.Id},
-		Metadata: map[string]string{
-			"user-script": "<your script here>",
-		},
-		Tags: map[string]string{
-			"tag1": "value1",
-		},
+		Metadata: mdataInput,
+		Tags:     tagsInput,
 		CNS: compute.InstanceCNS{
 			Services: []string{"frontend", "web"},
 		},

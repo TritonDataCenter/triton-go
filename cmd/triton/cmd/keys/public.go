@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,12 +9,12 @@
 package keys
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/create"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/delete"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/get"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/list"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/keys/create"
+	keyDelete "github.com/joyent/triton-go/v2/cmd/triton/cmd/keys/delete"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/keys/get"
+	"github.com/joyent/triton-go/v2/cmd/triton/cmd/keys/list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

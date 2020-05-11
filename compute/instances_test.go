@@ -25,9 +25,9 @@ import (
 
 	"path"
 
-	"github.com/joyent/triton-go/compute"
-	"github.com/joyent/triton-go/network"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/joyent/triton-go/v2/compute"
+	"github.com/joyent/triton-go/v2/network"
+	"github.com/joyent/triton-go/v2/testutils"
 )
 
 var (
@@ -56,6 +56,12 @@ func reseed() {
 
 func InstanceCreate(t *testing.T) {
 	testInstanceName := RandWithPrefix("acctest")
+	testInstMetadata := make(map[string]interface{}, 3)
+	testInstMetadata["metadata1"] = "value1"
+	testInstMetadata["metadata_bool"] = true
+	testInstMetadata["metadata_int"] = 64
+	testInstTags := make(map[string]interface{}, 1)
+	testInstTags["tag1"] = "value1"
 
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
@@ -83,12 +89,8 @@ func InstanceCreate(t *testing.T) {
 						Package:  pkg.ID,
 						Image:    img.ID,
 						Networks: []string{net.Id},
-						Metadata: map[string]string{
-							"metadata1": "value1",
-						},
-						Tags: map[string]string{
-							"tag1": "value1",
-						},
+						Metadata: testInstMetadata,
+						Tags:     testInstTags,
 						CNS: compute.InstanceCNS{
 							Services: []string{"testapp", "testweb"},
 						},
@@ -154,12 +156,27 @@ func InstanceCreate(t *testing.T) {
 					}
 
 					metadataVal, metaOk := instance.Metadata["metadata1"]
+
 					if !metaOk {
 						t.Fatalf("Expected instance to have Metadata: found \"%+v\"",
 							instance.Metadata)
 					}
 					if metadataVal != "value1" {
 						t.Fatalf("Expected instance Metadata \"metadata1\" to equal \"value1\": found \"%s\"",
+							metadataVal)
+					}
+
+					metadataVal, metaOk = instance.Metadata["metadata_bool"]
+
+					if metadataVal != true {
+						t.Fatalf("Expected instance Metadata \"metadata_bool\" to equal true: found \"%s\"",
+							metadataVal)
+					}
+
+					metadataVal, metaOk = instance.Metadata["metadata_int"]
+
+					if metadataVal != float64(64) {
+						t.Fatalf("Expected instance Metadata \"metadata_int\" to equal 64: found \"%s\"",
 							metadataVal)
 					}
 
@@ -248,6 +265,9 @@ func InstanceListTags(t *testing.T) {
 func InstanceUpdateMetadata(t *testing.T) {
 	t.Parallel()
 
+	testInstanceUpdateMetadata := make(map[string]interface{}, 2)
+	testInstanceUpdateMetadata["tester"] = os.Getenv("USER")
+	testInstanceUpdateMetadata["updated_uid"] = os.Getenv("UID")
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
 
@@ -256,10 +276,8 @@ func InstanceUpdateMetadata(t *testing.T) {
 				CallFunc: func(state testutils.TritonStateBag, c *compute.ComputeClient) (interface{}, error) {
 					ctx := context.Background()
 					input := &compute.UpdateMetadataInput{
-						ID: testInstanceID,
-						Metadata: map[string]string{
-							"tester": os.Getenv("USER"),
-						},
+						ID:       testInstanceID,
+						Metadata: testInstanceUpdateMetadata,
 					}
 					return c.Instances().UpdateMetadata(ctx, input)
 				},
@@ -272,13 +290,16 @@ func InstanceUpdateMetadata(t *testing.T) {
 						return fmt.Errorf("State key %q not found", "instances")
 					}
 
-					mdata := mdataRaw.(map[string]string)
+					mdata := mdataRaw.(map[string]interface{})
 					if len(mdata) == 0 {
 						return errors.New("Expected metadata on machine")
 					}
 
 					if mdata["tester"] != os.Getenv("USER") {
 						return errors.New("Expected test metadata to equal environ $USER")
+					}
+					if mdata["updated_uid"] != os.Getenv("UID") {
+						return errors.New("Expected test metadata to equal environ $PID")
 					}
 					return nil
 				},
@@ -311,7 +332,7 @@ func InstanceListMetadata(t *testing.T) {
 						return fmt.Errorf("State key %q not found", "instances")
 					}
 
-					mdata := mdataRaw.(map[string]string)
+					mdata := mdataRaw.(map[string]interface{})
 					if len(mdata) == 0 {
 						return errors.New("Expected metadata on machine")
 					}
@@ -1005,13 +1026,12 @@ func TestReplaceInstanceTags(t *testing.T) {
 
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
-
+		testTagsInput := make(map[string]interface{}, 2)
+		testTagsInput["foo"] = "bar"
+		testTagsInput["group"] = "test"
 		return cc.Instances().ReplaceTags(ctx, &compute.ReplaceTagsInput{
-			ID: fakeMachineID,
-			Tags: map[string]string{
-				"foo":   "bar",
-				"group": "test",
-			},
+			ID:   fakeMachineID,
+			Tags: testTagsInput,
 		})
 	}
 
@@ -1044,12 +1064,12 @@ func TestAddInstanceTags(t *testing.T) {
 	do := func(ctx context.Context, cc *compute.ComputeClient) error {
 		defer testutils.DeactivateClient()
 
+		testTagsInput := make(map[string]interface{})
+		testTagsInput["foo"] = "bar"
+		testTagsInput["group"] = "test"
 		return cc.Instances().AddTags(ctx, &compute.AddTagsInput{
-			ID: fakeMachineID,
-			Tags: map[string]string{
-				"foo":   "bar",
-				"group": "test",
-			},
+			ID:   fakeMachineID,
+			Tags: testTagsInput,
 		})
 	}
 
@@ -1127,7 +1147,7 @@ func TestGetInstanceMetaData(t *testing.T) {
 func TestListInstanceMetaData(t *testing.T) {
 	computeClient := MockComputeClient()
 
-	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
+	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]interface{}, error) {
 		defer testutils.DeactivateClient()
 
 		metadata, err := cc.Instances().ListMetadata(ctx, &compute.ListMetadataInput{
@@ -1242,16 +1262,17 @@ func TestDeleteAllInstanceMetaData(t *testing.T) {
 
 func TestUpdateInstanceMetaData(t *testing.T) {
 	computeClient := MockComputeClient()
-
-	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]string, error) {
+	mdata := make(map[string]interface{}, 4)
+	mdata["foo"] = "bar"
+	mdata["group"] = "test"
+	mdata["bool"] = true
+	mdata["number"] = 64
+	do := func(ctx context.Context, cc *compute.ComputeClient) (map[string]interface{}, error) {
 		defer testutils.DeactivateClient()
 
 		metadata, err := cc.Instances().UpdateMetadata(ctx, &compute.UpdateMetadataInput{
-			ID: fakeMachineID,
-			Metadata: map[string]string{
-				"foo":   "bar",
-				"group": "test",
-			},
+			ID:       fakeMachineID,
+			Metadata: mdata,
 		})
 		if err != nil {
 			return nil, err

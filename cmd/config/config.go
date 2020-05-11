@@ -1,3 +1,10 @@
+//
+//  Copyright 2020 Joyent, Inc. All rights reserved.
+//
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
 package config
 
 import (
@@ -8,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/cmd/internal/config"
+	triton "github.com/joyent/triton-go/v2"
+	"github.com/joyent/triton-go/v2/authentication"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -315,9 +322,9 @@ func GetMachineAffinityRules() []string {
 	return nil
 }
 
-func GetMachineTags() map[string]string {
+func GetMachineTags() map[string]interface{} {
 	if viper.IsSet(config.KeyInstanceTag) {
-		tags := make(map[string]string, 0)
+		tags := make(map[string]interface{}, 0)
 		cfg := viper.GetStringSlice(config.KeyInstanceTag)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")
@@ -345,9 +352,9 @@ func GetSearchTags() map[string]interface{} {
 	return nil
 }
 
-func GetMachineMetadata() map[string]string {
+func GetMachineMetadata() map[string]interface{} {
 	if viper.IsSet(config.KeyInstanceMetadata) {
-		metadata := make(map[string]string, 0)
+		metadata := make(map[string]interface{}, 0)
 		cfg := viper.GetStringSlice(config.KeyInstanceMetadata)
 		for _, i := range cfg {
 			m := strings.Split(i, "=")

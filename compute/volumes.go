@@ -15,7 +15,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/joyent/triton-go/v2/client"
 	"github.com/pkg/errors"
 )
 

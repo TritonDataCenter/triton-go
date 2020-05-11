@@ -1,3 +1,11 @@
+//
+// Copyright 2020 Joyent, Inc. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+
 package services_test
 
 import (
@@ -9,8 +17,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/services"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/joyent/triton-go/v2/services"
+	"github.com/joyent/triton-go/v2/testutils"
 )
 
 const (

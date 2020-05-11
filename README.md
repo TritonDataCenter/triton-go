@@ -88,8 +88,7 @@ is performed using the [pkg/errors][7] library.
 ## Acceptance Tests
 
 Acceptance Tests run directly against the Triton API (e.g. CloudAPI), so you
-will need an installation of Triton in order to run them, or
-[COAL](https://github.com/joyent/triton/blob/master/docs/developer-guide/coal-setup.md)
+will need an installation of Triton in order to run them, or [COAL][8]
 (Cloud On A Laptop). The tests create real resources and thus could cost real
 money if you are using a paid Triton account! It is also possible that the
 acceptance tests will leave behind resources, so extra attention will be needed
@@ -97,7 +96,7 @@ to clean up these test resources.
 
 The acceptance tests depend upon a few things in your Triton setup:
 
-- the [Ubuntu 16.04](https://docs.joyent.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images) LX image to be installed
+- the [Ubuntu 16.04][9] LX image to be installed
 - a generic package with Memory in the range of 128MB to 1024MB
 - a public (external) network to provision with
 - if your Triton setup is used for testing - then running
@@ -173,9 +172,9 @@ import (
     "os"
     "time"
 
-    triton "github.com/joyent/triton-go"
-    "github.com/joyent/triton-go/authentication"
-    "github.com/joyent/triton-go/compute"
+    triton "github.com/joyent/triton-go/v2"
+    "github.com/joyent/triton-go/v2/authentication"
+    "github.com/joyent/triton-go/v2/compute"
 )
 
 func main() {
@@ -263,3 +262,5 @@ func main() {
 [5]: https://godoc.org/github.com/joyent/triton-go/authentication
 [6]: https://godoc.org/github.com/joyent/triton-go/authentication
 [7]: https://github.com/pkg/errors
+[8]: https://github.com/joyent/triton/blob/master/docs/developer-guide/coal-setup.md
+[9]: https://docs.joyent.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images

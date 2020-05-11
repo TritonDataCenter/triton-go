@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2020 Joyent, Inc. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,8 +11,8 @@ package storage
 import (
 	"context"
 
-	"github.com/joyent/triton-go/cmd/config"
-	tsc "github.com/joyent/triton-go/storage"
+	"github.com/joyent/triton-go/v2/cmd/config"
+	tsc "github.com/joyent/triton-go/v2/storage"
 	"github.com/pkg/errors"
 )
 

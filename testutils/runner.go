@@ -16,8 +16,8 @@ import (
 	"os"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
+	triton "github.com/joyent/triton-go/v2"
+	"github.com/joyent/triton-go/v2/authentication"
 )
 
 const TestEnvVar = "TRITON_TEST"

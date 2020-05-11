@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/client"
-	"github.com/joyent/triton-go/errors"
+	"github.com/joyent/triton-go/v2/client"
+	"github.com/joyent/triton-go/v2/errors"
 	pkgerrors "github.com/pkg/errors"
 )
 
@@ -67,7 +67,7 @@ type Instance struct {
 	Image              string                 `json:"image"`
 	Memory             int                    `json:"memory"`
 	Disk               int                    `json:"disk"`
-	Metadata           map[string]string      `json:"metadata"`
+	Metadata           map[string]interface{} `json:"metadata"`
 	Tags               map[string]interface{} `json:"tags"`
 	Created            time.Time              `json:"created"`
 	Updated            time.Time              `json:"updated"`
@@ -287,9 +287,9 @@ type CreateInstanceInput struct {
 	LocalityStrict  bool
 	LocalityNear    []string
 	LocalityFar     []string
-	Metadata        map[string]string
-	Tags            map[string]string //
-	FirewallEnabled bool              //
+	Metadata        map[string]interface{}
+	Tags            map[string]interface{} //
+	FirewallEnabled bool                   //
 	CNS             InstanceCNS
 	Volumes         []InstanceVolume
 }
@@ -534,7 +534,7 @@ func (c *InstancesClient) Rename(ctx context.Context, input *RenameInstanceInput
 
 type ReplaceTagsInput struct {
 	ID   string
-	Tags map[string]string
+	Tags map[string]interface{}
 	CNS  InstanceCNS
 }
 
@@ -569,7 +569,7 @@ func (c *InstancesClient) ReplaceTags(ctx context.Context, input *ReplaceTagsInp
 
 type AddTagsInput struct {
 	ID   string
-	Tags map[string]string
+	Tags map[string]interface{}
 }
 
 func (c *InstancesClient) AddTags(ctx context.Context, input *AddTagsInput) error {
@@ -684,7 +684,7 @@ type ListMetadataInput struct {
 	Credentials bool
 }
 
-func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataInput) (map[string]string, error) {
+func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataInput) (map[string]interface{}, error) {
 	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata")
 
 	query := &url.Values{}
@@ -705,7 +705,7 @@ func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataI
 		return nil, pkgerrors.Wrap(err, "unable to list machine metadata")
 	}
 
-	var result map[string]string
+	var result map[string]interface{}
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to decode list machine metadata response")
@@ -716,10 +716,10 @@ func (c *InstancesClient) ListMetadata(ctx context.Context, input *ListMetadataI
 
 type UpdateMetadataInput struct {
 	ID       string
-	Metadata map[string]string
+	Metadata map[string]interface{}
 }
 
-func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetadataInput) (map[string]string, error) {
+func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetadataInput) (map[string]interface{}, error) {
 	fullPath := path.Join("/", c.client.AccountName, "machines", input.ID, "metadata")
 	reqInputs := client.RequestInput{
 		Method: http.MethodPost,
@@ -734,7 +734,7 @@ func (c *InstancesClient) UpdateMetadata(ctx context.Context, input *UpdateMetad
 		return nil, pkgerrors.Wrap(err, "unable to update machine metadata")
 	}
 
-	var result map[string]string
+	var result map[string]interface{}
 	decoder := json.NewDecoder(respReader)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, pkgerrors.Wrap(err, "unable to decode update machine metadata response")

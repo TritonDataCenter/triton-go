@@ -1,5 +1,5 @@
 //
-//  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2020 Joyent, Inc. All rights reserved.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,10 +12,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/joyent/triton-go/cmd/agent/compute"
-	cfg "github.com/joyent/triton-go/cmd/config"
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/joyent/triton-go/v2/cmd/agent/compute"
+	cfg "github.com/joyent/triton-go/v2/cmd/config"
+	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/joyent/triton-go/v2/cmd/internal/config"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -167,10 +167,10 @@ var Cmd = &command.Command{
 				longName    = "metadata"
 				shortName   = "m"
 				description = `Add metadata when creating the instance. Metadata are key/value
-			       pairs available on the instance API object as the "metadata"
-			       field, and inside the instance via the "mdata-*" commands. DATA
-			       is one of: a "key=value" string (bool and numeric "value" are
-				   converted to that type). This option can be used multiple times.`
+pairs available on the instance API object as the "metadata"
+field, and inside the instance via the "mdata-*" commands. DATA
+is one of: a "key=value" string (bool and numeric "value" are
+converted to that type). This option can be used multiple times.`
 			)
 
 			flags := parent.Cobra.Flags()
