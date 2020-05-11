@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.4 (May 11 2020)
+
+- Fix panic when testing images without TRITON_TEST set [#186]
+
 ## 1.8.3 (May 6 2020)
 
 - Add support for `brand`, `flexible_disk` and `disks` for packages [#182].
