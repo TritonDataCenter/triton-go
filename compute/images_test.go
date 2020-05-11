@@ -26,7 +26,7 @@ import (
 
 var (
 	fakeImageID = "2b683a82-a066-11e3-97ab-2faa44701c5a"
-	localImage  *compute.Image
+	localImage  compute.Image
 )
 
 func TestAccImagesList(t *testing.T) {
@@ -63,7 +63,7 @@ func TestAccImagesList(t *testing.T) {
 						return fmt.Errorf("No images returned by list images")
 					}
 
-					localImage = images.([]*compute.Image)[0]
+					localImage = *images.([]*compute.Image)[0]
 
 					if localImage.Name == "" {
 						return fmt.Errorf("Returned image should have a name")
