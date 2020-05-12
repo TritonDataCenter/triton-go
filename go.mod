@@ -13,7 +13,6 @@ require (
 	github.com/mattn/go-isatty v0.0.8
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
-	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.4.0
 	github.com/satori/go.uuid v1.2.0 // indirect
