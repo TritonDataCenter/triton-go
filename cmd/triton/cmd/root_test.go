@@ -122,7 +122,6 @@ func TestGetPackageByName_Cmd(t *testing.T) {
 						return fmt.Errorf("Error compiling Regexp: %v", err)
 					}
 
-					t.Logf("\n%s =>\n%s", strings.Join(cmd.Args[:], " "), out.String())
 					if !re.MatchString(out.String()) {
 						return fmt.Errorf("Unexpected command stdout:\n%s", out.String())
 					}
