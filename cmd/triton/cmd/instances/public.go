@@ -59,7 +59,7 @@ var Cmd = &command.Command{
 				description  = "Instance ID"
 			)
 
-			flags := parent.Cobra.Flags()
+			flags := parent.Cobra.PersistentFlags()
 			flags.String(longName, defaultValue, description)
 			viper.BindPFlag(key, flags.Lookup(longName))
 		}
