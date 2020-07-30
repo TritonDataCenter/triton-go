@@ -41,7 +41,7 @@ func NewClient(config *triton.ClientConfig) (*AccountClient, error) {
 	return newAccountClient(client), nil
 }
 
-// SetHeaders allows a consumer of the current client to set custom headers for
+// SetHeader allows a consumer of the current client to set custom headers for
 // the next backend HTTP request sent to CloudAPI
 func (c *AccountClient) SetHeader(header *http.Header) {
 	c.Client.RequestHeader = header
@@ -57,4 +57,10 @@ func (c *AccountClient) Config() *ConfigClient {
 // key functionality in the Triton API.
 func (c *AccountClient) Keys() *KeysClient {
 	return &KeysClient{c.Client}
+}
+
+// AccessKeys returns a Compute Client used for accessing functions related to
+// Access Keys functionality
+func (c *AccountClient) AccessKeys() *AccessKeysClient {
+	return &AccessKeysClient{c.Client}
 }

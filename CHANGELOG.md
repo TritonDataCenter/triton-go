@@ -9,6 +9,8 @@ fields from `map[string][string]` and optionally `map[string]interface{}` to
 types of Metadata and Tags as defined by Triton's VMAPI: valid strings,
 booleans or numeric JSON values.
 
+- TRITON-2152 Added support for `account.AccessKeys`
+
 ## 1.8.4 (May 11 2020)
 
 - Fix panic when testing images without TRITON_TEST set [#186]
