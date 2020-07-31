@@ -208,3 +208,64 @@ func (c *AgentAccountClient) GetKey() (*tac.Key, error) {
 
 	return nil, nil
 }
+
+func (c *AgentAccountClient) ListAccessKeys() ([]*tac.AccessKey, error) {
+	accesskeys, err := c.client.AccessKeys().ListAccessKeys(context.Background(), &tac.ListAccessKeysInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return accesskeys, nil
+}
+
+func (c *AgentAccountClient) CreateAccessKey() (*tac.AccessKey, error) {
+	params := &tac.CreateAccessKeyInput{}
+
+	accesskey, err := c.client.AccessKeys().CreateAccessKey(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+
+	return accesskey, nil
+}
+
+func (c *AgentAccountClient) DeleteAccessKey() (*tac.AccessKey, error) {
+	var accesskey *tac.AccessKey
+
+	accesskeyid := config.GetAccessKeyID()
+	if accesskeyid != "" {
+		k, err := c.client.AccessKeys().GetAccessKey(context.Background(), &tac.GetAccessKeyInput{
+			AccessKeyID: accesskeyid,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		accesskey = k
+	}
+
+	err := c.client.AccessKeys().DeleteAccessKey(context.Background(), &tac.DeleteAccessKeyInput{
+		AccessKeyID: accesskeyid,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return accesskey, nil
+}
+
+func (c *AgentAccountClient) GetAccessKey() (*tac.AccessKey, error) {
+	accesskeyid := config.GetAccessKeyID()
+	if accesskeyid != "" {
+		accesskey, err := c.client.AccessKeys().GetAccessKey(context.Background(), &tac.GetAccessKeyInput{
+			AccessKeyID: accesskeyid,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return accesskey, nil
+	}
+
+	return nil, nil
+}

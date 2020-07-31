@@ -426,6 +426,10 @@ func GetSSHKey() string {
 	return viper.GetString(config.KeySSHKey)
 }
 
+func GetAccessKeyID() string {
+	return viper.GetString(config.KeyAccessKeyID)
+}
+
 func IsBlockingAction() bool {
 	return viper.GetBool(config.KeyInstanceWait)
 }
