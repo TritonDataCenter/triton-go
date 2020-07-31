@@ -67,6 +67,8 @@ const (
 	KeySSHKeyName        = "keys.name"
 	KeySSHKey            = "keys.publickey"
 
+	KeyAccessKeyID = "accesskeys.accesskeyid"
+
 	KeyAccountEmail            = "account.email"
 	KeyAccountCompanyName      = "account.companyname"
 	KeyAccountFirstName        = "account.firstname"
