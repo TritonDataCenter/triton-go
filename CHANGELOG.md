@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Added delegate_dataset support to instance creation
+
 ## 2.0.0-pre3 (July 31 2020)
 
 - TRITON-2152 Added `triton accesskeys create|get|list|delete` subcommands
