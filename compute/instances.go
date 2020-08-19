@@ -80,6 +80,7 @@ type Instance struct {
 	Package            string                 `json:"package"`
 	DomainNames        []string               `json:"dns_names"`
 	DeletionProtection bool                   `json:"deletion_protection"`
+	DelegateDataset    bool                   `json:"delegate_dataset,omitempty"`
 	CNS                InstanceCNS
 }
 
@@ -290,6 +291,7 @@ type CreateInstanceInput struct {
 	Metadata        map[string]string
 	Tags            map[string]string //
 	FirewallEnabled bool              //
+	DelegateDataset bool
 	CNS             InstanceCNS
 	Volumes         []InstanceVolume
 }
@@ -305,6 +307,7 @@ func (input *CreateInstanceInput) toAPI() (map[string]interface{}, error) {
 	result := make(map[string]interface{}, numExtraParams+len(input.Metadata)+len(input.Tags))
 
 	result["firewall_enabled"] = input.FirewallEnabled
+	result["delegate_dataset"] = input.DelegateDataset
 
 	if input.Name != "" {
 		result["name"] = input.Name

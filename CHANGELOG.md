@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.5 (Aug 19 2020)
+
+- Added delegate_dataset support to instance creation
+
 ## 1.8.4 (May 11 2020)
 
 - Fix panic when testing images without TRITON_TEST set [#186]
