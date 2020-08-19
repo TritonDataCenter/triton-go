@@ -15,14 +15,14 @@ import (
 
 // Version represents main version number of the current release
 // of the Triton-go SDK.
-const Version = "2.0.0-pre3"
+const Version = "2.0.0"
 
 // Prerelease adds a pre-release marker to the version.
 //
 // If this is "" (empty string) then it means that it is a final release.
 // Otherwise, this is a pre-release such as "dev" (in development), "beta",
 // "rc1", etc.
-var Prerelease = ""
+var Prerelease = "pre3"
 
 // UserAgent returns a Triton-go characteristic string that allows the
 // network protocol peers to identify the version, release and runtime

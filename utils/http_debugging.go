@@ -34,12 +34,12 @@ type traceRoundTripper struct {
 func (d *traceRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	d.dumpRequest(req)
 	res, err := d.inner.RoundTrip(req)
-        if err != nil {
+	if err != nil {
 		fmt.Fprintf(d.logger, "\n\tERROR for request: %v\n", err)
-        }
-        if res != nil {
+	}
+	if res != nil {
 		d.dumpResponse(res)
-        }
+	}
 	return res, err
 }
 
