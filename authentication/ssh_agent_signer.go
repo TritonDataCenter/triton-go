@@ -73,7 +73,7 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 		return nil, err
 	}
 	signer.key = matchingKey
-        signer.formattedKeyFingerprint, err = formatPublicKeyFingerprint(signer.key, true)
+	signer.formattedKeyFingerprint, err = formatPublicKeyFingerprint(signer.key, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to format match public key")
 	}
