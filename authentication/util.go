@@ -9,23 +9,44 @@
 package authentication
 
 import (
+	"crypto/ecdsa"
 	"crypto/md5"
+	"crypto/rsa"
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
 
 // formatPublicKeyFingerprint produces the MD5 fingerprint of the given SSH
 // public key. If display is true, the fingerprint is formatted with colons
 // between each byte, as per the output of OpenSSL.
-func formatPublicKeyFingerprint(key ssh.PublicKey, display bool) string {
+func formatPublicKeyFingerprint(privateKey interface{}, display bool) (string, error) {
+	var key ssh.PublicKey
+	switch privateKey.(type) {
+	case *rsa.PrivateKey:
+		p, err := ssh.NewPublicKey(privateKey.(*rsa.PrivateKey).Public())
+		if err != nil {
+			return "", errors.Wrap(err, "unable to parse SSH key from private key")
+		}
+		key = p
+	case *ecdsa.PrivateKey:
+		p, err := ssh.NewPublicKey(privateKey.(*ecdsa.PrivateKey).Public())
+		if err != nil {
+			return "", errors.Wrap(err, "unable to parse SSH key from private key")
+		}
+		key = p
+	default:
+		return "", fmt.Errorf("unable to parse SSH key from private key")
+
+	}
 	publicKeyFingerprint := md5.New()
 	publicKeyFingerprint.Write(key.Marshal())
 	publicKeyFingerprintString := fmt.Sprintf("%x", publicKeyFingerprint.Sum(nil))
 
 	if !display {
-		return publicKeyFingerprintString
+		return publicKeyFingerprintString, nil
 	}
 
 	formatted := ""
@@ -33,5 +54,5 @@ func formatPublicKeyFingerprint(key ssh.PublicKey, display bool) string {
 		formatted = fmt.Sprintf("%s%s:", formatted, publicKeyFingerprintString[i:i+2])
 	}
 
-	return strings.TrimSuffix(formatted, ":")
+	return strings.TrimSuffix(formatted, ":"), nil
 }

@@ -17,6 +17,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
 	pkgerrors "github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -72,7 +73,10 @@ func NewSSHAgentSigner(input SSHAgentSignerInput) (*SSHAgentSigner, error) {
 		return nil, err
 	}
 	signer.key = matchingKey
-	signer.formattedKeyFingerprint = formatPublicKeyFingerprint(signer.key, true)
+        signer.formattedKeyFingerprint, err = formatPublicKeyFingerprint(signer.key, true)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to format match public key")
+	}
 
 	_, algorithm, err := signer.SignRaw("HelloWorld")
 	if err != nil {
