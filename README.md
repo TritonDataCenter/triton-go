@@ -1,6 +1,6 @@
 # triton-go
 
-`triton-go` is a client SDK for Go applications using Joyent's Triton Compute
+`triton-go` is a client SDK for Go applications using Triton Compute
 and Object Storage (Manta) APIs.
 
 The Triton Go SDK is used in the following open source projects.

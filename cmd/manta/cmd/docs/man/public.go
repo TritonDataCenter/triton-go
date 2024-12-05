@@ -28,7 +28,7 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "man",
-		Short: "Generates and installs Joyent Manta cli man pages",
+		Short: "Generates and installs Manta Object Storage cli man pages",
 		Long: `This command automatically generates up-to-date man pages of Manta CLI
 command-line interface.  By default, it creates the man page files
 in the "docs/man" directory under the current directory.`,
