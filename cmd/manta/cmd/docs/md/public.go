@@ -36,7 +36,7 @@ url: %s
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "doc",
-		Short: "Generates and installs Joyent Manta cli documentation in markdown",
+		Short: "Generates and installs Manta Object Storage cli documentation in markdown",
 		Long: `Generate Markdown documentation for the Manta CLI.
 
 It creates one Markdown file per command `,

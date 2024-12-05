@@ -20,7 +20,7 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:          "version",
-		Short:        "print Joyent manta cli version",
+		Short:        "print manta cli version",
 		SilenceUsage: true,
 
 		RunE: func(cmd *cobra.Command, args []string) error {

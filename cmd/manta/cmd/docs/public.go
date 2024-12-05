@@ -19,7 +19,7 @@ var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:     "doc",
 		Aliases: []string{"docs", "documentation"},
-		Short:   "Documentation for Joyent Manta cli",
+		Short:   "Documentation for Manta Object Storage cli",
 	},
 
 	Setup: func(parent *command.Command) error {
