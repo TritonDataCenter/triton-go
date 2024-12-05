@@ -89,7 +89,7 @@ func TestNew(t *testing.T) {
 	tsgEnv := "http://tsg.test.org"
 	jpcTritonURL := "https://us-central-1.api.mnx.io"
 	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
-	jpcServiceURL := "https://tsg.us-east-1.svc.triton.zone"
+	jpcServiceURL := "https://tsg.us-central-1.svc.triton.zone"
 	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
 	privateInstallUrl := "https://myinstall.mycompany.com"
 
