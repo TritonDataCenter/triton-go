@@ -41,8 +41,8 @@ var (
 	InvalidDCInURL     = "invalid data center in URL"
 
 	knownDCFormats = []string{
-                `https?://(.*).api.samsungcloud.io`,
-                `https?://(.*).api.tritoncompute.cloud`,
+		`https?://(.*).api.samsungcloud.io`,
+		`https?://(.*).api.tritoncompute.cloud`,
 		`https?://(.*).api.mnx.io`,
 	}
 

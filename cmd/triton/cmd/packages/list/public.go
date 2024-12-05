@@ -11,11 +11,11 @@ package list
 import (
 	"fmt"
 
-	humanize "github.com/dustin/go-humanize"
 	"github.com/TritonDataCenter/triton-go/cmd/agent/compute"
 	cfg "github.com/TritonDataCenter/triton-go/cmd/config"
 	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
 	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"

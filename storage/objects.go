@@ -311,9 +311,9 @@ type PutObjectMetadataInput struct {
 // stored on each request.
 //
 // You cannot change "critical" headers:
-// 	- Content-Length
-//	- Content-MD5
-//	- Durability-Level
+//   - Content-Length
+//   - Content-MD5
+//   - Durability-Level
 func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadataInput) error {
 	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 	query := &url.Values{}

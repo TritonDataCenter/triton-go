@@ -15,10 +15,10 @@ import (
 
 	"fmt"
 
-	"github.com/imdario/mergo"
 	"github.com/TritonDataCenter/triton-go/cmd/config"
 	tcc "github.com/TritonDataCenter/triton-go/compute"
 	terrors "github.com/TritonDataCenter/triton-go/errors"
+	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 )
 
