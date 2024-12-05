@@ -16,7 +16,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"

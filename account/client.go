@@ -11,8 +11,8 @@ package account
 import (
 	"net/http"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/client"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/client"
 )
 
 type AccountClient struct {

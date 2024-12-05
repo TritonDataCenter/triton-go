@@ -18,9 +18,9 @@ import (
 
 	"encoding/pem"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/storage"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/storage"
 )
 
 func main() {

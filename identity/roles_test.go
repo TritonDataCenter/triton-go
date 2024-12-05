@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/identity"
-	"github.com/joyent/triton-go/testutils"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/identity"
+	"github.com/TritonDataCenter/triton-go/testutils"
 )
 
 const fakeRoleID = "e53b8fec-e661-4ded-a21e-959c9ba08cb2"

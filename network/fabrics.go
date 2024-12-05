@@ -15,7 +15,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/client"
 	"github.com/pkg/errors"
 )
 

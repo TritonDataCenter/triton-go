@@ -16,8 +16,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/joyent/triton-go/client"
-	"github.com/joyent/triton-go/errors"
+	"github.com/TritonDataCenter/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/errors"
 	pkgerrors "github.com/pkg/errors"
 )
 

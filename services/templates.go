@@ -16,7 +16,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/client"
 	pkgerrors "github.com/pkg/errors"
 )
 

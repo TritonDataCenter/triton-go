@@ -13,9 +13,9 @@ import (
 
 	"strconv"
 
-	"github.com/joyent/triton-go/account"
-	tac "github.com/joyent/triton-go/account"
-	"github.com/joyent/triton-go/cmd/config"
+	"github.com/TritonDataCenter/triton-go/account"
+	tac "github.com/TritonDataCenter/triton-go/account"
+	"github.com/TritonDataCenter/triton-go/cmd/config"
 	"github.com/pkg/errors"
 )
 

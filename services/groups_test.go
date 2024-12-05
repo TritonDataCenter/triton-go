@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/compute"
-	"github.com/joyent/triton-go/services"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/TritonDataCenter/triton-go/compute"
+	"github.com/TritonDataCenter/triton-go/services"
+	"github.com/TritonDataCenter/triton-go/testutils"
 )
 
 const (

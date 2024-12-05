@@ -16,9 +16,9 @@ import (
 	"fmt"
 
 	"github.com/imdario/mergo"
-	"github.com/joyent/triton-go/cmd/config"
-	tcc "github.com/joyent/triton-go/compute"
-	terrors "github.com/joyent/triton-go/errors"
+	"github.com/TritonDataCenter/triton-go/cmd/config"
+	tcc "github.com/TritonDataCenter/triton-go/compute"
+	terrors "github.com/TritonDataCenter/triton-go/errors"
 	"github.com/pkg/errors"
 )
 

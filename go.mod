@@ -1,4 +1,4 @@
-module github.com/joyent/triton-go
+module github.com/TritonDataCenter/triton-go
 
 require (
 	github.com/abdullin/seq v0.0.0-20160510034733-d5467c17e7af

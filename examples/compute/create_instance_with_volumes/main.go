@@ -17,11 +17,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/compute"
-	"github.com/joyent/triton-go/network"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/compute"
+	"github.com/TritonDataCenter/triton-go/network"
+	"github.com/TritonDataCenter/triton-go/testutils"
 )
 
 const (
@@ -178,7 +178,7 @@ func main() {
 	}
 
 	// Create a new instance using our input attributes...
-	// https://github.com/joyent/triton-go/blob/master/compute/instances.go#L206
+	// https://github.com/TritonDataCenter/triton-go/blob/master/compute/instances.go#L206
 	createInput := &compute.CreateInstanceInput{
 		Name:     testutils.RandString(10),
 		Package:  PackageName,

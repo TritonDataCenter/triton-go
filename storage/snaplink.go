@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/client"
 	"github.com/pkg/errors"
 )
 

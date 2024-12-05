@@ -9,10 +9,10 @@
 package packages
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/triton/cmd/packages/get"
-	"github.com/joyent/triton-go/cmd/triton/cmd/packages/list"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/packages/get"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/packages/list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

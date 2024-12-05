@@ -11,7 +11,7 @@ package main
 import (
 	"os"
 
-	"github.com/joyent/triton-go/cmd/triton/cmd"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd"
 	"github.com/rs/zerolog/log"
 	"github.com/sean-/conswriter"
 )

@@ -17,8 +17,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/identity"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/TritonDataCenter/triton-go/identity"
+	"github.com/TritonDataCenter/triton-go/testutils"
 )
 
 var (

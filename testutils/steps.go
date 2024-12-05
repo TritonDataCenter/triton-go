@@ -15,10 +15,10 @@ import (
 	"reflect"
 
 	"github.com/abdullin/seq"
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/compute"
-	"github.com/joyent/triton-go/errors"
-	"github.com/joyent/triton-go/network"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/compute"
+	"github.com/TritonDataCenter/triton-go/errors"
+	"github.com/TritonDataCenter/triton-go/network"
 	pkgerrors "github.com/pkg/errors"
 )
 

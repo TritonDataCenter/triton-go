@@ -11,10 +11,10 @@ package create
 import (
 	"fmt"
 
-	"github.com/joyent/triton-go/cmd/agent/account"
-	cfg "github.com/joyent/triton-go/cmd/config"
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/cmd/agent/account"
+	cfg "github.com/TritonDataCenter/triton-go/cmd/config"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

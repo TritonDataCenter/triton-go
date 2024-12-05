@@ -16,9 +16,9 @@ import (
 	"strings"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/account"
-	"github.com/joyent/triton-go/testutils"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/account"
+	"github.com/TritonDataCenter/triton-go/testutils"
 	"github.com/pkg/errors"
 )
 

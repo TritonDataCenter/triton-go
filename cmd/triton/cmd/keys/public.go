@@ -9,12 +9,12 @@
 package keys
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/create"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/delete"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/get"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys/list"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/keys/create"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/keys/delete"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/keys/get"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/keys/list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

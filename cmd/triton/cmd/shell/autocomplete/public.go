@@ -9,8 +9,8 @@
 package autocomplete
 
 import (
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/triton/cmd/shell/autocomplete/bash"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/shell/autocomplete/bash"
 	"github.com/spf13/cobra"
 )
 

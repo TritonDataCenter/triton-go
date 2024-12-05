@@ -11,10 +11,10 @@ package list
 import (
 	"strings"
 
-	"github.com/joyent/triton-go/cmd/agent/compute"
-	cfg "github.com/joyent/triton-go/cmd/config"
-	"github.com/joyent/triton-go/cmd/internal/command"
-	tc "github.com/joyent/triton-go/compute"
+	"github.com/TritonDataCenter/triton-go/cmd/agent/compute"
+	cfg "github.com/TritonDataCenter/triton-go/cmd/config"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	tc "github.com/TritonDataCenter/triton-go/compute"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"

@@ -11,8 +11,8 @@ package version
 import (
 	"fmt"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/cmd/internal/command"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 )

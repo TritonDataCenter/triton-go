@@ -19,8 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/client"
-	tt "github.com/joyent/triton-go/errors"
+	"github.com/TritonDataCenter/triton-go/client"
+	tt "github.com/TritonDataCenter/triton-go/errors"
 	"github.com/pkg/errors"
 )
 

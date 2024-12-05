@@ -16,9 +16,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"

@@ -12,8 +12,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/client"
 )
 
 // Responders are callbacks that receive http requests and return a mocked
