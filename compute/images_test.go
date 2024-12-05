@@ -728,7 +728,7 @@ func exportImageSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-  "manta_url": "https://us-east.manta.joyent.com",
+  "manta_url": "https://us-central.manta.mnx.io",
   "image_path": "/user/stor/my-image.zfs.gz",
   "manifest_path": "/user/stor/my-image.imgmanifest"
 }
