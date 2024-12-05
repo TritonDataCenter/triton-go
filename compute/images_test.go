@@ -510,7 +510,7 @@ func getImageSuccess(req *http.Request) (*http.Response, error) {
 	"role": "os",
 	"group": "base-32"
   },
-  "homepage": "https://docs.joyent.com/images/smartos/base",
+  "homepage": "https://docs.tritondatacenter.com/images/smartos/base",
   "published_at": "2014-02-28T10:50:42Z",
   "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
   "public": true,
@@ -548,7 +548,7 @@ func getImageBadDecode(req *http.Request) (*http.Response, error) {
 	"role": "os",
 	"group": "base-32"
   },
-  "homepage": "https://docs.joyent.com/images/smartos/base",
+  "homepage": "https://docs.tritondatacenter.com/images/smartos/base",
   "published_at": "2014-02-28T10:50:42Z",
   "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
   "public": true,
@@ -601,7 +601,7 @@ func listImagesSuccess(req *http.Request) (*http.Response, error) {
 	  "role": "os",
 	  "group": "base-32"
 	},
-	"homepage": "https://docs.joyent.com/images/smartos/base",
+	"homepage": "https://docs.tritondatacenter.com/images/smartos/base",
 	"published_at": "2014-02-28T10:50:42Z",
 	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
 	"public": true,
@@ -650,7 +650,7 @@ func listImagesBadDecode(req *http.Request) (*http.Response, error) {
 	  "role": "os",
 	  "group": "base-32"
 	},
-	"homepage": "https://docs.joyent.com/images/smartos/base",
+	"homepage": "https://docs.tritondatacenter.com/images/smartos/base",
 	"published_at": "2014-02-28T10:50:42Z",
 	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
 	"public": true,

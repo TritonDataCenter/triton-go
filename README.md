@@ -263,4 +263,4 @@ func main() {
 [6]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
 [7]: https://github.com/pkg/errors
 [8]: https://github.com/TritonDataCenter/triton/blob/master/docs/developer-guide/coal-setup.md
-[9]: https://docs.joyent.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images
+[9]: https://docs.tritondatacenter.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images

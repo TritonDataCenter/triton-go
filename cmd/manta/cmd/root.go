@@ -34,7 +34,7 @@ var subCommands = []*command.Command{
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "manta",
-		Short: "Joyent Manta CLI and client (https://www.joyent.com/triton)",
+		Short: "Manta Object Storage CLI and client (https://www.tritondatacenter.com/manta)",
 	},
 	Setup: func(parent *command.Command) error {
 		{
