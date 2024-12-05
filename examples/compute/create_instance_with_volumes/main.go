@@ -28,7 +28,7 @@ const (
 	PackageName       = "g4-highcpu-512M"
 	ImageName         = "ubuntu-16.04"
 	ImageVersion      = "20170403"
-	PublicNetworkName = "Joyent-SDC-Public"
+	PublicNetworkName = "Triton-Public"
 	PrivateWorkName   = "My-Fabric-Network"
 )
 
