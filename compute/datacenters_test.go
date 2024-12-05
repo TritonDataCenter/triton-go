@@ -175,7 +175,7 @@ func TestListDataCenters(t *testing.T) {
 }
 
 func TestGetDataCenter(t *testing.T) {
-	const dataCenterName = "us-east-1"
+	const dataCenterName = "us-central-1"
 
 	computeClient := MockComputeClient()
 
@@ -205,8 +205,8 @@ func TestGetDataCenter(t *testing.T) {
 			t.Fatalf("Expected an output but got nil")
 		}
 
-		if resp.URL != "https://us-east-1.api.joyentcloud.com" {
-			t.Fatal("Expected URL to be `https://us-east-1.api.joyentcloud.com` but got `https://us-east-1.api.joyentcloud.com`", resp.URL)
+		if resp.URL != "https://us-central-1.api.mnx.io" {
+			t.Fatalf("Expected URL to be `https://us-central-1.api.mnx.io` but got `%s`", resp.URL)
 		}
 	})
 
@@ -232,12 +232,7 @@ func listDataCentersSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-	"us-east-1": "https://us-east-1.api.joyentcloud.com",
-	"us-west-1": "https://us-west-1.api.joyentcloud.com",
-	"us-sw-1": "https://us-sw-1.api.joyentcloud.com",
-	"eu-ams-1": "https://eu-ams-1.api.joyentcloud.com",
-	"us-east-2": "https://us-east-2.api.joyentcloud.com",
-	"us-east-3": "https://us-east-3.api.joyentcloud.com"
+	"us-central-1": "https://us-central-1.api.mnx.io",
 }
 `)
 
@@ -264,12 +259,7 @@ func listDataCentersBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-	"us-east-1": "https://us-east-1.api.joyentcloud.com",
-	"us-west-1": "https://us-west-1.api.joyentcloud.com",
-	"us-sw-1": "https://us-sw-1.api.joyentcloud.com",
-	"eu-ams-1": "https://eu-ams-1.api.joyentcloud.com",
-	"us-east-2": "https://us-east-2.api.joyentcloud.com",
-	"us-east-3": "https://us-east-3.api.joyentcloud.com",
+	"us-central-1": "https://us-central-1.api.mnx.io",
 }`)
 
 	return &http.Response{
@@ -288,7 +278,7 @@ func getDataCenterSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-	"us-east-1": "https://us-east-1.api.joyentcloud.com"
+	"us-central-1": "https://us-central-1.api.mnx.io"
 }
 `)
 

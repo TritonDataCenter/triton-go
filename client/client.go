@@ -41,12 +41,10 @@ var (
 	InvalidDCInURL     = "invalid data center in URL"
 
 	knownDCFormats = []string{
-		`https?://(.*).api.joyent.com`,
-		`https?://(.*).api.joyentcloud.com`,
-		`https?://(.*).api.samsungcloud.io`,
+		`https?://(.*).api.mnx.io`,
 	}
 
-	jpcFormatURL = "https://tsg.%s.svc.joyent.zone"
+	jpcFormatURL = "https://tsg.%s.svc.triton.zone"
 	spcFormatURL = "https://tsg.%s.svc.samsungcloud.zone"
 
 	tritonTransportHttpTraceChecked = false

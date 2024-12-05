@@ -73,7 +73,7 @@ func overrideHeaderTest(t *testing.T) func(req *http.Request) (*http.Response, e
 		header.Add("Content-Type", "application/json")
 
 		body := strings.NewReader(`{
-	"us-east-1": "https://us-east-1.api.joyentcloud.com"
+	"us-central-1": "https://us-central-1.api.mnx.io"
 }
 `)
 

@@ -131,7 +131,7 @@ The verbose output has been removed for brevity here.
 ```
 $ HTTP_PROXY=http://localhost:8888 \
     TRITON_TEST=1 \
-    TRITON_URL=https://us-sw-1.api.joyent.com \
+    TRITON_URL=https://us-central-1.api.mnx.io \
     TRITON_ACCOUNT=AccountName \
     TRITON_KEY_ID=a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11 \
     go test -v -run "TestAccKey"

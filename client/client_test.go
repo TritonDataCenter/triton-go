@@ -85,11 +85,11 @@ gnfBQoS89m3aO035henSfRFKVJkHaEoasj8hB3pwl9FGZUJp1c2JxiKzONqZhyGa
 }
 
 func TestNew(t *testing.T) {
-	mantaURL := "https://us-east.manta.joyent.com"
+	mantaURL := "https://us-central.manta.mnx.io"
 	tsgEnv := "http://tsg.test.org"
-	jpcTritonURL := "https://us-east-1.api.joyent.com"
+	jpcTritonURL := "https://us-central-1.api.mnx.io"
 	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
-	jpcServiceURL := "https://tsg.us-east-1.svc.joyent.zone"
+	jpcServiceURL := "https://tsg.us-east-1.svc.triton.zone"
 	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
 	privateInstallUrl := "https://myinstall.mycompany.com"
 
