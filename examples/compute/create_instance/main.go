@@ -28,7 +28,7 @@ const (
 	PackageName  = "g4-highcpu-512M"
 	ImageName    = "ubuntu-16.04"
 	ImageVersion = "20170403"
-	NetworkName  = "Joyent-SDC-Public"
+	NetworkName  = "Triton-Public"
 )
 
 func main() {
