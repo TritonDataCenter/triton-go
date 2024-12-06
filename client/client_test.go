@@ -89,9 +89,7 @@ func TestNew(t *testing.T) {
 	mantaURL := "https://us-central.manta.mnx.io"
 	tsgEnv := "http://tsg.test.org"
 	jpcTritonURL := "https://us-central-1.api.mnx.io"
-	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
 	jpcServiceURL := "https://tsg.us-central-1.svc.triton.zone"
-	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
 	privateInstallUrl := "https://myinstall.mycompany.com"
 
 	accountName := "test.user"
@@ -108,7 +106,6 @@ func TestNew(t *testing.T) {
 		err         interface{}
 	}{
 		{"default", jpcTritonURL, mantaURL, "", jpcServiceURL, accountName, signer, nil},
-		{"in samsung", spcTritonURL, mantaURL, "", spcServiceURL, accountName, signer, nil},
 		{"env TSG", jpcTritonURL, mantaURL, tsgEnv, tsgEnv, accountName, signer, nil},
 		{"missing url", "", "", "", "", accountName, signer, ErrMissingURL},
 		{"bad tritonURL", BadURL, mantaURL, "", "", accountName, signer, InvalidTritonURL},
