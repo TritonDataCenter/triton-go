@@ -7,7 +7,7 @@
 
 #
 # Copyright 2019 Joyent, Inc.
-# Copyright 2024 MNX Solutions, Inc.
+# Copyright 2024 MNX Cloud, Inc.
 #
 
 #
