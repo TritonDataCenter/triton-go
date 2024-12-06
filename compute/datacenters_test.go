@@ -233,7 +233,6 @@ func listDataCentersSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-        "eu-ams-1": "https://eu-ams-1.api.tritoncompute.cloud",
 	"us-central-1": "https://us-central-1.api.mnx.io"
 }
 `)
