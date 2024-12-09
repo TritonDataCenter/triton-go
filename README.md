@@ -97,7 +97,7 @@ to clean up these test resources.
 
 The acceptance tests depend upon a few things in your Triton setup:
 
-- the [Ubuntu 16.04](https://docs.tritondatacenter.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images) LX image to be installed
+- the [Ubuntu 24.04](https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/ubuntu) LX image to be installed
 - a generic package with Memory in the range of 128MB to 1024MB
 - a public (external) network to provision with
 - if your Triton setup is used for testing - then running
