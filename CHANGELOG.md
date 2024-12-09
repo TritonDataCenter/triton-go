@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.6 (Dec 08 2024)
+
+- Updated joyent links to TritonDataCenter
+
 ## 1.8.5 (Aug 19 2020)
 
 - Added delegate_dataset support to instance creation
