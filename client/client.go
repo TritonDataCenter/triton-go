@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
 	triton "github.com/TritonDataCenter/triton-go/v2"
@@ -46,7 +45,6 @@ var (
 	}
 
 	jpcFormatURL = "https://tsg.%s.svc.triton.zone"
-	spcFormatURL = "https://tsg.%s.svc.samsungcloud.zone"
 
 	tritonTransportHttpTraceChecked = false
 	tritonTransportHttpTraceEnabled = false
@@ -94,21 +92,16 @@ func wrapTritonTransport(in http.RoundTripper) http.RoundTripper {
 // parseDC parses out the data center commonly found in Triton URLs. Returns an
 // error if the Triton URL does not include a known data center name, in which
 // case a URL override (TRITON_TSG_URL) must be provided.
-func parseDC(url string) (string, bool, error) {
-	isSamsung := false
-	if strings.Contains(url, "samsung") {
-		isSamsung = true
-	}
-
+func parseDC(url string) (string, error) {
 	for _, pattern := range knownDCFormats {
 		re := regexp.MustCompile(pattern)
 		matches := re.FindStringSubmatch(url)
 		if len(matches) > 1 {
-			return matches[1], isSamsung, nil
+			return matches[1], nil
 		}
 	}
 
-	return "", isSamsung, fmt.Errorf("failed to parse datacenter from '%s'", url)
+	return "", fmt.Errorf("failed to parse datacenter from '%s'", url)
 }
 
 // New is used to construct a Client in order to make API
@@ -140,15 +133,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	// variable is available than override using that value instead.
 	tsgURL := triton.GetEnv("TSG_URL")
 	if tsgURL == "" && tritonURL != "" && !isPrivateInstall(tritonURL) {
-		currentDC, isSamsung, err := parseDC(tritonURL)
+		currentDC, err := parseDC(tritonURL)
 		if err != nil {
 			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
 		}
 
 		tsgURL = fmt.Sprintf(jpcFormatURL, currentDC)
-		if isSamsung {
-			tsgURL = fmt.Sprintf(spcFormatURL, currentDC)
-		}
 	}
 
 	servicesURL, err := url.Parse(tsgURL)
