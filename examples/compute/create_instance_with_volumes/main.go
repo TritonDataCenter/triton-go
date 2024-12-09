@@ -27,8 +27,8 @@ import (
 
 const (
 	PackageName       = "g4-highcpu-512M"
-	ImageName         = "ubuntu-16.04"
-	ImageVersion      = "20170403"
+	ImageName         = "ubuntu-24.04"
+	ImageVersion      = "20240612"
 	PublicNetworkName = "Triton-Public"
 	PrivateWorkName   = "My-Fabric-Network"
 )
