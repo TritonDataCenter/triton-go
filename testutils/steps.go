@@ -147,8 +147,8 @@ func (s *StepGetImage) Run(state TritonStateBag) StepAction {
 	}
 
 	images, err := computeClient.Images().List(context.Background(), &compute.ListImagesInput{
-		Name: imageName,
-                Version: imageVersion,
+		Name:    imageName,
+		Version: imageVersion,
 	})
 	if err != nil {
 		state.AppendError(err)
