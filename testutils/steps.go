@@ -137,7 +137,8 @@ type StepGetImage struct {
 }
 
 func (s *StepGetImage) Run(state TritonStateBag) StepAction {
-	const imageName = "ubuntu-16.04"
+	const imageName = "ubuntu-24.04"
+	const imageVersion = "20240612"
 
 	computeClient, err := compute.NewClient(state.Config())
 	if err != nil {
@@ -147,6 +148,7 @@ func (s *StepGetImage) Run(state TritonStateBag) StepAction {
 
 	images, err := computeClient.Images().List(context.Background(), &compute.ListImagesInput{
 		Name: imageName,
+                Version: imageVersion,
 	})
 	if err != nil {
 		state.AppendError(err)
