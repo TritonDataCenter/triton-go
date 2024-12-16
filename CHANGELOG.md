@@ -2,7 +2,7 @@
 
 ## 1.8.6 (Dec 08 2024)
 
-- Updated joyent links to TritonDataCenter
+- Updated joyent links to TritonDataCenter to reflect new repo home
 
 ## 1.8.5 (Aug 19 2020)
 
