@@ -30,8 +30,6 @@ var (
 	testNetworkID        = ""
 )
 
-// Note that this is specific to Triton Public Cloud and will not pass on
-// private installations of Triton.
 func TestAccNetworks_List(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{
