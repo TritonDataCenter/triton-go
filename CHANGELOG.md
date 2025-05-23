@@ -1,6 +1,9 @@
 ## Unreleased
 
+## 2.0.0-pre4 (May 23 2025)
+
 - Added delegate_dataset support to instance creation
+- TRITON-2469 Update joyent links to TritonDataCenter
 
 ## 2.0.0-pre3 (July 31 2020)
 
