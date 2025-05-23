@@ -96,7 +96,7 @@ to clean up these test resources.
 
 The acceptance tests depend upon a few things in your Triton setup:
 
-- the [Ubuntu 16.04][9] LX image to be installed
+- the [Ubuntu 24.04][9] LX image to be installed
 - a generic package with Memory in the range of 128MB to 1024MB
 - a public (external) network to provision with
 - if your Triton setup is used for testing - then running
@@ -263,4 +263,4 @@ func main() {
 [6]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
 [7]: https://github.com/pkg/errors
 [8]: https://github.com/TritonDataCenter/triton/blob/master/docs/developer-guide/coal-setup.md
-[9]: https://docs.tritondatacenter.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images
+[9]: https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/ubuntu
