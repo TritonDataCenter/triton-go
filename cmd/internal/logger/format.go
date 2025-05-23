@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/spf13/viper"
 )
 

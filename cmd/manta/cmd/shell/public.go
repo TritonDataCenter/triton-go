@@ -9,8 +9,8 @@
 package shell
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/shell/autocomplete"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/shell/autocomplete"
 	"github.com/spf13/cobra"
 )
 

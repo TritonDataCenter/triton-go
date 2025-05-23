@@ -9,9 +9,9 @@
 package docs
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/docs/man"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/docs/md"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/docs/man"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/docs/md"
 	"github.com/spf13/cobra"
 )
 

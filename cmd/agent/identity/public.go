@@ -9,8 +9,8 @@
 package identity
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/config"
-	"github.com/joyent/triton-go/v2/identity"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/config"
+	"github.com/TritonDataCenter/triton-go/v2/identity"
 	"github.com/pkg/errors"
 )
 

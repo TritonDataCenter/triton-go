@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	auth "github.com/joyent/triton-go/v2/authentication"
+	auth "github.com/TritonDataCenter/triton-go/v2/authentication"
 )
 
 const BadURL = "**ftp://man($$"

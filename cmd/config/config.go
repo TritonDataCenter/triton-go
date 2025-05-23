@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/authentication"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/authentication"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"

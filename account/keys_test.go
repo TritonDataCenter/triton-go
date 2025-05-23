@@ -17,9 +17,9 @@ import (
 	"testing"
 
 	"github.com/abdullin/seq"
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/account"
-	"github.com/joyent/triton-go/v2/testutils"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/account"
+	"github.com/TritonDataCenter/triton-go/v2/testutils"
 	"github.com/pkg/errors"
 )
 

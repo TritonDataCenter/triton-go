@@ -17,9 +17,9 @@ import (
 
 	"encoding/pem"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/account"
-	"github.com/joyent/triton-go/v2/authentication"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/account"
+	"github.com/TritonDataCenter/triton-go/v2/authentication"
 )
 
 func printAccount(acct *account.Account) {

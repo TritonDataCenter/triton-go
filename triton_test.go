@@ -12,7 +12,7 @@ import (
 	"os"
 	"testing"
 
-	triton "github.com/joyent/triton-go/v2"
+	triton "github.com/TritonDataCenter/triton-go/v2"
 )
 
 func TestGetEnv(t *testing.T) {

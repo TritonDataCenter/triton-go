@@ -9,9 +9,9 @@
 package account
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/account/get"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/account/update"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/account/get"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/account/update"
 	"github.com/spf13/cobra"
 )
 

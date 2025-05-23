@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/authentication"
-	"github.com/joyent/triton-go/v2/errors"
-	tritonutils "github.com/joyent/triton-go/v2/utils"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/authentication"
+	"github.com/TritonDataCenter/triton-go/v2/errors"
+	tritonutils "github.com/TritonDataCenter/triton-go/v2/utils"
 	pkgerrors "github.com/pkg/errors"
 )
 

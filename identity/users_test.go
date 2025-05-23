@@ -19,9 +19,9 @@ import (
 	"strings"
 	"testing"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/identity"
-	"github.com/joyent/triton-go/v2/testutils"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/identity"
+	"github.com/TritonDataCenter/triton-go/v2/testutils"
 )
 
 const accountUrl = "testing"

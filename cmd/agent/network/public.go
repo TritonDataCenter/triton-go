@@ -9,8 +9,8 @@
 package network
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/config"
-	"github.com/joyent/triton-go/v2/network"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/config"
+	"github.com/TritonDataCenter/triton-go/v2/network"
 	"github.com/pkg/errors"
 )
 

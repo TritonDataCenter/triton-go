@@ -11,8 +11,8 @@ package storage
 import (
 	"context"
 
-	"github.com/joyent/triton-go/v2/cmd/config"
-	tsc "github.com/joyent/triton-go/v2/storage"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/config"
+	tsc "github.com/TritonDataCenter/triton-go/v2/storage"
 	"github.com/pkg/errors"
 )
 

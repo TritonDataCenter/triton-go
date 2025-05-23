@@ -11,8 +11,8 @@ package storage
 import (
 	"net/http"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/client"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/client"
 )
 
 type StorageClient struct {

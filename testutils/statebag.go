@@ -11,7 +11,7 @@ package testutils
 import (
 	"sync"
 
-	triton "github.com/joyent/triton-go/v2"
+	triton "github.com/TritonDataCenter/triton-go/v2"
 )
 
 type TritonStateBag interface {

@@ -11,7 +11,7 @@ package compute
 import (
 	"sort"
 
-	"github.com/joyent/triton-go/v2/compute"
+	"github.com/TritonDataCenter/triton-go/v2/compute"
 )
 
 type instanceSort []*compute.Instance

@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/v2/client"
+	"github.com/TritonDataCenter/triton-go/v2/client"
 	"github.com/pkg/errors"
 )
 

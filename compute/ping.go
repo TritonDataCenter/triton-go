@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/joyent/triton-go/v2/client"
+	"github.com/TritonDataCenter/triton-go/v2/client"
 	pkgerrors "github.com/pkg/errors"
 )
 

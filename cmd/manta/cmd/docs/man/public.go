@@ -15,9 +15,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"

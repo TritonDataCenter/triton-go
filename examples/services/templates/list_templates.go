@@ -16,9 +16,9 @@ import (
 	"log"
 	"os"
 
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/authentication"
-	"github.com/joyent/triton-go/v2/services"
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/authentication"
+	"github.com/TritonDataCenter/triton-go/v2/services"
 )
 
 func main() {

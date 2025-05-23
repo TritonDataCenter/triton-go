@@ -11,7 +11,7 @@ package triton
 import (
 	"os"
 
-	"github.com/joyent/triton-go/v2/authentication"
+	"github.com/TritonDataCenter/triton-go/v2/authentication"
 )
 
 // Universal package used for defining configuration used across all client

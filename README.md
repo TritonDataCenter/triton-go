@@ -10,8 +10,8 @@ The Triton Go SDK is used in the following open source projects.
 - [Vault](http://github.com/hashicorp/vault)
 - [Terraform](http://github.com/hashicorp/terraform)
 - [Terraform Triton Provider](https://github.com/terraform-providers/terraform-provider-triton)
-- [Docker Machine](https://github.com/joyent/docker-machine-driver-triton)
-- [Triton Kubernetes](https://github.com/joyent/triton-kubernetes)
+- [Docker Machine](https://github.com/TritonDataCenter/docker-machine-driver-triton)
+- [Triton Kubernetes](https://github.com/TritonDataCenter/triton-kubernetes)
 - [HashiCorp go-discover](https://github.com/hashicorp/go-discover)
 
 ## Usage
@@ -141,7 +141,7 @@ $ HTTP_PROXY=http://localhost:8888 \
 === RUN   TestAccKey_Delete
 --- PASS: TestAccKey_Delete (15.08s)
 PASS
-ok  	github.com/joyent/triton-go	31.861s
+ok  	github.com/TritonDataCenter/triton-go	31.861s
 ```
 
 ## Example API
@@ -172,9 +172,9 @@ import (
     "os"
     "time"
 
-    triton "github.com/joyent/triton-go/v2"
-    "github.com/joyent/triton-go/v2/authentication"
-    "github.com/joyent/triton-go/v2/compute"
+    triton "github.com/TritonDataCenter/triton-go/v2"
+    "github.com/TritonDataCenter/triton-go/v2/authentication"
+    "github.com/TritonDataCenter/triton-go/v2/compute"
 )
 
 func main() {
@@ -258,9 +258,9 @@ func main() {
 
 ```
 
-[4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md
-[5]: https://godoc.org/github.com/joyent/triton-go/authentication
-[6]: https://godoc.org/github.com/joyent/triton-go/authentication
+[4]: https://github.com/TritonDataCenter/node-http-signature/blob/master/http_signing.md
+[5]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
+[6]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
 [7]: https://github.com/pkg/errors
-[8]: https://github.com/joyent/triton/blob/master/docs/developer-guide/coal-setup.md
+[8]: https://github.com/TritonDataCenter/triton/blob/master/docs/developer-guide/coal-setup.md
 [9]: https://docs.joyent.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images

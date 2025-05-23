@@ -11,10 +11,10 @@ package update
 import (
 	"fmt"
 
-	"github.com/joyent/triton-go/v2/cmd/agent/account"
-	cfg "github.com/joyent/triton-go/v2/cmd/config"
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/agent/account"
+	cfg "github.com/TritonDataCenter/triton-go/v2/cmd/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

@@ -9,12 +9,12 @@
 package accesskeys
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/accesskeys/create"
-	accessKeyDelete "github.com/joyent/triton-go/v2/cmd/triton/cmd/accesskeys/delete"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/accesskeys/get"
-	"github.com/joyent/triton-go/v2/cmd/triton/cmd/accesskeys/list"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/accesskeys/create"
+	accessKeyDelete "github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/accesskeys/delete"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/accesskeys/get"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/triton/cmd/accesskeys/list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

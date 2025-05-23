@@ -11,9 +11,9 @@ package list
 import (
 	"fmt"
 
-	"github.com/joyent/triton-go/v2/cmd/agent/storage"
-	cfg "github.com/joyent/triton-go/v2/cmd/config"
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/agent/storage"
+	cfg "github.com/TritonDataCenter/triton-go/v2/cmd/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 )

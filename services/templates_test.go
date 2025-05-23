@@ -17,8 +17,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/v2/services"
-	"github.com/joyent/triton-go/v2/testutils"
+	"github.com/TritonDataCenter/triton-go/v2/services"
+	"github.com/TritonDataCenter/triton-go/v2/testutils"
 )
 
 const (
