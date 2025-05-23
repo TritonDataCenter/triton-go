@@ -17,10 +17,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/abdullin/seq"
 	triton "github.com/TritonDataCenter/triton-go/v2"
 	"github.com/TritonDataCenter/triton-go/v2/compute"
 	"github.com/TritonDataCenter/triton-go/v2/testutils"
+	"github.com/abdullin/seq"
 	"github.com/pkg/errors"
 )
 

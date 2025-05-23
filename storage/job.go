@@ -199,8 +199,8 @@ type CancelJobInput struct {
 // closed will likely still run to completion.
 //
 // This is however useful when:
-// 	- input is still open
-// 	- you have a long-running job
+//   - input is still open
+//   - you have a long-running job
 func (s *JobClient) Cancel(ctx context.Context, input *CancelJobInput) error {
 	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "cancel")
 

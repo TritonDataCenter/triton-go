@@ -14,11 +14,11 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/abdullin/seq"
 	triton "github.com/TritonDataCenter/triton-go/v2"
 	"github.com/TritonDataCenter/triton-go/v2/compute"
 	"github.com/TritonDataCenter/triton-go/v2/errors"
 	"github.com/TritonDataCenter/triton-go/v2/network"
+	"github.com/abdullin/seq"
 	pkgerrors "github.com/pkg/errors"
 )
 
