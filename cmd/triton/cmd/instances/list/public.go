@@ -1,5 +1,6 @@
 //
 //  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,10 +12,10 @@ package list
 import (
 	"strings"
 
-	"github.com/joyent/triton-go/cmd/agent/compute"
-	cfg "github.com/joyent/triton-go/cmd/config"
-	"github.com/joyent/triton-go/cmd/internal/command"
-	tc "github.com/joyent/triton-go/compute"
+	"github.com/TritonDataCenter/triton-go/cmd/agent/compute"
+	cfg "github.com/TritonDataCenter/triton-go/cmd/config"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	tc "github.com/TritonDataCenter/triton-go/compute"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"

@@ -1,5 +1,6 @@
 //
 //  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,8 +12,8 @@ package version
 import (
 	"fmt"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/cmd/internal/command"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
 )

@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,13 +21,12 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/errors"
-	tritonutils "github.com/joyent/triton-go/utils"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/errors"
+	tritonutils "github.com/TritonDataCenter/triton-go/utils"
 	pkgerrors "github.com/pkg/errors"
 )
 
@@ -41,13 +41,10 @@ var (
 	InvalidDCInURL     = "invalid data center in URL"
 
 	knownDCFormats = []string{
-		`https?://(.*).api.joyent.com`,
-		`https?://(.*).api.joyentcloud.com`,
-		`https?://(.*).api.samsungcloud.io`,
+		`https?://(.*).api.mnx.io`,
 	}
 
-	jpcFormatURL = "https://tsg.%s.svc.joyent.zone"
-	spcFormatURL = "https://tsg.%s.svc.samsungcloud.zone"
+	jpcFormatURL = "https://tsg.%s.svc.triton.zone"
 
 	tritonTransportHttpTraceChecked = false
 	tritonTransportHttpTraceEnabled = false
@@ -95,21 +92,16 @@ func wrapTritonTransport(in http.RoundTripper) http.RoundTripper {
 // parseDC parses out the data center commonly found in Triton URLs. Returns an
 // error if the Triton URL does not include a known data center name, in which
 // case a URL override (TRITON_TSG_URL) must be provided.
-func parseDC(url string) (string, bool, error) {
-	isSamsung := false
-	if strings.Contains(url, "samsung") {
-		isSamsung = true
-	}
-
+func parseDC(url string) (string, error) {
 	for _, pattern := range knownDCFormats {
 		re := regexp.MustCompile(pattern)
 		matches := re.FindStringSubmatch(url)
 		if len(matches) > 1 {
-			return matches[1], isSamsung, nil
+			return matches[1], nil
 		}
 	}
 
-	return "", isSamsung, fmt.Errorf("failed to parse datacenter from '%s'", url)
+	return "", fmt.Errorf("failed to parse datacenter from '%s'", url)
 }
 
 // New is used to construct a Client in order to make API
@@ -141,15 +133,12 @@ func New(tritonURL string, mantaURL string, accountName string, signers ...authe
 	// variable is available than override using that value instead.
 	tsgURL := triton.GetEnv("TSG_URL")
 	if tsgURL == "" && tritonURL != "" && !isPrivateInstall(tritonURL) {
-		currentDC, isSamsung, err := parseDC(tritonURL)
+		currentDC, err := parseDC(tritonURL)
 		if err != nil {
 			return nil, pkgerrors.Wrapf(err, InvalidDCInURL)
 		}
 
 		tsgURL = fmt.Sprintf(jpcFormatURL, currentDC)
-		if isSamsung {
-			tsgURL = fmt.Sprintf(spcFormatURL, currentDC)
-		}
 	}
 
 	servicesURL, err := url.Parse(tsgURL)

@@ -1,5 +1,6 @@
 //
 //  Copyright (tcc) 2018, Joyent, Inc. All rights reserved.
+//  Copyright 2024 MNX Cloud, Inc.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,10 +16,10 @@ import (
 
 	"fmt"
 
+	"github.com/TritonDataCenter/triton-go/cmd/config"
+	tcc "github.com/TritonDataCenter/triton-go/compute"
+	terrors "github.com/TritonDataCenter/triton-go/errors"
 	"github.com/imdario/mergo"
-	"github.com/joyent/triton-go/cmd/config"
-	tcc "github.com/joyent/triton-go/compute"
-	terrors "github.com/joyent/triton-go/errors"
 	"github.com/pkg/errors"
 )
 

@@ -1,6 +1,6 @@
 # triton-go
 
-`triton-go` is a client SDK for Go applications using Joyent's Triton Compute
+`triton-go` is a client SDK for Go applications using Triton Compute
 and Object Storage (Manta) APIs.
 
 The Triton Go SDK is used in the following open source projects.
@@ -10,8 +10,8 @@ The Triton Go SDK is used in the following open source projects.
 - [Vault](http://github.com/hashicorp/vault)
 - [Terraform](http://github.com/hashicorp/terraform)
 - [Terraform Triton Provider](https://github.com/terraform-providers/terraform-provider-triton)
-- [Docker Machine](https://github.com/joyent/docker-machine-driver-triton)
-- [Triton Kubernetes](https://github.com/joyent/triton-kubernetes)
+- [Docker Machine](https://github.com/TritonDataCenter/docker-machine-driver-triton)
+- [Triton Kubernetes](https://github.com/TritonDataCenter/triton-kubernetes)
 - [HashiCorp go-discover](https://github.com/hashicorp/go-discover)
 
 ## Usage
@@ -89,7 +89,7 @@ is performed using the [pkg/errors][7] library.
 
 Acceptance Tests run directly against the Triton API (e.g. CloudAPI), so you
 will need an installation of Triton in order to run them, or
-[COAL](https://github.com/joyent/triton/blob/master/docs/developer-guide/coal-setup.md)
+[COAL](https://github.com/TritonDataCenter/triton/blob/master/docs/developer-guide/coal-setup.md)
 (Cloud On A Laptop). The tests create real resources and thus could cost real
 money if you are using a paid Triton account! It is also possible that the
 acceptance tests will leave behind resources, so extra attention will be needed
@@ -97,7 +97,7 @@ to clean up these test resources.
 
 The acceptance tests depend upon a few things in your Triton setup:
 
-- the [Ubuntu 16.04](https://docs.joyent.com/public-cloud/instances/virtual-machines/images/linux/ubuntu-certified#1604-xenial-images) LX image to be installed
+- the [Ubuntu 24.04](https://docs.tritondatacenter.com/public-cloud/instances/virtual-machines/images) HVM image to be installed
 - a generic package with Memory in the range of 128MB to 1024MB
 - a public (external) network to provision with
 - if your Triton setup is used for testing - then running
@@ -131,7 +131,7 @@ The verbose output has been removed for brevity here.
 ```
 $ HTTP_PROXY=http://localhost:8888 \
     TRITON_TEST=1 \
-    TRITON_URL=https://us-sw-1.api.joyent.com \
+    TRITON_URL=https://us-central-1.api.mnx.io \
     TRITON_ACCOUNT=AccountName \
     TRITON_KEY_ID=a4:c6:f3:75:80:27:e0:03:a9:98:79:ef:c5:0a:06:11 \
     go test -v -run "TestAccKey"
@@ -142,7 +142,7 @@ $ HTTP_PROXY=http://localhost:8888 \
 === RUN   TestAccKey_Delete
 --- PASS: TestAccKey_Delete (15.08s)
 PASS
-ok  	github.com/joyent/triton-go	31.861s
+ok  	github.com/TritonDataCenter/triton-go	31.861s
 ```
 
 ## Example API
@@ -173,9 +173,9 @@ import (
     "os"
     "time"
 
-    triton "github.com/joyent/triton-go"
-    "github.com/joyent/triton-go/authentication"
-    "github.com/joyent/triton-go/compute"
+    triton "github.com/TritonDataCenter/triton-go"
+    "github.com/TritonDataCenter/triton-go/authentication"
+    "github.com/TritonDataCenter/triton-go/compute"
 )
 
 func main() {
@@ -259,7 +259,7 @@ func main() {
 
 ```
 
-[4]: https://github.com/joyent/node-http-signature/blob/master/http_signing.md
-[5]: https://godoc.org/github.com/joyent/triton-go/authentication
-[6]: https://godoc.org/github.com/joyent/triton-go/authentication
+[4]: https://github.com/TritonDataCenter/node-http-signature/blob/master/http_signing.md
+[5]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
+[6]: https://godoc.org/github.com/TritonDataCenter/triton-go/authentication
 [7]: https://github.com/pkg/errors

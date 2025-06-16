@@ -1,5 +1,6 @@
 //
 //  Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,18 +12,18 @@ package cmd
 import (
 	"os"
 
-	"github.com/joyent/triton-go/cmd/internal/command"
-	"github.com/joyent/triton-go/cmd/internal/config"
-	"github.com/joyent/triton-go/cmd/internal/logger"
-	"github.com/joyent/triton-go/cmd/triton/cmd/account"
-	"github.com/joyent/triton-go/cmd/triton/cmd/datacenters"
-	"github.com/joyent/triton-go/cmd/triton/cmd/docs"
-	"github.com/joyent/triton-go/cmd/triton/cmd/instances"
-	"github.com/joyent/triton-go/cmd/triton/cmd/keys"
-	"github.com/joyent/triton-go/cmd/triton/cmd/packages"
-	"github.com/joyent/triton-go/cmd/triton/cmd/services"
-	"github.com/joyent/triton-go/cmd/triton/cmd/shell"
-	"github.com/joyent/triton-go/cmd/triton/cmd/version"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/cmd/internal/logger"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/account"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/datacenters"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/docs"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/instances"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/keys"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/packages"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/services"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/shell"
+	"github.com/TritonDataCenter/triton-go/cmd/triton/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
@@ -44,7 +45,7 @@ var subCommands = []*command.Command{
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "triton",
-		Short: "Joyent Triton CLI and client (https://www.joyent.com/triton)",
+		Short: "Triton DataCenter CLI and client (https://www.tritondatacenter.com/triton)",
 	},
 	Setup: func(parent *command.Command) error {
 		{

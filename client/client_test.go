@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +14,7 @@ import (
 	"strings"
 	"testing"
 
-	auth "github.com/joyent/triton-go/authentication"
+	auth "github.com/TritonDataCenter/triton-go/authentication"
 )
 
 const BadURL = "**ftp://man($$"
@@ -85,12 +86,10 @@ gnfBQoS89m3aO035henSfRFKVJkHaEoasj8hB3pwl9FGZUJp1c2JxiKzONqZhyGa
 }
 
 func TestNew(t *testing.T) {
-	mantaURL := "https://us-east.manta.joyent.com"
+	mantaURL := "https://us-central.manta.mnx.io"
 	tsgEnv := "http://tsg.test.org"
-	jpcTritonURL := "https://us-east-1.api.joyent.com"
-	spcTritonURL := "https://us-east-1.api.samsungcloud.io"
-	jpcServiceURL := "https://tsg.us-east-1.svc.joyent.zone"
-	spcServiceURL := "https://tsg.us-east-1.svc.samsungcloud.zone"
+	jpcTritonURL := "https://us-central-1.api.mnx.io"
+	jpcServiceURL := "https://tsg.us-central-1.svc.triton.zone"
 	privateInstallUrl := "https://myinstall.mycompany.com"
 
 	accountName := "test.user"
@@ -107,7 +106,6 @@ func TestNew(t *testing.T) {
 		err         interface{}
 	}{
 		{"default", jpcTritonURL, mantaURL, "", jpcServiceURL, accountName, signer, nil},
-		{"in samsung", spcTritonURL, mantaURL, "", spcServiceURL, accountName, signer, nil},
 		{"env TSG", jpcTritonURL, mantaURL, tsgEnv, tsgEnv, accountName, signer, nil},
 		{"missing url", "", "", "", "", accountName, signer, ErrMissingURL},
 		{"bad tritonURL", BadURL, mantaURL, "", "", accountName, signer, InvalidTritonURL},

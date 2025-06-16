@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,8 +18,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joyent/triton-go/network"
-	"github.com/joyent/triton-go/testutils"
+	"github.com/TritonDataCenter/triton-go/network"
+	"github.com/TritonDataCenter/triton-go/testutils"
 	"github.com/pkg/errors"
 )
 
@@ -29,8 +30,6 @@ var (
 	testNetworkID        = ""
 )
 
-// Note that this is specific to Joyent Public Cloud and will not pass on
-// private installations of Triton.
 func TestAccNetworks_List(t *testing.T) {
 	testutils.AccTest(t, testutils.TestCase{
 		Steps: []testutils.Step{

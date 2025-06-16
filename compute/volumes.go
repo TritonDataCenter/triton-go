@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent Inc.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +16,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/client"
 	"github.com/pkg/errors"
 )
 

@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,8 +17,8 @@ import (
 	"os"
 	"testing"
 
-	triton "github.com/joyent/triton-go"
-	"github.com/joyent/triton-go/authentication"
+	triton "github.com/TritonDataCenter/triton-go"
+	"github.com/TritonDataCenter/triton-go/authentication"
 )
 
 const TestEnvVar = "TRITON_TEST"

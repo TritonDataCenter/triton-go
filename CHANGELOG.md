@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 1.8.6 (Dec 08 2024)
+
+- Updated joyent links to TritonDataCenter to reflect new repo home
+
 ## 1.8.5 (Aug 19 2020)
 
 - Added delegate_dataset support to instance creation
@@ -126,11 +130,11 @@ We also now add support for using `SDC_*` and `TRITON_*` env vars when working w
   connections per host, total of 10x connections per client.
 - Expose an optional Headers attribute to clients to allow them to customize
   HTTP headers when making Object requests.
-- Fix a bug in Directory ListIndex [#69](https://github.com/joyent/issues/69)
+- Fix a bug in Directory ListIndex [#69](https://github.com/TritonDataCenter/triton-go/issues/69)
 - Inputs to Object inputs have been relaxed to `io.Reader` (formerly a
-  `io.ReadSeeker`) [#73](https://github.com/joyent/issues/73).
-- Add support for ForceDelete of all children of a directory [#71](https://github.com/joyent/issues/71)
-- storage: Introduce `Objects.GetInfo` and `Objects.IsDir` using HEAD requests [#74](https://github.com/joyent/triton-go/issues/74)
+  `io.ReadSeeker`) [#73](https://github.com/TritonDataCenter/triton-go/issues/73).
+- Add support for ForceDelete of all children of a directory [#71](https://github.com/TritonDataCenter/triton-go/issues/71)
+- storage: Introduce `Objects.GetInfo` and `Objects.IsDir` using HEAD requests [#74](https://github.com/TritonDataCenter/triton-go/issues/74)
 
 ## 0.2.1 (November 8 2017)
 

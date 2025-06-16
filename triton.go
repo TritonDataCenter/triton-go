@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +12,7 @@ package triton
 import (
 	"os"
 
-	"github.com/joyent/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/authentication"
 )
 
 // Universal package used for defining configuration used across all client

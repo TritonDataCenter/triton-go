@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,8 +13,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/joyent/triton-go/authentication"
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/authentication"
+	"github.com/TritonDataCenter/triton-go/client"
 )
 
 // Responders are callbacks that receive http requests and return a mocked

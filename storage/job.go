@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2024 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/client"
+	"github.com/TritonDataCenter/triton-go/client"
 	"github.com/pkg/errors"
 )
 
@@ -199,8 +200,8 @@ type CancelJobInput struct {
 // closed will likely still run to completion.
 //
 // This is however useful when:
-// 	- input is still open
-// 	- you have a long-running job
+//   - input is still open
+//   - you have a long-running job
 func (s *JobClient) Cancel(ctx context.Context, input *CancelJobInput) error {
 	fullPath := path.Join("/", s.client.AccountName, "jobs", input.JobID, "live", "cancel")
 
