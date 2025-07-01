@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,9 +20,9 @@ import (
 // APIError represents an error code and message along with
 // the status code of the HTTP request which resulted in the error
 // message. Error codes used by the Triton API are listed at
-// https://apidocs.joyent.com/cloudapi/#cloudapi-http-responses
+// https://apidocs.tritondatacenter.com/cloudapi/#cloudapi-http-responses
 // Error codes used by the Manta API are listed at
-// https://apidocs.joyent.com/manta/api.html#errors
+// https://apidocs.tritondatacenter.com/manta/api.html#errors
 type APIError struct {
 	StatusCode int
 	Code       string `json:"code"`

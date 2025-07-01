@@ -1,4 +1,4 @@
-module github.com/joyent/triton-go/v2
+module github.com/TritonDataCenter/triton-go/v2
 
 go 1.14
 

@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,15 +18,15 @@ import (
 	"strings"
 	"testing"
 
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/compute"
+	"github.com/TritonDataCenter/triton-go/v2/testutils"
 	"github.com/abdullin/seq"
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/compute"
-	"github.com/joyent/triton-go/v2/testutils"
 	"github.com/pkg/errors"
 )
 
 var (
-	fakeImageID = "2b683a82-a066-11e3-97ab-2faa44701c5a"
+	fakeImageID = "8adac45a-aca7-11ee-b53e-00151714048c"
 	localImage  compute.Image
 )
 
@@ -492,26 +493,26 @@ func getImageSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-  "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-  "name": "base",
-  "version": "13.4.0",
+  "id": "8adac45a-aca7-11ee-b53e-00151714048c",
+  "name": "base-64-lts",
+  "version": "23.4.0",
   "os": "smartos",
   "requirements": {},
   "type": "zone-dataset",
-  "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+  "description": "A 64-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
   "files": [
 	{
 	  "compression": "gzip",
-	  "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-	  "size": 110742036
+          "sha1": "b9ffbab72b94a22575e056923cd3e6c0dd905a2b",
+          "size": 239035529
 	}
   ],
   "tags": {
-	"role": "os",
-	"group": "base-32"
+        "role": "os",
+        "group": "base-64-lts"
   },
-  "homepage": "https://docs.joyent.com/images/smartos/base",
-  "published_at": "2014-02-28T10:50:42Z",
+  "homepage": "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/smartos/base",
+  "published_at": "2024-01-06T15:23:28Z",
   "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
   "public": true,
   "state": "active"
@@ -530,26 +531,26 @@ func getImageBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-  "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-  "name": "base",
-  "version": "13.4.0",
+  "id": "8adac45a-aca7-11ee-b53e-00151714048c",
+  "name": "base-64-lts",
+  "version": "23.4.0",
   "os": "smartos",
   "requirements": {},
   "type": "zone-dataset",
-  "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+  "description": "A 64-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
   "files": [
 	{
 	  "compression": "gzip",
-	  "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-	  "size": 110742036
+          "sha1": "b9ffbab72b94a22575e056923cd3e6c0dd905a2b",
+          "size": 239035529
 	}
   ],
   "tags": {
-	"role": "os",
-	"group": "base-32"
+        "role": "os",
+        "group": "base-64-lts"
   },
-  "homepage": "https://docs.joyent.com/images/smartos/base",
-  "published_at": "2014-02-28T10:50:42Z",
+  "homepage": "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/smartos/base",
+  "published_at": "2024-01-06T15:23:28Z",
   "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
   "public": true,
   "state": "active",
@@ -583,26 +584,26 @@ func listImagesSuccess(req *http.Request) (*http.Response, error) {
 
 	body := strings.NewReader(`[
 {
-	"id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-	"name": "base",
-	"version": "13.4.0",
+	"id": "8adac45a-aca7-11ee-b53e-00151714048c",
+	"name": "base-64-lts",
+	"version": "23.4.0",
 	"os": "smartos",
 	"requirements": {},
 	"type": "zone-dataset",
-	"description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+	"description": "A 64-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
 	"files": [
 	  {
 		"compression": "gzip",
-		"sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-		"size": 110742036
+		"sha1": "b9ffbab72b94a22575e056923cd3e6c0dd905a2b",
+		"size": 239035529
 	  }
 	],
 	"tags": {
 	  "role": "os",
-	  "group": "base-32"
+	  "group": "base-64-lts"
 	},
-	"homepage": "https://docs.joyent.com/images/smartos/base",
-	"published_at": "2014-02-28T10:50:42Z",
+	"homepage": "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/smartos/base",
+	"published_at": "2024-01-06T15:23:28Z",
 	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
 	"public": true,
 	"state": "active"
@@ -632,26 +633,26 @@ func listImagesBadDecode(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`[{
-	"id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
-	"name": "base",
-	"version": "13.4.0",
+	"id": "8adac45a-aca7-11ee-b53e-00151714048c",
+	"name": "base-64-lts",
+	"version": "23.4.0",
 	"os": "smartos",
 	"requirements": {},
 	"type": "zone-dataset",
-	"description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+	"description": "A 64-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
 	"files": [
 	  {
 		"compression": "gzip",
-		"sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
-		"size": 110742036
+		"sha1": "b9ffbab72b94a22575e056923cd3e6c0dd905a2b",
+		"size": 239035529
 	  }
 	],
 	"tags": {
 	  "role": "os",
-	  "group": "base-32"
+	  "group": "base-64-lts"
 	},
-	"homepage": "https://docs.joyent.com/images/smartos/base",
-	"published_at": "2014-02-28T10:50:42Z",
+	"homepage": "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/smartos/base",
+	"published_at": "2024-01-06T15:23:28Z",
 	"owner": "930896af-bf8c-48d4-885c-6573a94b1853",
 	"public": true,
 	"state": "active",
@@ -677,7 +678,7 @@ func createImageFromMachineSuccess(req *http.Request) (*http.Response, error) {
 	"name": "my-custom-image",
 	"version": "1.2.3",
 	"requirements": {},
-	"owner": "47034e57-42d1-0342-b302-00db733e8c8a",
+	"owner": "e02341e8-f62f-e160-c5a9-a08204006413",
 	"public": false,
 	"state": "active"
 }
@@ -699,14 +700,14 @@ func updateImageSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-  "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+  "id": "8adac45a-aca7-11ee-b53e-00151714048c",
   "name": "my-custom-image",
   "version": "1.0.1",
   "os": "smartos",
   "requirements": {},
   "type": "zone-dataset",
   "published_at": "2013-11-25T17:44:54Z",
-  "owner": "47034e57-42d1-0342-b302-00db733e8c8a",
+  "owner": "e02341e8-f62f-e160-c5a9-a08204006413",
   "public": true,
   "state": "active"
 }
@@ -728,7 +729,7 @@ func exportImageSuccess(req *http.Request) (*http.Response, error) {
 	header.Add("Content-Type", "application/json")
 
 	body := strings.NewReader(`{
-  "manta_url": "https://us-east.manta.joyent.com",
+  "manta_url": "https://us-central.manta.mnx.io",
   "image_path": "/user/stor/my-image.zfs.gz",
   "manifest_path": "/user/stor/my-image.imgmanifest"
 }

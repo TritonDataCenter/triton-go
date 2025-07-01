@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +10,9 @@
 package docs
 
 import (
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/docs/man"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/docs/md"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/docs/man"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/docs/md"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +20,7 @@ var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:     "doc",
 		Aliases: []string{"docs", "documentation"},
-		Short:   "Documentation for Joyent Manta cli",
+		Short:   "Documentation for Manta Object Storage cli",
 	},
 
 	Setup: func(parent *command.Command) error {

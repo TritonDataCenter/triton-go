@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/v2/client"
-	"github.com/joyent/triton-go/v2/errors"
+	"github.com/TritonDataCenter/triton-go/v2/client"
+	"github.com/TritonDataCenter/triton-go/v2/errors"
 	pkgerrors "github.com/pkg/errors"
 )
 

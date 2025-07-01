@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,13 +12,13 @@ package cmd
 import (
 	"os"
 
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
-	"github.com/joyent/triton-go/v2/cmd/internal/logger"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/docs"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/list"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/shell"
-	"github.com/joyent/triton-go/v2/cmd/manta/cmd/version"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/logger"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/docs"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/list"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/shell"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/manta/cmd/version"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/sean-/conswriter"
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ var subCommands = []*command.Command{
 var rootCmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "manta",
-		Short: "Joyent Manta CLI and client (https://www.joyent.com/triton)",
+		Short: "Manta Object Storage CLI and client (https://www.tritondatacenter.com/manta)",
 	},
 	Setup: func(parent *command.Command) error {
 		{

@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,11 +15,11 @@ import (
 	"log"
 	"reflect"
 
+	triton "github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/compute"
+	"github.com/TritonDataCenter/triton-go/v2/errors"
+	"github.com/TritonDataCenter/triton-go/v2/network"
 	"github.com/abdullin/seq"
-	triton "github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/compute"
-	"github.com/joyent/triton-go/v2/errors"
-	"github.com/joyent/triton-go/v2/network"
 	pkgerrors "github.com/pkg/errors"
 )
 
@@ -136,7 +137,8 @@ type StepGetImage struct {
 }
 
 func (s *StepGetImage) Run(state TritonStateBag) StepAction {
-	const imageName = "ubuntu-16.04"
+	const imageName = "ubuntu-24.04"
+	const imageVersion = "20240612"
 
 	computeClient, err := compute.NewClient(state.Config())
 	if err != nil {
@@ -145,7 +147,8 @@ func (s *StepGetImage) Run(state TritonStateBag) StepAction {
 	}
 
 	images, err := computeClient.Images().List(context.Background(), &compute.ListImagesInput{
-		Name: imageName,
+		Name:    imageName,
+		Version: imageVersion,
 	})
 	if err != nil {
 		state.AppendError(err)

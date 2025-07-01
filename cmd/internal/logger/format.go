@@ -1,5 +1,6 @@
 //
 //  Copyright 2020 Joyent, Inc. All rights reserved.
+//  Copyright 2025 MNX Cloud, Inc.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +13,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/spf13/viper"
 )
 

@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,8 +13,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -23,8 +24,8 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "bash",
-		Short: "Generates shell autocompletion file for Joyent Manta CLI",
-		Long: `Generates a shell autocompletion script for Joyent Manta CLI.
+		Short: "Generates shell autocompletion file for Manta Object Storage CLI",
+		Long: `Generates a shell autocompletion script for Manta Object Storage CLI.
 
 By default, the file is written directly to /etc/bash_completion.d
 for convenience, and the command may need superuser rights, e.g.:

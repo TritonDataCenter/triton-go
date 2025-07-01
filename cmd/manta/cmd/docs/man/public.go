@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,9 +16,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/joyent/triton-go/v2"
-	"github.com/joyent/triton-go/v2/cmd/internal/command"
-	"github.com/joyent/triton-go/v2/cmd/internal/config"
+	"github.com/TritonDataCenter/triton-go/v2"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/command"
+	"github.com/TritonDataCenter/triton-go/v2/cmd/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -28,7 +29,7 @@ import (
 var Cmd = &command.Command{
 	Cobra: &cobra.Command{
 		Use:   "man",
-		Short: "Generates and installs Joyent Manta cli man pages",
+		Short: "Generates and installs Manta Object Storage cli man pages",
 		Long: `This command automatically generates up-to-date man pages of Manta CLI
 command-line interface.  By default, it creates the man page files
 in the "docs/man" directory under the current directory.`,

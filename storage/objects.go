@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
+// Copyright 2025 MNX Cloud, Inc.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,8 +20,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joyent/triton-go/v2/client"
-	tt "github.com/joyent/triton-go/v2/errors"
+	"github.com/TritonDataCenter/triton-go/v2/client"
+	tt "github.com/TritonDataCenter/triton-go/v2/errors"
 	"github.com/pkg/errors"
 )
 
@@ -311,9 +312,9 @@ type PutObjectMetadataInput struct {
 // stored on each request.
 //
 // You cannot change "critical" headers:
-// 	- Content-Length
-//	- Content-MD5
-//	- Durability-Level
+//   - Content-Length
+//   - Content-MD5
+//   - Durability-Level
 func (s *ObjectsClient) PutMetadata(ctx context.Context, input *PutObjectMetadataInput) error {
 	absPath := absFileInput(s.client.AccountName, input.ObjectPath)
 	query := &url.Values{}
