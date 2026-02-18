@@ -180,6 +180,8 @@ func main() {
 
 	// Create a new instance using our input attributes...
 	// https://github.com/TritonDataCenter/triton-go/v2/blob/master/compute/instances.go#L206
+	tagsInput := make(map[string]interface{}, 1)
+	tagsInput["tag1"] = "value1"
 	createInput := &compute.CreateInstanceInput{
 		Name:     testutils.RandString(10),
 		Package:  PackageName,
@@ -188,9 +190,7 @@ func main() {
 		Volumes: []compute.InstanceVolume{
 			instanceVolume,
 		},
-		Tags: map[string]string{
-			"tag1": "value1",
-		},
+		Tags: tagsInput,
 	}
 
 	created, err := c.Instances().Create(context.Background(), createInput)
