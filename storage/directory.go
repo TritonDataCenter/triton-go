@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -141,18 +142,13 @@ func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInpu
 	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
 
 	if input.ForceDelete {
-		err := deleteAll(*s, ctx, absPath)
-		if err != nil {
+		if err := deleteAll(*s, ctx, absPath); err != nil {
 			return err
 		}
-	} else {
-		err := deleteDirectory(*s, ctx, absPath)
-		if err != nil {
-			return err
-		}
+		return deleteDirectory(*s, ctx, absPath)
 	}
 
-	return nil
+	return deleteDirectory(*s, ctx, absPath)
 }
 
 func deleteAll(c DirectoryClient, ctx context.Context, directoryPath _AbsCleanPath) error {
@@ -165,12 +161,16 @@ func deleteAll(c DirectoryClient, ctx context.Context, directoryPath _AbsCleanPa
 	for _, obj := range objs.Entries {
 		newPath := absFileInput(c.client.AccountName, path.Join(string(directoryPath), obj.Name))
 		if obj.Type == "directory" {
-			err := deleteDirectory(c, ctx, newPath)
-			if err != nil {
-				return deleteAll(c, ctx, newPath)
+			if err := deleteAll(c, ctx, newPath); err != nil {
+				return err
+			}
+			if err := deleteDirectory(c, ctx, newPath); err != nil {
+				return err
 			}
 		} else {
-			return deleteObject(c, ctx, newPath)
+			if err := deleteObject(c, ctx, newPath); err != nil {
+				return err
+			}
 		}
 	}
 
