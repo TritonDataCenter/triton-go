@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2025 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +12,7 @@ package authentication
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/asn1"
@@ -93,29 +95,10 @@ func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error)
 func (s *PrivateKeySigner) Sign(dateHeader string, isManta bool) (string, error) {
 	const headerName = "date"
 
-	hash := s.hashFunc.New()
-	hash.Write([]byte(fmt.Sprintf("%s: %s", headerName, dateHeader)))
-	digest := hash.Sum(nil)
-
-	var algoName string
-	var signedBase64 string
-	switch s.privateKey.(type) {
-	case *rsa.PrivateKey:
-		algoName = RSA_SHA512
-		signed, err := rsa.SignPKCS1v15(rand.Reader, s.privateKey.(*rsa.PrivateKey), s.hashFunc, digest)
-		if err != nil {
-			return "", errors.Wrap(err, "unable to sign date header")
-		}
-		signedBase64 = base64.StdEncoding.EncodeToString(signed)
-	case *ecdsa.PrivateKey:
-		algoName = ECDSA_SHA512
-		r, s, err := ecdsa.Sign(rand.Reader, s.privateKey.(*ecdsa.PrivateKey), digest)
-		if err != nil {
-			return "", errors.Wrap(err, "unable to sign date header")
-		}
-		signature := ECDSASignature{R: r, S: s}
-		signed, err := asn1.Marshal(signature)
-		signedBase64 = base64.StdEncoding.EncodeToString(signed)
+	message := fmt.Sprintf("%s: %s", headerName, dateHeader)
+	signedBase64, algoName, err := s.SignRaw(message)
+	if err != nil {
+		return "", err
 	}
 
 	key := &KeyID{
@@ -129,30 +112,41 @@ func (s *PrivateKeySigner) Sign(dateHeader string, isManta bool) (string, error)
 }
 
 func (s *PrivateKeySigner) SignRaw(toSign string) (string, string, error) {
-	hash := s.hashFunc.New()
-	hash.Write([]byte(toSign))
-	digest := hash.Sum(nil)
-
 	var algoName string
 	var signedBase64 string
-	switch s.privateKey.(type) {
+	message := []byte(toSign)
+	switch key := s.privateKey.(type) {
 	case *rsa.PrivateKey:
 		algoName = RSA_SHA512
-		signed, err := rsa.SignPKCS1v15(rand.Reader, s.privateKey.(*rsa.PrivateKey), s.hashFunc, digest)
+		hash := s.hashFunc.New()
+		hash.Write(message)
+		digest := hash.Sum(nil)
+		signed, err := rsa.SignPKCS1v15(rand.Reader, key, s.hashFunc, digest)
 		if err != nil {
 			return "", "", errors.Wrap(err, "unable to sign date header")
 		}
 		signedBase64 = base64.StdEncoding.EncodeToString(signed)
 	case *ecdsa.PrivateKey:
 		algoName = ECDSA_SHA512
-		r, s, err := ecdsa.Sign(rand.Reader, s.privateKey.(*ecdsa.PrivateKey), digest)
+		hash := s.hashFunc.New()
+		hash.Write(message)
+		digest := hash.Sum(nil)
+		r, s, err := ecdsa.Sign(rand.Reader, key, digest)
 		if err != nil {
 			return "", "", errors.Wrap(err, "unable to sign date header")
 		}
 		signature := ECDSASignature{R: r, S: s}
 		signed, err := asn1.Marshal(signature)
+		if err != nil {
+			return "", "", errors.Wrap(err, "unable to marshal ECDSA signature")
+		}
 		signedBase64 = base64.StdEncoding.EncodeToString(signed)
-
+	case ed25519.PrivateKey:
+		algoName = ED25519_SHA512
+		signed := ed25519.Sign(key, message)
+		signedBase64 = base64.StdEncoding.EncodeToString(signed)
+	default:
+		return "", "", errors.New("unable to sign string with unsupported key type")
 	}
 
 	return signedBase64, algoName, nil

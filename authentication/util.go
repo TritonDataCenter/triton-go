@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
+// Copyright 2025 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +11,7 @@ package authentication
 
 import (
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/md5"
 	"crypto/rsa"
 	"fmt"
@@ -24,22 +26,29 @@ import (
 // between each byte, as per the output of OpenSSL.
 func formatPublicKeyFingerprint(privateKey interface{}, display bool) (string, error) {
 	var key ssh.PublicKey
-	switch privateKey.(type) {
+	switch k := privateKey.(type) {
+	case ssh.PublicKey:
+		key = k
 	case *rsa.PrivateKey:
-		p, err := ssh.NewPublicKey(privateKey.(*rsa.PrivateKey).Public())
+		p, err := ssh.NewPublicKey(k.Public())
 		if err != nil {
 			return "", errors.Wrap(err, "unable to parse SSH key from private key")
 		}
 		key = p
 	case *ecdsa.PrivateKey:
-		p, err := ssh.NewPublicKey(privateKey.(*ecdsa.PrivateKey).Public())
+		p, err := ssh.NewPublicKey(k.Public())
+		if err != nil {
+			return "", errors.Wrap(err, "unable to parse SSH key from private key")
+		}
+		key = p
+	case ed25519.PrivateKey:
+		p, err := ssh.NewPublicKey(k.Public())
 		if err != nil {
 			return "", errors.Wrap(err, "unable to parse SSH key from private key")
 		}
 		key = p
 	default:
 		return "", fmt.Errorf("unable to parse SSH key from private key")
-
 	}
 	publicKeyFingerprint := md5.New()
 	publicKeyFingerprint.Write(key.Marshal())
