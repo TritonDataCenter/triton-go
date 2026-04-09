@@ -141,7 +141,7 @@ func TestUpdateConfig(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigSuccess)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, "config"), updateConfigSuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -150,7 +150,7 @@ func TestUpdateConfig(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigError)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, "config"), updateConfigError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {

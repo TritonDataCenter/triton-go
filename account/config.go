@@ -64,7 +64,7 @@ type UpdateConfigInput struct {
 func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	fullPath := path.Join("/", c.client.AccountName, "config")
 	reqInputs := client.RequestInput{
-		Method: http.MethodPost,
+		Method: http.MethodPut,
 		Path:   fullPath,
 		Body:   input,
 	}
