@@ -133,11 +133,11 @@ func (s *DirectoryClient) Put(ctx context.Context, input *PutDirectoryInput) err
 // DeleteDirectoryInput represents parameters to a Delete operation.
 type DeleteDirectoryInput struct {
 	DirectoryName string
-	ForceDelete   bool //Will recursively delete all child directories and objects
+	ForceDelete   bool // Recursively delete all child directories and objects
 }
 
-// Delete deletes a directory on the Triton Object Storage. The directory must
-// be empty.
+// Delete deletes a directory on the Triton Object Storage. If ForceDelete is
+// false, the directory must be empty.
 func (s *DirectoryClient) Delete(ctx context.Context, input *DeleteDirectoryInput) error {
 	absPath := absFileInput(s.client.AccountName, input.DirectoryName)
 
