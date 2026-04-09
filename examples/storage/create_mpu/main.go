@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,9 +26,9 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("TRITON_KEY_ID")
-	accountName := os.Getenv("TRITON_ACCOUNT")
-	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	accountName := os.Getenv("MANTA_USER")
+	keyMaterial := os.Getenv("MANTA_KEY_MATERIAL")
 	userName := os.Getenv("TRITON_USER")
 	fileName := "foo.txt"
 	localPath := "/tmp/" + fileName

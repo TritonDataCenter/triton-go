@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2018, Joyent, Inc. All rights reserved.
-// Copyright 2025 Edgecast Cloud LLC.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this

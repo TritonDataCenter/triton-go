@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,6 +31,10 @@ func main() {
 	mantaUser := os.Getenv("MANTA_USER")
 	mantaFolder := os.Getenv("MANTA_FOLDER")
 	userName := os.Getenv("TRITON_USER")
+
+	if mantaFolder == "" {
+		log.Fatal("MANTA_FOLDER must be set")
+	}
 
 	var signer authentication.Signer
 	var err error

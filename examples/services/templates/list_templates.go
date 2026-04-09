@@ -1,11 +1,16 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
+
+// NOTE: Triton Service Groups (TSG) was a standalone microservice for
+// auto-scaling instance groups that never left preview status. This example
+// targets a separate TSG API server (via TRITON_TSG_URL), not CloudAPI.
 
 package main
 
