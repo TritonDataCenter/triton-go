@@ -1,5 +1,6 @@
 //
 // Copyright 2020 Joyent, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +12,7 @@ package triton
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 )
 
 // Version represents main version number of the current release
@@ -40,3 +42,33 @@ func UserAgent() string {
 // CloudAPIMajorVersion specifies the CloudAPI version compatibility
 // for current release of the Triton-go SDK.
 const CloudAPIMajorVersion = "8"
+
+// VCSInfo contains version control metadata embedded by the Go toolchain
+// at build time.
+type VCSInfo struct {
+	Revision string
+	Time     string
+	Modified bool
+}
+
+// BuildInfo returns VCS metadata embedded by the Go toolchain. If the
+// binary was not built with module support or VCS info is unavailable,
+// the returned fields will be empty/false.
+func BuildInfo() VCSInfo {
+	var info VCSInfo
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return info
+	}
+	for _, s := range bi.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			info.Revision = s.Value
+		case "vcs.time":
+			info.Time = s.Value
+		case "vcs.modified":
+			info.Modified = s.Value == "true"
+		}
+	}
+	return info
+}
