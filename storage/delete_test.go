@@ -173,3 +173,40 @@ func TestForceDeleteNestedDirectory(t *testing.T) {
 		}
 	}
 }
+
+// TestDeleteDirectorySimple verifies that Delete with ForceDelete: false
+// issues a single DELETE request without listing or recursing.
+func TestDeleteDirectorySimple(t *testing.T) {
+	storageClient := MockStorageClient()
+	defer testutils.DeactivateClient()
+
+	var mu sync.Mutex
+	deleted := make(map[string]bool)
+	track := deleteTracker(&mu, deleted)
+
+	dirPath := path.Join("/", accountURL, "stor/emptydir")
+
+	// If a GET (directory listing) is issued, the test should fail.
+	testutils.RegisterResponder("GET", dirPath,
+		func(req *http.Request) (*http.Response, error) {
+			t.Fatal("unexpected directory listing request; ForceDelete is false")
+			return nil, nil
+		})
+
+	testutils.RegisterResponder("DELETE", dirPath, track)
+
+	err := storageClient.Dir().Delete(context.Background(), &storage.DeleteDirectoryInput{
+		DirectoryName: "/stor/emptydir",
+		ForceDelete:   false,
+	})
+	if err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+
+	if !deleted[dirPath] {
+		t.Errorf("expected DELETE for %q but it was not called", dirPath)
+	}
+	if len(deleted) != 1 {
+		t.Errorf("expected exactly 1 DELETE, got %d: %v", len(deleted), deleted)
+	}
+}
