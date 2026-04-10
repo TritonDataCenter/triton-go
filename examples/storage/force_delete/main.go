@@ -26,11 +26,11 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("TRITON_KEY_ID")
-	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	keyMaterial := os.Getenv("MANTA_KEY_MATERIAL")
 	mantaUser := os.Getenv("MANTA_USER")
 	mantaFolder := os.Getenv("MANTA_FOLDER")
-	userName := os.Getenv("TRITON_USER")
+	userName := os.Getenv("MANTA_SUBUSER")
 
 	if mantaFolder == "" {
 		log.Fatal("MANTA_FOLDER must be set")

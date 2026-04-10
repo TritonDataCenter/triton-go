@@ -30,7 +30,7 @@ func main() {
 	keyID := os.Getenv("MANTA_KEY_ID")
 	accountName := os.Getenv("MANTA_USER")
 	keyMaterial := os.Getenv("MANTA_KEY_MATERIAL")
-	userName := os.Getenv("TRITON_USER")
+	userName := os.Getenv("MANTA_SUBUSER")
 
 	var signer authentication.Signer
 	var err error

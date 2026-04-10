@@ -25,10 +25,10 @@ import (
 )
 
 func main() {
-	keyID := os.Getenv("TRITON_KEY_ID")
-	keyMaterial := os.Getenv("TRITON_KEY_MATERIAL")
+	keyID := os.Getenv("MANTA_KEY_ID")
+	keyMaterial := os.Getenv("MANTA_KEY_MATERIAL")
 	mantaUser := os.Getenv("MANTA_USER")
-	userName := os.Getenv("TRITON_USER")
+	userName := os.Getenv("MANTA_SUBUSER")
 
 	var signer authentication.Signer
 	var err error
