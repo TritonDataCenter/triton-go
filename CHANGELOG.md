@@ -1,5 +1,14 @@
 ## Unreleased
 
+## 2.0.0-pre5 (April 13 2026)
+
+- TRITON-2542 Add support for ed25519 keys
+- Fix UpdateConfig endpoint support
+- Fix issue decoding image tags with non boolean keys
+- Fix ForceDelete behavior in `deleteAll` [#155]
+- Fix dropped marshal errors [#204]
+- Fix create_instance_with_volumes unit test [#205]
+
 ## 2.0.0-pre4 (May 23 2025)
 
 - Added delegate_dataset support to instance creation
