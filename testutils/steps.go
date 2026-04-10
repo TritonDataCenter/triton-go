@@ -138,7 +138,7 @@ type StepGetImage struct {
 
 func (s *StepGetImage) Run(state TritonStateBag) StepAction {
 	const imageName = "ubuntu-24.04"
-	const imageVersion = "20240612"
+	const imageVersion = "20260121"
 
 	computeClient, err := compute.NewClient(state.Config())
 	if err != nil {
@@ -156,8 +156,8 @@ func (s *StepGetImage) Run(state TritonStateBag) StepAction {
 	}
 
 	if len(images) == 0 {
-		state.AppendError(pkgerrors.Errorf("No images matching image name %s",
-			imageName))
+		state.AppendError(pkgerrors.Errorf("No images matching image name %s v%s",
+			imageName, imageVersion))
 		return Halt
 	}
 
