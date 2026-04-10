@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,7 +46,7 @@ type Image struct {
 	Owner        string                 `json:"owner"`
 	Public       bool                   `json:"public"`
 	State        string                 `json:"state"`
-	Tags         map[string]string      `json:"tags"`
+	Tags         map[string]interface{} `json:"tags"`
 	EULA         string                 `json:"eula"`
 	ACL          []string               `json:"acl"`
 }
@@ -195,14 +196,14 @@ func (c *ImagesClient) Export(ctx context.Context, input *ExportImageInput) (*Ma
 }
 
 type CreateImageFromMachineInput struct {
-	MachineID   string            `json:"machine"`
-	Name        string            `json:"name"`
-	Version     string            `json:"version,omitempty"`
-	Description string            `json:"description,omitempty"`
-	HomePage    string            `json:"homepage,omitempty"`
-	EULA        string            `json:"eula,omitempty"`
-	ACL         []string          `json:"acl,omitempty"`
-	Tags        map[string]string `json:"tags,omitempty"`
+	MachineID   string                 `json:"machine"`
+	Name        string                 `json:"name"`
+	Version     string                 `json:"version,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	HomePage    string                 `json:"homepage,omitempty"`
+	EULA        string                 `json:"eula,omitempty"`
+	ACL         []string               `json:"acl,omitempty"`
+	Tags        map[string]interface{} `json:"tags,omitempty"`
 }
 
 func (c *ImagesClient) CreateFromMachine(ctx context.Context, input *CreateImageFromMachineInput) (*Image, error) {
@@ -230,14 +231,14 @@ func (c *ImagesClient) CreateFromMachine(ctx context.Context, input *CreateImage
 }
 
 type UpdateImageInput struct {
-	ImageID     string            `json:"-"`
-	Name        string            `json:"name,omitempty"`
-	Version     string            `json:"version,omitempty"`
-	Description string            `json:"description,omitempty"`
-	HomePage    string            `json:"homepage,omitempty"`
-	EULA        string            `json:"eula,omitempty"`
-	ACL         []string          `json:"acl,omitempty"`
-	Tags        map[string]string `json:"tags,omitempty"`
+	ImageID     string                 `json:"-"`
+	Name        string                 `json:"name,omitempty"`
+	Version     string                 `json:"version,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	HomePage    string                 `json:"homepage,omitempty"`
+	EULA        string                 `json:"eula,omitempty"`
+	ACL         []string               `json:"acl,omitempty"`
+	Tags        map[string]interface{} `json:"tags,omitempty"`
 }
 
 func (c *ImagesClient) Update(ctx context.Context, input *UpdateImageInput) (*Image, error) {
