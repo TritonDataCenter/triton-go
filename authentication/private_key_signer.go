@@ -123,7 +123,7 @@ func (s *PrivateKeySigner) SignRaw(toSign string) (string, string, error) {
 		digest := hash.Sum(nil)
 		signed, err := rsa.SignPKCS1v15(rand.Reader, key, s.hashFunc, digest)
 		if err != nil {
-			return "", "", errors.Wrap(err, "failed create signature using RSA key")
+			return "", "", errors.Wrap(err, "failed to create signature using RSA key")
 		}
 		signedBase64 = base64.StdEncoding.EncodeToString(signed)
 	case *ecdsa.PrivateKey:
@@ -133,7 +133,7 @@ func (s *PrivateKeySigner) SignRaw(toSign string) (string, string, error) {
 		digest := hash.Sum(nil)
 		r, s, err := ecdsa.Sign(rand.Reader, key, digest)
 		if err != nil {
-			return "", "", errors.Wrap(err, "failed create signature using ECDSA key")
+			return "", "", errors.Wrap(err, "failed to create signature using ECDSA key")
 		}
 		signature := ECDSASignature{R: r, S: s}
 		signed, err := asn1.Marshal(signature)
