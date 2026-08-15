@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -281,6 +282,59 @@ func TestGetImage(t *testing.T) {
 
 		if !strings.Contains(err.Error(), "unable to get image") {
 			t.Errorf("expected error to equal testError: found %s", err)
+		}
+	})
+}
+
+func TestGetImageMixedTags(t *testing.T) {
+	computeClient := MockComputeClient()
+
+	do := func(ctx context.Context, cc *compute.ComputeClient) (*compute.Image, error) {
+		defer testutils.DeactivateClient()
+
+		image, err := cc.Images().Get(ctx, &compute.GetImageInput{
+			ImageID: fakeImageID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return image, nil
+	}
+
+	t.Run("successful", func(t *testing.T) {
+		testutils.RegisterResponder("GET", path.Join("/", accountURL, "images", fakeImageID), getImageMixedTagsSuccess)
+
+		resp, err := do(context.Background(), computeClient)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp == nil {
+			t.Fatalf("Expected an output but got nil")
+		}
+
+		tagVal, ok := resp.Tags["role"]
+		if !ok {
+			t.Fatalf("Expected image to have tag \"role\": found %v", resp.Tags)
+		}
+		if tagVal != "os" {
+			t.Fatalf("Expected tag \"role\" to equal \"os\": found %v", tagVal)
+		}
+
+		tagVal, ok = resp.Tags["production"]
+		if !ok {
+			t.Fatalf("Expected image to have tag \"production\": found %v", resp.Tags)
+		}
+		if tagVal != true {
+			t.Fatalf("Expected tag \"production\" to equal true: found %v", tagVal)
+		}
+
+		tagVal, ok = resp.Tags["priority"]
+		if !ok {
+			t.Fatalf("Expected image to have tag \"priority\": found %v", resp.Tags)
+		}
+		if tagVal != float64(42) {
+			t.Fatalf("Expected tag \"priority\" to equal 42: found %v", tagVal)
 		}
 	})
 }
@@ -576,6 +630,45 @@ func getImageEmpty(req *http.Request) (*http.Response, error) {
 
 func getImageError(req *http.Request) (*http.Response, error) {
 	return nil, errors.New("unable to get image")
+}
+
+func getImageMixedTagsSuccess(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+  "id": "8adac45a-aca7-11ee-b53e-00151714048c",
+  "name": "base-64-lts",
+  "version": "23.4.0",
+  "os": "smartos",
+  "requirements": {},
+  "type": "zone-dataset",
+  "description": "A 64-bit SmartOS image with just essential packages installed.",
+  "files": [
+	{
+	  "compression": "gzip",
+	  "sha1": "b9ffbab72b94a22575e056923cd3e6c0dd905a2b",
+	  "size": 239035529
+	}
+  ],
+  "tags": {
+	"role": "os",
+	"production": true,
+	"priority": 42
+  },
+  "homepage": "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images/smartos/base",
+  "published_at": "2024-01-06T15:23:28Z",
+  "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
+  "public": true,
+  "state": "active"
+}
+`)
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
 }
 
 func listImagesSuccess(req *http.Request) (*http.Response, error) {

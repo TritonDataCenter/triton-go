@@ -6,6 +6,7 @@
 
 #
 # Copyright 2020 Joyent, Inc.
+# Copyright 2026 Edgecast Cloud LLC.
 #
 
 TEST?=$$(go list ./... |grep -Ev 'vendor|examples|testutils')
@@ -14,18 +15,13 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 .PHONY: all
 all:
 
-.PHONY: tools
-tools: ## Download and install all dev/code tools
-	@echo "==> Installing dev tools"
-	go get -u github.com/golang/dep/cmd/dep
-
 .PHONY: build
-build:
-	@govvv build
+build: ## Build all packages
+	@go build ./...
 
 .PHONY: install
-install:
-	@govvv install
+install: ## Install all packages
+	@go install ./...
 
 .PHONY: test
 test: ## Run unit tests
@@ -38,8 +34,9 @@ testacc: ## Run acceptance tests
 	TRITON_TEST=1 go test $(TEST) -v -run TestAcc -timeout 60m
 
 .PHONY: check
-check:
-	scripts/gofmt-check.sh
+check: ## Run all lint checks (gofmt, vet)
+	@scripts/gofmt-check.sh
+	@go vet ./...
 
 .PHONY: help
 help: ## Display this help message

@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -141,7 +142,7 @@ func TestUpdateConfig(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigSuccess)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, "config"), updateConfigSuccess)
 
 		_, err := do(context.Background(), accountClient)
 		if err != nil {
@@ -150,7 +151,7 @@ func TestUpdateConfig(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		testutils.RegisterResponder("POST", path.Join("/", accountUrl, "config"), updateConfigError)
+		testutils.RegisterResponder("PUT", path.Join("/", accountUrl, "config"), updateConfigError)
 
 		_, err := do(context.Background(), accountClient)
 		if err == nil {

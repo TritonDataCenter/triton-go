@@ -1,6 +1,7 @@
 //
 //  Copyright 2020 Joyent, Inc. All rights reserved.
 //  Copyright 2025 MNX Cloud, Inc.
+//  Copyright 2026 Edgecast Cloud LLC.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +27,17 @@ var Cmd = &command.Command{
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cons := conswriter.GetTerminal()
-			cons.Write([]byte(fmt.Sprintf("Version: %s\n", triton.UserAgent())))
+			fmt.Fprintf(cons, "Version: %s\n", triton.UserAgent())
+			bi := triton.BuildInfo()
+			if bi.Revision != "" {
+				fmt.Fprintf(cons, "Revision: %s\n", bi.Revision)
+			}
+			if bi.Time != "" {
+				fmt.Fprintf(cons, "Build Time: %s\n", bi.Time)
+			}
+			if bi.Modified {
+				fmt.Fprintf(cons, "Modified: true\n")
+			}
 			return nil
 		},
 	},

@@ -1,6 +1,7 @@
 //
 // Copyright 2020 Joyent, Inc. All rights reserved.
 // Copyright 2025 MNX Cloud, Inc.
+// Copyright 2026 Edgecast Cloud LLC.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -64,7 +65,7 @@ type UpdateConfigInput struct {
 func (c *ConfigClient) Update(ctx context.Context, input *UpdateConfigInput) (*Config, error) {
 	fullPath := path.Join("/", c.client.AccountName, "config")
 	reqInputs := client.RequestInput{
-		Method: http.MethodPost,
+		Method: http.MethodPut,
 		Path:   fullPath,
 		Body:   input,
 	}
