@@ -115,6 +115,9 @@ func (s *PrivateKeySigner) Sign(dateHeader string, isManta bool) (string, error)
 		}
 		signature := ECDSASignature{R: r, S: s}
 		signed, err := asn1.Marshal(signature)
+		if err != nil {
+			return "", errors.Wrap(err, "unable to marshal signature")
+		}
 		signedBase64 = base64.StdEncoding.EncodeToString(signed)
 	}
 
@@ -151,6 +154,9 @@ func (s *PrivateKeySigner) SignRaw(toSign string) (string, string, error) {
 		}
 		signature := ECDSASignature{R: r, S: s}
 		signed, err := asn1.Marshal(signature)
+		if err != nil {
+			return "", "", errors.Wrap(err, "unable to marshal signature")
+		}
 		signedBase64 = base64.StdEncoding.EncodeToString(signed)
 
 	}
